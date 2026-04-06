@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .mypy_cache/
+.env
+.env.local
 data/downloads/
 data/runs/
 data/sessions/

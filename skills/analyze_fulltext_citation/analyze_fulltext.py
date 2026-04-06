@@ -5,15 +5,25 @@ import os
 from pathlib import Path
 from typing import Tuple
 
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from project_env import get_project_env, load_project_env
+
+load_project_env(ROOT)
+
 # Local analysis model defaults to the llama.cpp OpenAI-compatible endpoint.
 # These can be overridden via env vars when switching runtimes/models.
-LOCAL_VLLM_URL = os.getenv(
+LOCAL_VLLM_URL = get_project_env(
     "ACADEMIC_IMPACT_LOCAL_LLM_URL",
-    "http://114.212.82.168:8002/v1/chat/completions",
+    "http://127.0.0.1:8002/v1/chat/completions",
+    project_root=ROOT,
 )
-LOCAL_MODEL = os.getenv(
+LOCAL_MODEL = get_project_env(
     "ACADEMIC_IMPACT_LOCAL_MODEL",
     "Qwen3.5-27B-Q4_K_M.gguf",
+    project_root=ROOT,
 )
 
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
@@ -82,15 +92,9 @@ JSON格式必须严格为：
 """
 
 def load_deepseek_key():
-    key = os.getenv("DEEPSEEK_API_KEY")
+    key = get_project_env("DEEPSEEK_API_KEY", "", project_root=ROOT)
     if key:
         return key
-
-    env_path = Path.home() / ".openclaw" / ".env"
-    if env_path.exists():
-        for line in env_path.read_text(encoding="utf-8").splitlines():
-            if line.strip().startswith("DEEPSEEK_API_KEY="):
-                return line.split("=", 1)[1].strip().strip('"').strip("'")
     return None
 
 def call_local_27b(messages, max_tokens=900):
@@ -288,7 +292,7 @@ def analyze_payload(payload):
     if not api_key:
         return {
             "ok": False,
-            "error": "未找到 DEEPSEEK_API_KEY。请先 export，或写入 ~/.openclaw/.env"
+            "error": "未找到 DEEPSEEK_API_KEY。请先 export，或写入项目根目录的 .env / .env.local"
         }
 
     if not payload.get("candidate_spans"):

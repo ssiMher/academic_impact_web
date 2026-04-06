@@ -99,11 +99,16 @@ def load_session(session_id: str):
     return impact_cli().load_session(resolve_session_dir(session_id))
 
 
-def load_status(session_id: str, filters: dict[str, Any] | None = None):
+def refresh_phase1_exports(session_id: str, session: dict[str, Any] | None = None):
     session_dir = resolve_session_dir(session_id)
+    current_session = session if session is not None else load_session(session_id)
+    return impact_cli().build_phase1_export_payload(session_dir, current_session)
+
+
+def load_status(session_id: str, filters: dict[str, Any] | None = None):
     session = load_session(session_id)
     status_payload = impact_cli().build_status_payload(session)
-    detail_payload = impact_cli().build_phase1_export_payload(session_dir, session)
+    detail_payload = refresh_phase1_exports(session_id, session=session)
     if filters:
         detail_payload = impact_cli().build_session_detail_payload(session, filters)
         detail_payload["exports"] = dict(session.get("exports", {}))
@@ -139,8 +144,8 @@ def review_person_candidate(session_id: str, candidate_id: str, *, action: str, 
 
 
 def resolve_export_path(session_id: str, export_name: str) -> Path:
-    session = load_session(session_id)
-    exports = session.get("exports", {})
+    detail_payload = refresh_phase1_exports(session_id)
+    exports = detail_payload.get("exports", {})
     mapping = {
         "report.md": exports.get("report_md_path", ""),
         "structured.json": exports.get("structured_json_path", ""),

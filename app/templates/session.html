@@ -178,6 +178,13 @@
               <span class="chip">首次/强表述：{{ '是' if item.citation_method_summary.first_claim_hit else '否' }}</span>
               <span class="chip">页码：{{ item.citation_method_summary.page_start or '-' }} - {{ item.citation_method_summary.page_end or item.citation_method_summary.page_start or '-' }}</span>
             </div>
+            {% if item.analysis_reason %}
+            <p class="muted">
+              当前限制：
+              {% if item.analysis_reason.tags %}{{ item.analysis_reason.tags | join(' / ') }}{% endif %}
+              {% if item.analysis_reason.message %} · {{ item.analysis_reason.message }}{% endif %}
+            </p>
+            {% endif %}
             <p>{{ item.citation_method_summary.evidence_excerpt or '暂无可展示的结构化证据片段。' }}</p>
           </article>
           {% endfor %}

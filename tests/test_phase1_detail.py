@@ -178,6 +178,39 @@ class Phase1DetailTestCase(unittest.TestCase):
                         'local_file_path': None,
                         'candidate_count': 0,
                         'pdf_candidates': [],
+                        'attempts': [
+                            {
+                                'ok': True,
+                                'status': 'manual_required',
+                                'requested_via': '10.1234/survey',
+                                'candidate_count': 0,
+                            },
+                            {
+                                'ok': False,
+                                'requested_via': 'Survey of Transformers',
+                                'error': '搜索失败，状态码: 429',
+                            },
+                        ],
+                    },
+                    'download_result': {
+                        'ok': False,
+                        'query': 'Survey of Transformers',
+                        'requested_via': 'Survey of Transformers',
+                        'error': '搜索失败，状态码: 429',
+                        'attempts': [
+                            {
+                                'ok': False,
+                                'query': '10.1234/survey',
+                                'requested_via': '10.1234/survey',
+                                'error': '未找到合法开源 PDF 链接。',
+                            },
+                            {
+                                'ok': False,
+                                'query': 'Survey of Transformers',
+                                'requested_via': 'Survey of Transformers',
+                                'error': '搜索失败，状态码: 429',
+                            },
+                        ],
                     },
                     'analysis_result': {
                         'status': 'context_only',
@@ -237,6 +270,55 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertEqual(after_reset['person_summary']['pending_count'], 1)
         self.assertEqual(after_reset['person_summary']['confirmed_count'], 0)
 
+    def test_reject_candidate_changes_summary_counts(self):
+        _, _, detail_payload, _ = impact_core.load_status(TEST_SESSION_ID)
+        candidate_id = detail_payload['person_candidates'][0]['candidate_id']
+
+        impact_core.review_person_candidate(TEST_SESSION_ID, candidate_id, action='reject', note='not a match')
+        _, _, after_reject, _ = impact_core.load_status(TEST_SESSION_ID)
+        self.assertEqual(after_reject['person_summary']['pending_count'], 0)
+        self.assertEqual(after_reject['person_summary']['confirmed_count'], 0)
+        self.assertEqual(after_reject['person_summary']['rejected_count'], 1)
+
+    def test_export_file_includes_export_paths_on_first_generation(self):
+        _, _, detail_payload, _ = impact_core.load_status(TEST_SESSION_ID)
+        structured_path = Path(detail_payload['exports']['structured_json_path'])
+        exported_payload = json.loads(structured_path.read_text(encoding='utf-8'))
+
+        self.assertEqual(exported_payload['exports']['report_md_path'], detail_payload['exports']['report_md_path'])
+        self.assertEqual(exported_payload['exports']['structured_json_path'], detail_payload['exports']['structured_json_path'])
+        context_only_item = next(item for item in exported_payload['papers'] if item['id'] == 'P002')
+        self.assertIn('未获得 PDF', context_only_item['analysis_reason']['tags'])
+        self.assertIn('外部源限流', context_only_item['analysis_reason']['tags'])
+        self.assertIn('未经全文验证', context_only_item['analysis_reason']['tags'])
+        self.assertIn('citation contexts', context_only_item['analysis_reason']['message'])
+
+    def test_review_candidate_refreshes_export_payload(self):
+        _, _, detail_payload, _ = impact_core.load_status(TEST_SESSION_ID)
+        candidate_id = detail_payload['person_candidates'][0]['candidate_id']
+
+        impact_core.review_person_candidate(TEST_SESSION_ID, candidate_id, action='confirm', note='verified')
+        exported_payload = json.loads(
+            impact_core.resolve_export_path(TEST_SESSION_ID, 'structured.json').read_text(encoding='utf-8')
+        )
+
+        self.assertEqual(exported_payload['person_summary']['confirmed_count'], 1)
+        self.assertEqual(exported_payload['person_summary']['pending_count'], 0)
+        self.assertEqual(exported_payload['person_candidates'][0]['status'], 'confirmed')
+        self.assertEqual(exported_payload['person_candidates'][0]['review_note'], 'verified')
+
+    def test_context_only_reason_renders_in_page_and_report(self):
+        _, _, detail_payload, report_md = impact_core.load_status(TEST_SESSION_ID)
+        context_only_item = next(item for item in detail_payload['papers'] if item['id'] == 'P002')
+
+        self.assertIn('未获得 PDF', context_only_item['analysis_reason']['tags'])
+        self.assertIn('外部源限流', context_only_item['analysis_reason']['tags'])
+        self.assertIn('仅 citation context', context_only_item['analysis_reason']['tags'])
+        self.assertIn('未经全文验证', context_only_item['analysis_reason']['tags'])
+        self.assertIn('HTTP 429', context_only_item['analysis_reason']['message'])
+        self.assertIn('当前限制说明', report_md)
+        self.assertIn('外部源限流', report_md)
+
     def test_session_detail_page_renders_phase1_sections(self):
         request = Request({'type': 'http', 'method': 'GET', 'path': f'/sessions/{TEST_SESSION_ID}', 'headers': []})
         response = asyncio.run(session_detail(request, TEST_SESSION_ID))
@@ -248,6 +330,8 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('导出与汇总', body)
         self.assertIn('/exports/report.md', body)
         self.assertIn('Grace Hopper', body)
+        self.assertIn('当前限制', body)
+        self.assertIn('外部源限流', body)
 
 
 if __name__ == '__main__':

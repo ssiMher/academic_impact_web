@@ -503,6 +503,60 @@ def contains_first_claim(text: str):
     return any(re.search(pattern, content, flags=re.I) for pattern in FIRST_CLAIM_PATTERNS)
 
 
+def is_rate_limited_error(text: str) -> bool:
+    lowered = str(text or "").lower()
+    return "429" in lowered or "rate limited" in lowered or "rate limit" in lowered
+
+
+def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict] = None):
+    if not status:
+        return None
+
+    download_probe = item.get("download_probe", {}) or {}
+    download_result = item.get("download_result", {}) or {}
+    attempts = []
+    for payload in [download_probe, download_result]:
+        for attempt in payload.get("attempts", []) or []:
+            if isinstance(attempt, dict):
+                attempts.append(attempt)
+
+    raw_errors = unique_strings(
+        [
+            download_probe.get("error", ""),
+            download_result.get("error", ""),
+            *[attempt.get("error", "") for attempt in attempts],
+        ]
+    )
+    tags = []
+    details = []
+
+    if status == "context_only":
+        tags.extend(["未获得 PDF", "仅 citation context", "未经全文验证"])
+        details.append("未获得全文 PDF，当前结果仅基于 citation contexts，未经全文验证。")
+        if any(is_rate_limited_error(error) for error in raw_errors):
+            tags.append("外部源限流")
+            details.append("下载阶段命中过外部源限流（HTTP 429）。")
+        fallback_message = (fallback_data or {}).get("message", "")
+        if fallback_message:
+            details.append(fallback_message)
+    elif status == "fulltext_extract_failed":
+        tags.append("全文提取失败")
+        details.append("已获得 PDF，但全文提取失败，无法继续做全文级语义分析。")
+    elif status == "analysis_failed":
+        tags.append("全文语义分析失败")
+        details.append("已获得候选段落，但全文语义分析阶段失败。")
+
+    tags = unique_strings(tags)
+    details = unique_strings(details)
+    if not tags and not details and not raw_errors:
+        return None
+    return {
+        "tags": tags,
+        "message": "；".join(details),
+        "errors": raw_errors,
+    }
+
+
 def summarize_citation_method(item: dict):
     analysis_paths = item.get("analysis_result", {}).get("paths", {})
     candidate_data = load_json_if_exists(analysis_paths.get("candidate_spans", ""))
@@ -561,6 +615,7 @@ def summarize_citation_method(item: dict):
         finding.get("confidence") for finding in findings if isinstance(finding.get("confidence"), (int, float))
     ]
     confidence = max(confidence_values) if confidence_values else primary_evidence.get("finding", {}).get("confidence")
+    analysis_reason = build_analysis_reason(item, status, fallback_data)
 
     return {
         "labels": unique_strings(labels),
@@ -573,6 +628,7 @@ def summarize_citation_method(item: dict):
         "confidence": confidence,
         "status": status,
         "primary_evidence": primary_evidence,
+        "analysis_reason": analysis_reason,
     }
 
 
@@ -1009,6 +1065,7 @@ def save_session(session_dir: Path, session: dict):
     session.setdefault("exports", default_exports())
     apply_qa_flags(session)
     write_json(session_dir / "session.json", session)
+    build_phase1_export_payload(session_dir, session)
 
 
 def build_discover_session(
@@ -1432,6 +1489,13 @@ def render_phase1_export_markdown(detail_payload: dict):
                 f"- 首次/强表述命中：{'是' if summary.get('first_claim_hit') else '否'}",
             ]
         )
+        analysis_reason = item.get("analysis_reason") or summary.get("analysis_reason") or {}
+        if analysis_reason.get("tags"):
+            lines.append(f"- 当前限制标签：{' / '.join(analysis_reason.get('tags', []))}")
+        if analysis_reason.get("message"):
+            lines.append(f"- 当前限制说明：{analysis_reason.get('message')}")
+        for error in analysis_reason.get("errors", [])[:3]:
+            lines.append(f"- 失败原因：{error}")
         if summary.get("evidence_excerpt"):
             lines.append(f"- 证据片段：{summary.get('evidence_excerpt')}")
         if item.get("person_candidate_hits"):
@@ -1453,22 +1517,22 @@ def render_phase1_export_markdown(detail_payload: dict):
 
 
 def build_phase1_export_payload(session_dir: Path, session: dict):
-    detail_payload = build_session_detail_payload(session)
     export_dir = session_dir / "exports"
     export_dir.mkdir(parents=True, exist_ok=True)
     markdown_path = export_dir / "phase1_report.md"
     structured_json_path = export_dir / "phase1_structured.json"
+    session["exports"] = {
+        "report_md_path": str(markdown_path),
+        "structured_json_path": str(structured_json_path),
+    }
+    detail_payload = build_session_detail_payload(session)
+    detail_payload["exports"] = dict(session["exports"])
     markdown_path.write_text(render_phase1_export_markdown(detail_payload), encoding="utf-8")
     structured_json_path.write_text(
         json.dumps(detail_payload, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
-    session["exports"] = {
-        "report_md_path": str(markdown_path),
-        "structured_json_path": str(structured_json_path),
-    }
     write_json(session_dir / "session.json", session)
-    detail_payload["exports"] = dict(session["exports"])
     return detail_payload
 
 
@@ -1649,6 +1713,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             "qa_ready": item.get("qa_ready", False),
             "candidate_count": len(raw_item.get("person_candidate_hits", [])),
             "citation_method_summary": citation_summary,
+            "analysis_reason": citation_summary.get("analysis_reason"),
             "person_candidate_hits": raw_item.get("person_candidate_hits", []),
         }
         download_filter = (filters.get("download_status") or "").strip()
@@ -1810,6 +1875,7 @@ def build_markdown_session_summary(session: dict, *, max_items: int = 8, status_
 
 
 def build_feishu_command_text(action: str, session_dir: str, paper_id: str):
+    """Legacy/Deprecated: retained only for historical Feishu card output compatibility."""
     if action == "refresh":
         return f"/paperimpact-refresh {session_dir} {paper_id}"
     if action == "download":
@@ -1844,6 +1910,7 @@ def _context_label(confidence: str):
 
 
 def build_feishu_card_payload(session: dict, max_items: int = 8):
+    """Legacy/Deprecated: retained for historical Feishu card consumers; not part of the main Web path."""
     card_state = build_card_state_payload(session)
     session_dir = card_state.get("session_dir", "")
     summary = card_state.get("summary", {})
@@ -1945,10 +2012,10 @@ def build_parser():
     status = sub.add_parser("status", help="查看会话状态")
     status.add_argument("session_dir", help="discover 阶段生成的会话目录")
 
-    card_state = sub.add_parser("card-state", help="输出适合飞书卡片消费的轻量状态摘要")
+    card_state = sub.add_parser("card-state", help="输出轻量状态摘要（legacy card consumer / 非 Web 主路径）")
     card_state.add_argument("session_dir", help="discover 阶段生成的会话目录")
 
-    feishu_card = sub.add_parser("feishu-card", help="输出官方飞书卡片 JSON")
+    feishu_card = sub.add_parser("feishu-card", help="输出官方飞书卡片 JSON（legacy/deprecated）")
     feishu_card.add_argument("session_dir", help="discover 阶段生成的会话目录")
     feishu_card.add_argument("--max-items", type=int, default=8, help="最多渲染多少个 citing paper 卡片块")
 
@@ -2003,11 +2070,13 @@ def main():
         return
 
     if args.command == "card-state":
+        print("[legacy] `card-state` is retained for historical card consumers and is not part of the main Web workflow.", file=sys.stderr)
         session = load_session(Path(args.session_dir).expanduser())
         print(json.dumps(build_card_state_payload(session), ensure_ascii=False, indent=2))
         return
 
     if args.command == "feishu-card":
+        print("[legacy/deprecated] `feishu-card` is retained only for historical Feishu output compatibility and is not part of the main Web workflow.", file=sys.stderr)
         session = load_session(Path(args.session_dir).expanduser())
         print(json.dumps(build_feishu_card_payload(session, max_items=max(1, args.max_items)), ensure_ascii=False, indent=2))
         return

@@ -1,0 +1,4 @@
+{
+  "_comment": "组内可维护的人物标签来源。每项至少包含 name、tag_type、source_links。",
+  "items": []
+}

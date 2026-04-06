@@ -1,0 +1,2057 @@
+import argparse
+import importlib.util
+import json
+import re
+import shutil
+from collections import Counter
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import quote
+
+
+ROOT = Path(__file__).resolve().parents[2]
+SKILLS_ROOT = ROOT / "skills"
+DEFAULT_SESSIONS_DIR = ROOT / "data" / "sessions"
+PERSON_TAG_REGISTRY_PATH = ROOT / "data" / "reference" / "person_tag_registry.json"
+SESSION_SCHEMA_VERSION = "1.0"
+QUICK_ANALYSIS_VERSION = "1.0"
+EVIDENCE_INDEX_VERSION = "1.0"
+SESSION_DETAIL_PAYLOAD_VERSION = "1.0"
+
+STOPWORD_TOKENS = {
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "using",
+    "towards",
+    "technical",
+    "report",
+    "analysis",
+    "study",
+    "paper",
+    "papers",
+    "model",
+    "models",
+    "approach",
+    "method",
+    "methods",
+    "system",
+    "systems",
+    "ocr",
+    "vl",
+}
+
+ANALYSIS_STATUS_LABELS = {
+    "fulltext_analyzed": "已完成全文分析",
+    "mention_only": "弱提及",
+    "reference_only": "仅参考文献命中",
+    "fulltext_no_finding": "全文未发现可靠证据",
+    "context_only": "仅 citation context",
+    "fulltext_extract_failed": "全文提取失败",
+    "analysis_failed": "语义分析失败",
+}
+
+NUMBER_WORDS = {
+    "一": 1,
+    "二": 2,
+    "两": 2,
+    "三": 3,
+    "四": 4,
+    "五": 5,
+    "六": 6,
+    "七": 7,
+    "八": 8,
+    "九": 9,
+    "十": 10,
+}
+
+TOP_SCHOOL_RULES = [
+    ("mit", "MIT", ["massachusetts institute of technology"]),
+    ("cmu", "CMU", ["carnegie mellon university"]),
+    ("stanford", "Stanford", ["stanford university"]),
+    ("berkeley", "UC Berkeley", ["university of california berkeley", "uc berkeley", "berkeley"]),
+    ("harvard", "Harvard", ["harvard university"]),
+    ("princeton", "Princeton", ["princeton university"]),
+    ("caltech", "Caltech", ["california institute of technology", "caltech"]),
+    ("oxford", "Oxford", ["university of oxford", "oxford university"]),
+    ("cambridge", "Cambridge", ["university of cambridge", "cambridge university"]),
+    ("eth", "ETH Zurich", ["eth zurich", "swiss federal institute of technology zurich"]),
+    ("epfl", "EPFL", ["epfl", "ecole polytechnique federale de lausanne"]),
+]
+
+STRONG_CLAIM_PATTERNS = [
+    re.compile(pattern, flags=re.I)
+    for pattern in [
+        r"\bfor the first time\b",
+        r"\bfirst\b",
+        r"\bnovel\b",
+        r"\bstate[- ]of[- ]the[- ]art\b",
+        r"首次",
+        r"首个",
+        r"第一次",
+    ]
+]
+
+
+def load_module(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"无法加载模块: {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+LIST_PAPERS = load_module(
+    "impact_cli_list_papers",
+    SKILLS_ROOT / "list_all_citations" / "list_papers.py"
+)
+FETCH_CONTEXTS = load_module(
+    "impact_cli_fetch_contexts",
+    SKILLS_ROOT / "academic_impact_analyzer" / "fetch_contexts.py"
+)
+DOWNLOAD_PDF = load_module(
+    "impact_cli_download_pdf",
+    SKILLS_ROOT / "download_paper_pdf" / "download_pdf.py"
+)
+RUN_PIPELINE = load_module(
+    "impact_cli_run_pipeline",
+    SKILLS_ROOT / "academic_impact_analyzer" / "run_pipeline.py"
+)
+AGGREGATE_REPORT = load_module(
+    "impact_cli_aggregate_report",
+    SKILLS_ROOT / "academic_impact_analyzer" / "aggregate_report.py"
+)
+PERSON_CANDIDATES = load_module(
+    "impact_cli_person_candidates",
+    SKILLS_ROOT / "academic_impact_analyzer" / "person_candidates.py"
+)
+
+
+def sanitize_json_value(value):
+    if isinstance(value, str):
+        return re.sub(r"[\ud800-\udfff]", "", value)
+    if isinstance(value, list):
+        return [sanitize_json_value(item) for item in value]
+    if isinstance(value, dict):
+        return {key: sanitize_json_value(item) for key, item in value.items()}
+    return value
+
+
+def write_json(path: Path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    sanitized = sanitize_json_value(data)
+    path.write_text(json.dumps(sanitized, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def read_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_ids(raw: str) -> List[str]:
+    return [item.strip() for item in (raw or "").split(",") if item.strip()]
+
+
+def chinese_number_to_int(text: str):
+    text = (text or "").strip()
+    if not text:
+        return None
+    if text.isdigit():
+        return int(text)
+    if text in NUMBER_WORDS:
+        return NUMBER_WORDS[text]
+    if len(text) == 2 and text[0] == "十" and text[1] in NUMBER_WORDS:
+        return 10 + NUMBER_WORDS[text[1]]
+    if len(text) == 2 and text[1] == "十" and text[0] in NUMBER_WORDS:
+        return NUMBER_WORDS[text[0]] * 10
+    if len(text) == 3 and text[1] == "十" and text[0] in NUMBER_WORDS and text[2] in NUMBER_WORDS:
+        return NUMBER_WORDS[text[0]] * 10 + NUMBER_WORDS[text[2]]
+    return None
+
+
+def ids_from_message(message: str):
+    matches = re.findall(r"第\s*([0-9一二两三四五六七八九十]+)\s*篇", message or "")
+    ids = []
+    for raw in matches:
+        num = chinese_number_to_int(raw)
+        if num is None:
+            continue
+        ids.append(f"P{num:03d}")
+    return ids
+
+
+def truncate_text(text: str, limit: int = 180):
+    clean = re.sub(r"\s+", " ", str(text or "")).strip()
+    if len(clean) <= limit:
+        return clean
+    return clean[: max(0, limit - 3)].rstrip() + "..."
+
+
+def sort_papers_by_recent(papers: List[dict]) -> List[dict]:
+    return sorted(
+        papers,
+        key=lambda item: (
+            item.get("year") is None,
+            -(item.get("year") or -1),
+            (item.get("title") or "").lower(),
+        ),
+    )
+
+
+def normalize_reference_text(text: str):
+    text = (text or "").strip().lower()
+    text = re.sub(r"[^a-z0-9\u4e00-\u9fff]+", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def tokenize_reference_text(text: str) -> List[str]:
+    normalized = normalize_reference_text(text)
+    if not normalized:
+        return []
+    return [token for token in normalized.split(" ") if token]
+
+
+def unique_strings(values: List[str]) -> List[str]:
+    result = []
+    seen = set()
+    for value in values:
+        normalized = (value or "").strip()
+        if not normalized:
+            continue
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        result.append(normalized)
+    return result
+
+
+def count_sentences(text: str) -> int:
+    clean = re.sub(r"\s+", " ", str(text or "")).strip()
+    if not clean:
+        return 0
+    parts = [part for part in re.split(r"[。！？!?；;]+", clean) if part.strip()]
+    return max(1, len(parts))
+
+
+def build_paper_alias_entry(item: dict):
+    title = item.get("title", "")
+    paper_id = item.get("id", "")
+    normalized_title = normalize_reference_text(title)
+    title_parts = [
+        part.strip()
+        for part in re.split(r"[:：\-|/]", title)
+        if part and part.strip()
+    ]
+    aliases = [title]
+    if title_parts:
+        aliases.append(title_parts[0])
+    normalized_aliases = unique_strings([normalize_reference_text(alias) for alias in aliases])
+    tokens = []
+    for token in tokenize_reference_text(title):
+        if len(token) < 3 and not token.isdigit():
+            continue
+        if token in STOPWORD_TOKENS:
+            continue
+        tokens.append(token)
+    keywords = unique_strings(tokens)[:8]
+    return {
+        "id": paper_id,
+        "title": title,
+        "normalized_title": normalized_title,
+        "aliases": unique_strings(aliases),
+        "normalized_aliases": normalized_aliases,
+        "keywords": keywords,
+    }
+
+
+def build_session_paper_aliases(papers: List[dict]):
+    return [build_paper_alias_entry(item) for item in papers]
+
+
+def default_quick_analysis(session: dict = None):
+    query = (session or {}).get("query", "")
+    return {
+        "schema_version": QUICK_ANALYSIS_VERSION,
+        "status": "not_ready",
+        "analysis_mode": "quick",
+        "query": query,
+        "impact_level": None,
+        "impact_label": None,
+        "summary": "",
+        "highlights": [],
+        "generated_at": None,
+    }
+
+
+def default_evidence_index():
+    return {
+        "schema_version": EVIDENCE_INDEX_VERSION,
+        "status": "not_ready",
+        "items": [],
+        "qa_ready_count": 0,
+        "generated_at": None,
+    }
+
+
+def default_overview_stats():
+    return {
+        "downloaded_count": 0,
+        "analyzed_count": 0,
+        "candidate_people_count": 0,
+        "confirmed_people_count": 0,
+    }
+
+
+def default_exports():
+    return {
+        "report_md_path": "",
+        "structured_json_path": "",
+    }
+
+
+def infer_impact_level(paper_count: int, medium_or_high_count: int, high_count: int) -> Tuple[str, str]:
+    if paper_count >= 10 or high_count >= 2 or medium_or_high_count >= 4:
+        return "high", "较高"
+    if paper_count >= 5 or medium_or_high_count >= 2:
+        return "medium", "中等"
+    return "low", "初步"
+
+
+def build_quick_analysis(session_dir: Path, session: dict):
+    papers = session.get("papers", [])
+    if not papers:
+        result = default_quick_analysis(session)
+        result["status"] = "empty"
+        result["summary"] = "当前会话中还没有发现引用论文。"
+        result["generated_at"] = datetime.now().isoformat(timespec="seconds")
+        return result
+
+    confidence_counts = Counter(item.get("context_confidence") or "unknown" for item in papers)
+    high_count = confidence_counts.get("high", 0)
+    medium_count = confidence_counts.get("medium", 0)
+    medium_or_high_count = high_count + medium_count
+    impact_level, impact_label = infer_impact_level(len(papers), medium_or_high_count, high_count)
+
+    highlights = []
+    for item in papers:
+        best_context = item.get("best_context") or {}
+        context_text = truncate_text(best_context.get("text") or "", limit=180)
+        if not context_text:
+            continue
+        highlights.append({
+            "id": item.get("id"),
+            "title": item.get("title"),
+            "context_confidence": item.get("context_confidence"),
+            "excerpt": context_text,
+        })
+    highlights = highlights[:3]
+
+    total_citation_count = ((session.get("target") or {}).get("citationCount"))
+    displayed_count = len(papers)
+    if total_citation_count:
+        count_intro = f"Semantic Scholar 当前记录总引用数约 {total_citation_count} 篇，本会话先展示其中 {displayed_count} 篇候选论文。"
+    else:
+        count_intro = f"当前会话先展示 {displayed_count} 篇引用论文候选。"
+
+    summary_parts = [
+        f"{count_intro} 其中 {medium_or_high_count} 篇在 citation contexts 中呈现出中高置信度引用信号。"
+    ]
+    if highlights:
+        top_titles = "、".join(f"{entry['id']} {entry['title']}" for entry in highlights[:2])
+        summary_parts.append(f"从现有上下文看，较值得优先关注的引用论文包括 {top_titles}。")
+    summary_parts.append(
+        f"基于现有 citation contexts 的初步判断，这篇目标论文的外部影响力处于{impact_label}水平；如果需要回答“具体怎么引用、引用了多长段落”，还需要继续做全文级全面分析。"
+    )
+
+    return {
+        "schema_version": QUICK_ANALYSIS_VERSION,
+        "status": "ready",
+        "analysis_mode": "quick",
+        "query": session.get("query", ""),
+        "impact_level": impact_level,
+        "impact_label": impact_label,
+        "summary": " ".join(summary_parts),
+        "highlights": highlights,
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+    }
+
+
+def load_json_if_exists(path_str: str):
+    path = Path(path_str).expanduser()
+    if not path_str or not path.exists():
+        return None
+    return read_json(path)
+
+
+def build_primary_evidence(candidate_data: dict, analysis_data: dict):
+    spans = candidate_data.get("spans", []) if isinstance(candidate_data, dict) else []
+    findings = analysis_data.get("findings", []) if isinstance(analysis_data, dict) else []
+    top_span = spans[0] if spans else {}
+    matched_finding = None
+    if top_span:
+        for finding in findings:
+            if (
+                finding.get("page") == top_span.get("page")
+                and finding.get("span_index") == top_span.get("span_index")
+            ):
+                matched_finding = finding
+                break
+    focus_text = top_span.get("text") or (matched_finding or {}).get("citation_text") or ""
+    return {
+        "page": top_span.get("page") or (matched_finding or {}).get("page"),
+        "span_index": top_span.get("span_index") or (matched_finding or {}).get("span_index"),
+        "char_length": len(re.sub(r"\s+", "", focus_text)),
+        "sentence_count": count_sentences(focus_text),
+        "excerpt": truncate_text(focus_text, limit=220),
+        "text": focus_text,
+        "match_type": top_span.get("match_type"),
+        "citation_index": top_span.get("citation_index") or candidate_data.get("citation_index"),
+        "score": top_span.get("score"),
+        "context_window_text": top_span.get("context_window_text", ""),
+        "finding": {
+            "aspect": (matched_finding or {}).get("aspect"),
+            "stance": (matched_finding or {}).get("stance"),
+            "function": (matched_finding or {}).get("function"),
+            "reason": (matched_finding or {}).get("reason"),
+            "confidence": (matched_finding or {}).get("confidence"),
+            "mention_type": (matched_finding or {}).get("mention_type"),
+        },
+    }
+
+
+def build_evidence_index(session_dir: Path, session: dict):
+    items = []
+    for item in session.get("papers", []):
+        analysis_paths = item.get("analysis_result", {}).get("paths", {})
+        if not analysis_paths:
+            continue
+        candidate_data = load_json_if_exists(analysis_paths.get("candidate_spans", ""))
+        analysis_data = load_json_if_exists(analysis_paths.get("analysis", ""))
+        fallback_data = load_json_if_exists(analysis_paths.get("fallback_analysis", ""))
+        status = item.get("analysis_result", {}).get("status")
+        primary_evidence = build_primary_evidence(candidate_data or {}, analysis_data or {})
+        qa_ready = bool(candidate_data and analysis_data and status in {
+            "fulltext_analyzed",
+            "mention_only",
+            "reference_only",
+            "fulltext_no_finding",
+        })
+        items.append({
+            "id": item.get("id"),
+            "title": item.get("title"),
+            "status": status,
+            "status_label": ANALYSIS_STATUS_LABELS.get(status, status or "-"),
+            "qa_ready": qa_ready,
+            "candidate_span_count": len((candidate_data or {}).get("spans", [])),
+            "findings_count": len((analysis_data or {}).get("findings", [])) if analysis_data else 0,
+            "primary_evidence": primary_evidence,
+            "fallback_contexts": (fallback_data or {}).get("fallback_contexts", [])[:2],
+            "paths": analysis_paths,
+        })
+
+    qa_ready_count = sum(1 for item in items if item.get("qa_ready"))
+    return {
+        "schema_version": EVIDENCE_INDEX_VERSION,
+        "status": "ready" if items else "not_ready",
+        "items": items,
+        "qa_ready_count": qa_ready_count,
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+    }
+
+
+def build_overview_stats(session: dict):
+    papers = session.get("papers", [])
+    person_candidates = session.get("person_candidates", [])
+    downloaded_count = sum(
+        1 for item in papers if item.get("download_probe", {}).get("status") == "local_available"
+    )
+    analyzed_count = sum(1 for item in papers if item.get("analysis_result", {}).get("status"))
+    candidate_people_count = len(person_candidates)
+    confirmed_people_count = sum(1 for item in person_candidates if item.get("status") == "confirmed")
+    return {
+        "downloaded_count": downloaded_count,
+        "analyzed_count": analyzed_count,
+        "candidate_people_count": candidate_people_count,
+        "confirmed_people_count": confirmed_people_count,
+    }
+
+
+def rebuild_person_candidates(session: dict):
+    session["person_candidates"] = PERSON_CANDIDATES.build_candidates(
+        session.get("papers", []),
+        existing=session.get("person_candidates", []),
+    )
+    session["overview_stats"] = build_overview_stats(session)
+
+
+FIRST_CLAIM_PATTERNS = [
+    r"\bfor the first time\b",
+    r"\bour work is the first\b",
+    r"\bwe are the first\b",
+    r"\bfirst to\b",
+    r"\b首次\b",
+    r"\b第一次\b",
+]
+
+
+def contains_first_claim(text: str):
+    content = str(text or "")
+    return any(re.search(pattern, content, flags=re.I) for pattern in FIRST_CLAIM_PATTERNS)
+
+
+def summarize_citation_method(item: dict):
+    analysis_paths = item.get("analysis_result", {}).get("paths", {})
+    candidate_data = load_json_if_exists(analysis_paths.get("candidate_spans", ""))
+    analysis_data = load_json_if_exists(analysis_paths.get("analysis", ""))
+    fallback_data = load_json_if_exists(analysis_paths.get("fallback_analysis", ""))
+    status = item.get("analysis_result", {}).get("status")
+    primary_evidence = build_primary_evidence(candidate_data or {}, analysis_data or {})
+    findings = (analysis_data or {}).get("findings", []) if isinstance(analysis_data, dict) else []
+    pages = [finding.get("page") for finding in findings if finding.get("page") is not None]
+    span_pairs = [
+        (finding.get("page"), finding.get("span_index"))
+        for finding in findings
+        if finding.get("page") is not None and finding.get("span_index") is not None
+    ]
+    unique_pairs = []
+    seen_pairs = set()
+    for pair in span_pairs:
+        if pair in seen_pairs:
+            continue
+        seen_pairs.add(pair)
+        unique_pairs.append(pair)
+    continuous_mention_count = 0
+    if unique_pairs:
+        continuous_mention_count = 1
+        previous_page, previous_span = unique_pairs[0]
+        for current_page, current_span in unique_pairs[1:]:
+            if current_page == previous_page and current_span == previous_span + 1:
+                pass
+            else:
+                continuous_mention_count += 1
+            previous_page, previous_span = current_page, current_span
+
+    labels = []
+    for finding in findings:
+        aspect = (finding.get("aspect") or "").strip()
+        mention_type = (finding.get("mention_type") or "").strip()
+        if aspect:
+            labels.append(aspect)
+        if mention_type and mention_type != "explicit_citation":
+            labels.append(mention_type)
+    if status and status not in {"fulltext_analyzed", "mention_only"}:
+        labels.append(status)
+
+    evidence_excerpt = primary_evidence.get("excerpt") or ""
+    if not evidence_excerpt and fallback_data:
+        fallback_contexts = fallback_data.get("fallback_contexts", [])
+        if fallback_contexts:
+            evidence_excerpt = truncate_text((fallback_contexts[0] or {}).get("text", ""), limit=220)
+
+    page_start = min(pages) if pages else primary_evidence.get("page")
+    page_end = max(pages) if pages else primary_evidence.get("page")
+    first_claim_hit = contains_first_claim(primary_evidence.get("text", "")) or any(
+        contains_first_claim(finding.get("citation_text", "")) for finding in findings
+    )
+    confidence_values = [
+        finding.get("confidence") for finding in findings if isinstance(finding.get("confidence"), (int, float))
+    ]
+    confidence = max(confidence_values) if confidence_values else primary_evidence.get("finding", {}).get("confidence")
+
+    return {
+        "labels": unique_strings(labels),
+        "evidence_excerpt": evidence_excerpt,
+        "page_start": page_start,
+        "page_end": page_end,
+        "citation_occurrence_count": len(unique_pairs),
+        "continuous_mention_count": continuous_mention_count if unique_pairs else 0,
+        "first_claim_hit": bool(first_claim_hit),
+        "confidence": confidence,
+        "status": status,
+        "primary_evidence": primary_evidence,
+    }
+
+
+def enrich_papers_with_candidate_hits(session: dict):
+    candidate_map: dict[str, list[dict]] = {}
+    for candidate in session.get("person_candidates", []):
+        for paper_id in candidate.get("matched_paper_ids", []):
+            candidate_map.setdefault(paper_id, []).append(candidate)
+    for item in session.get("papers", []):
+        item["person_candidate_hits"] = [
+            {
+                "candidate_id": candidate.get("candidate_id"),
+                "name": candidate.get("name"),
+                "tag_label": candidate.get("tag_label"),
+                "status": candidate.get("status"),
+            }
+            for candidate in candidate_map.get(item.get("id"), [])
+        ]
+
+
+def apply_qa_flags(session: dict):
+    qa_ready_ids = {
+        item.get("id")
+        for item in session.get("evidence_index", {}).get("items", [])
+        if item.get("qa_ready")
+    }
+    for item in session.get("papers", []):
+        item["qa_ready"] = item.get("id") in qa_ready_ids
+
+
+def sync_session_derivatives(session_dir: Path, session: dict, update_quick: bool = False, update_evidence: bool = False):
+    session["paper_aliases"] = build_session_paper_aliases(session.get("papers", []))
+    if update_quick:
+        session["quick_analysis"] = build_quick_analysis(session_dir, session)
+    else:
+        session.setdefault("quick_analysis", default_quick_analysis(session))
+    if update_evidence or (
+        session.get("analysis", {}).get("processed_papers")
+        and session.get("evidence_index", {}).get("status") != "ready"
+    ):
+        session["evidence_index"] = build_evidence_index(session_dir, session)
+    else:
+        session.setdefault("evidence_index", default_evidence_index())
+    apply_qa_flags(session)
+    rebuild_person_candidates(session)
+    enrich_papers_with_candidate_hits(session)
+    return session
+
+
+def query_matches_session(session: dict, query: str):
+    normalized_query = normalize_reference_text(query)
+    if not normalized_query:
+        return False
+    candidates = [
+        session.get("query", ""),
+        (session.get("target") or {}).get("title", ""),
+        ((session.get("target") or {}).get("externalIds") or {}).get("DOI", ""),
+        ((session.get("target") or {}).get("externalIds") or {}).get("ArXiv", ""),
+    ]
+    normalized_candidates = [normalize_reference_text(item) for item in candidates if item]
+    for candidate in normalized_candidates:
+        if not candidate:
+            continue
+        if normalized_query == candidate:
+            return True
+        if normalized_query in candidate or candidate in normalized_query:
+            return True
+    return False
+
+
+def find_latest_session_dir_by_query(query: str):
+    if not DEFAULT_SESSIONS_DIR.exists():
+        return None
+    candidates = sorted(
+        [path for path in DEFAULT_SESSIONS_DIR.iterdir() if path.is_dir()],
+        key=lambda path: path.name,
+        reverse=True,
+    )
+    for session_dir in candidates:
+        session_path = session_dir / "session.json"
+        if not session_path.exists():
+            continue
+        try:
+            session = read_json(session_path)
+        except Exception:
+            continue
+        if query_matches_session(session, query):
+            return session_dir
+    return None
+
+
+def message_has_multi_reference_cue(text: str):
+    return bool(re.search(r"[、,/，]|以及|和|及|还有", text or ""))
+
+
+def score_paper_alias_match(alias_entry: dict, message_text: str):
+    normalized_message = normalize_reference_text(message_text)
+    message_tokens = set(tokenize_reference_text(message_text))
+    score = 0
+    matched_keywords = []
+
+    normalized_title = alias_entry.get("normalized_title", "")
+    if normalized_title and len(normalized_title) >= 6 and normalized_title in normalized_message:
+        score += 120
+
+    for alias in alias_entry.get("normalized_aliases", []):
+        if len(alias) < 5:
+            continue
+        if alias in normalized_message:
+            score = max(score, 80 + min(len(alias), 30))
+
+    for keyword in alias_entry.get("keywords", []):
+        if keyword in message_tokens:
+            matched_keywords.append(keyword)
+        elif len(keyword) >= 5 and keyword in normalized_message:
+            matched_keywords.append(keyword)
+
+    if matched_keywords:
+        matched_keywords = unique_strings(matched_keywords)
+        score += len(matched_keywords) * 16
+        score += min(max(len(token) for token in matched_keywords), 20)
+        if len(matched_keywords) >= 2:
+            score += 20
+
+    return score, matched_keywords
+
+
+def resolve_paper_selection(session: dict, raw_text: str = "", ids: List[str] = None, top_n: int = 0):
+    papers = session.get("papers", [])
+    paper_ids = {item.get("id") for item in papers}
+
+    if ids:
+        valid_ids = [paper_id for paper_id in ids if paper_id in paper_ids]
+        return {
+            "status": "ok" if valid_ids else "no_match",
+            "ids": valid_ids,
+            "matches": [item for item in papers if item.get("id") in valid_ids],
+        }
+
+    if top_n > 0:
+        selected = papers[:top_n]
+        return {
+            "status": "ok" if selected else "no_match",
+            "ids": [item.get("id") for item in selected if item.get("id")],
+            "matches": selected,
+        }
+
+    alias_entries = session.get("paper_aliases") or build_session_paper_aliases(papers)
+    scored = []
+    for alias_entry in alias_entries:
+        score, matched_keywords = score_paper_alias_match(alias_entry, raw_text)
+        if score < 24:
+            continue
+        scored.append({
+            "id": alias_entry.get("id"),
+            "title": alias_entry.get("title"),
+            "score": score,
+            "matched_keywords": matched_keywords,
+        })
+    scored.sort(key=lambda item: (-item["score"], item["id"]))
+
+    if not scored:
+        relaxed_matches = []
+        message_tokens = set(tokenize_reference_text(raw_text))
+        for alias_entry in alias_entries:
+            relaxed_hits = []
+            for token in tokenize_reference_text(alias_entry.get("title", "")):
+                if len(token) < 4:
+                    continue
+                if token in message_tokens:
+                    relaxed_hits.append(token)
+            relaxed_hits = unique_strings(relaxed_hits)
+            if not relaxed_hits:
+                continue
+            relaxed_matches.append({
+                "id": alias_entry.get("id"),
+                "title": alias_entry.get("title"),
+                "score": len(relaxed_hits),
+                "matched_keywords": relaxed_hits,
+            })
+        if len(relaxed_matches) > 1:
+            relaxed_matches.sort(key=lambda item: (-item["score"], item["id"]))
+            return {
+                "status": "ambiguous",
+                "ids": [],
+                "matches": relaxed_matches[:3],
+            }
+        if len(relaxed_matches) == 1:
+            paper_id = relaxed_matches[0]["id"]
+            return {
+                "status": "ok",
+                "ids": [paper_id],
+                "matches": [item for item in papers if item.get("id") == paper_id],
+            }
+        return {
+            "status": "no_match",
+            "ids": [],
+            "matches": [],
+        }
+
+    if message_has_multi_reference_cue(raw_text):
+        selected_ids = [item["id"] for item in scored]
+        return {
+            "status": "ok",
+            "ids": selected_ids,
+            "matches": [item for item in papers if item.get("id") in selected_ids],
+        }
+
+    best = scored[0]
+    second = scored[1] if len(scored) > 1 else None
+    if second and second["score"] >= max(24, best["score"] - 10):
+        return {
+            "status": "ambiguous",
+            "ids": [],
+            "matches": scored[:3],
+        }
+
+    selected_ids = [best["id"]]
+    return {
+        "status": "ok",
+        "ids": selected_ids,
+        "matches": [item for item in papers if item.get("id") in selected_ids],
+    }
+
+
+def build_clarification_payload(session: dict, raw_text: str, selection: dict, action: str):
+    candidates = []
+    for item in selection.get("matches", []):
+        title = item.get("title") if isinstance(item, dict) and item.get("title") else None
+        paper_id = item.get("id") if isinstance(item, dict) else None
+        if title and paper_id:
+            candidates.append({
+                "id": paper_id,
+                "title": title,
+            })
+    if not candidates and selection.get("status") == "ambiguous":
+        for item in selection.get("matches", []):
+            candidates.append({
+                "id": item.get("id"),
+                "title": item.get("title"),
+            })
+    return {
+        "needs_clarification": True,
+        "clarification": {
+            "action": action,
+            "raw_text": raw_text,
+            "message": "我匹配到了多篇可能的论文，请你再明确一下编号。",
+            "candidates": candidates[:3],
+        },
+        "card_state": build_card_state_payload(session),
+    }
+
+
+def answer_paper_question(session_dir: Path, session: dict, paper_id: str, question_text: str):
+    evidence_items = {
+        item.get("id"): item
+        for item in session.get("evidence_index", {}).get("items", [])
+    }
+    paper_map = {
+        item.get("id"): item
+        for item in session.get("papers", [])
+    }
+    paper = paper_map.get(paper_id) or {}
+    evidence = evidence_items.get(paper_id)
+    if not evidence or not evidence.get("qa_ready"):
+        index_number = None
+        match = re.match(r"^P0*([1-9][0-9]*)$", paper_id or "", flags=re.I)
+        if match:
+            index_number = int(match.group(1))
+        if index_number:
+            prompt = f"你可以先说“分析第{index_number}篇”或“全面分析这篇论文的影响力”。"
+        else:
+            prompt = "你可以先说“分析这篇论文”或“全面分析这篇论文的影响力”。"
+        return {
+            "status": "needs_full_analysis",
+            "text": f"{paper.get('title', paper_id)} 目前还没有可直接问答的全文证据。{prompt}",
+            "paper": {
+                "id": paper_id,
+                "title": paper.get("title"),
+            },
+        }
+
+    primary = evidence.get("primary_evidence") or {}
+    finding = primary.get("finding") or {}
+    wants_length = bool(re.search(r"多长|多大的段落|多少字|多长的段落|长度", question_text or ""))
+    wants_excerpt = bool(re.search(r"原文|哪一段|具体内容|详细", question_text or ""))
+
+    lines = [
+        f"{paper.get('title', paper_id)} 在当前全文分析里，最主要的引用证据位于第 {primary.get('page') or '-'} 页、第 {primary.get('span_index') or '-'} 个候选段落。"
+    ]
+    if wants_length or True:
+        lines.append(
+            f"这段核心引用片段约 {primary.get('char_length') or 0} 个非空白字符，约 {primary.get('sentence_count') or 0} 句。"
+        )
+    if finding.get("function") or finding.get("reason"):
+        lines.append(
+            f"当前判断：{finding.get('function') or finding.get('reason')}（置信度 {finding.get('confidence') if finding.get('confidence') is not None else '-'}）。"
+        )
+    if wants_excerpt or not wants_length:
+        lines.append(f"证据摘录：{primary.get('excerpt') or '暂无可展示摘录。'}")
+    else:
+        lines.append(f"可复核摘录：{primary.get('excerpt') or '暂无可展示摘录。'}")
+
+    return {
+        "status": "answered",
+        "text": "\n".join(lines),
+        "paper": {
+            "id": paper_id,
+            "title": paper.get("title"),
+            "status": evidence.get("status"),
+        },
+        "evidence": primary,
+    }
+
+
+def default_download_probe(paper: dict):
+    return {
+        "ok": True,
+        "status": "not_probed",
+        "source": "",
+        "queries": RUN_PIPELINE.choose_download_queries(paper),
+        "attempts": [],
+        "candidate_count": None,
+        "local_file_path": None,
+        "pdf_candidates": [],
+        "error": None,
+    }
+
+
+def build_capabilities_payload():
+    lines = [
+        "我现在支持这些学术影响力分析能力：",
+        "1. 查找哪些论文引用了目标论文",
+        "2. 列出候选引用论文，并查看当前下载/分析状态",
+        "3. 下载指定论文，或批量下载前几篇",
+        "4. 对指定论文做全文引用分析",
+        "5. 追问某篇论文是怎么引用目标论文的",
+        "6. 绑定本地 PDF 后继续做全文分析",
+        "",
+        "你可以直接这样说：",
+        "- 想知道有哪些论文引用了 Attention Is All You Need",
+        "- 下载第2篇、第3篇",
+        "- 全面分析前三篇论文",
+        "- 论文P001引用目标论文时，引用了多长的段落？",
+        "- 把 /path/to/file.pdf 绑定到 P004",
+    ]
+    return {
+        "ok": True,
+        "action": "show_capabilities",
+        "text": "\n".join(lines),
+    }
+
+
+def find_context_for_title(contexts_data: dict, title: str):
+    title_key = RUN_PIPELINE.normalize_title_key(title)
+    for item in contexts_data.get("results", []):
+        if RUN_PIPELINE.normalize_title_key(item.get("citing_title", "")) == title_key:
+            return item
+    return None
+
+
+def probe_paper_downloadability(paper: dict):
+    queries = RUN_PIPELINE.choose_download_queries(paper)
+    attempts = []
+    best = None
+
+    for query in queries:
+        probe = DOWNLOAD_PDF.probe_download(query)
+        probe = dict(probe)
+        probe["requested_via"] = query
+        attempts.append(probe)
+        if probe.get("ok") and probe.get("status") in {"local_available", "auto_downloadable"}:
+            best = dict(probe)
+            break
+        if best is None and probe.get("ok"):
+            best = dict(probe)
+
+    if best is None:
+        best = dict(attempts[-1]) if attempts else {
+            "ok": False,
+            "requested_via": "",
+            "status": "probe_failed",
+            "error": "未执行任何下载探测。"
+        }
+
+    best["attempts"] = attempts
+    best["queries"] = queries
+    return best
+
+
+def load_session(session_dir: Path):
+    session_path = session_dir / "session.json"
+    if not session_path.exists():
+        raise FileNotFoundError(f"未找到 session.json: {session_path}")
+    session = read_json(session_path)
+    session.setdefault("schema_version", SESSION_SCHEMA_VERSION)
+    session.setdefault("session_kind", "academic_impact_analysis")
+    session.setdefault("session_dir", str(session_dir))
+    session.setdefault("paths", {})
+    session.setdefault("analysis", {})
+    session.setdefault("analysis_mode_last", None)
+    session.setdefault("warnings", [])
+    session.setdefault("papers", [])
+    session.setdefault("paper_aliases", build_session_paper_aliases(session.get("papers", [])))
+    session.setdefault("quick_analysis", default_quick_analysis(session))
+    session.setdefault("evidence_index", default_evidence_index())
+    session.setdefault("person_candidates", [])
+    session.setdefault("overview_stats", default_overview_stats())
+    session.setdefault("exports", default_exports())
+    session["paper_count"] = len(session.get("papers", []))
+    for item in session.get("papers", []):
+        item.setdefault("download_queries", RUN_PIPELINE.choose_download_queries(item.get("paper", {})))
+        item.setdefault("download_probe", default_download_probe(item.get("paper", {})))
+        item.setdefault("analysis_result", {
+            "status": None,
+            "paths": {},
+        })
+        item.setdefault("selection", {
+            "selected_for_download": False,
+            "selected_for_analysis": False,
+        })
+        item.setdefault("qa_ready", False)
+        item.setdefault("person_candidate_hits", [])
+    return sync_session_derivatives(session_dir, session)
+
+
+def save_session(session_dir: Path, session: dict):
+    session["schema_version"] = SESSION_SCHEMA_VERSION
+    session["session_kind"] = "academic_impact_analysis"
+    session["updated_at"] = datetime.now().isoformat(timespec="seconds")
+    session["session_dir"] = str(session_dir)
+    session["paper_count"] = len(session.get("papers", []))
+    session["paper_aliases"] = build_session_paper_aliases(session.get("papers", []))
+    session.setdefault("exports", default_exports())
+    apply_qa_flags(session)
+    write_json(session_dir / "session.json", session)
+
+
+def build_discover_session(
+    query: str,
+    session_dir: Path,
+    limit: int,
+    probe_downloads: bool,
+    auto_refresh_count: int = 0,
+    sort_preference: str = "context",
+):
+    session_dir.mkdir(parents=True, exist_ok=True)
+    normalized_sort = (sort_preference or "context").strip().lower()
+    fetch_limit = max(limit, auto_refresh_count or 0, 20)
+    list_result = LIST_PAPERS.list_all_citations(
+        query,
+        limit=max(100, fetch_limit),
+        sort_by="recent",
+        fetch_limit=max(100, min(max(fetch_limit * 5, 100), 500)),
+    )
+    write_json(session_dir / "list_papers.json", list_result)
+    if not list_result.get("ok"):
+        return list_result
+
+    warnings = []
+    try:
+        contexts_result = FETCH_CONTEXTS.get_citation_contexts(query)
+    except Exception as exc:
+        contexts_result = {
+            "ok": False,
+            "query": query,
+            "results": [],
+            "error": str(exc),
+        }
+        warnings.append(
+            "citation contexts 拉取失败，当前先返回引用论文列表；如需上下文级置信度和快速分析，可稍后重试。"
+        )
+    write_json(session_dir / "contexts.json", contexts_result)
+
+    target = list_result.get("target", {})
+    if normalized_sort == "recent":
+        reordered_papers = sort_papers_by_recent(list_result.get("papers", []))
+    else:
+        reordered_papers = RUN_PIPELINE.reorder_papers_by_context_signal(
+            list_result.get("papers", []),
+            contexts_result if isinstance(contexts_result, dict) else {},
+        )
+
+    entries = []
+    for index, paper in enumerate(reordered_papers[:limit], start=1):
+        paper_id = f"P{index:03d}"
+        context_item = find_context_for_title(contexts_result, paper.get("title", "")) if isinstance(contexts_result, dict) else None
+        download_probe = probe_paper_downloadability(paper) if probe_downloads else default_download_probe(paper)
+        entries.append({
+            "id": paper_id,
+            "title": paper.get("title", ""),
+            "year": paper.get("year"),
+            "venue": paper.get("venue"),
+            "authors": paper.get("authors", []),
+            "externalIds": paper.get("externalIds", {}),
+            "download_queries": RUN_PIPELINE.choose_download_queries(paper),
+            "download_probe": download_probe,
+            "best_context": context_item.get("best_context") if context_item else None,
+            "context_confidence": context_item.get("confidence") if context_item else None,
+            "context_count": len(context_item.get("contexts", [])) if context_item else 0,
+            "analysis_result": {
+                "status": None,
+                "paths": {},
+            },
+            "selection": {
+                "selected_for_download": False,
+                "selected_for_analysis": False,
+            },
+            "paper": paper,
+        })
+
+    session = {
+        "ok": True,
+        "schema_version": SESSION_SCHEMA_VERSION,
+        "session_kind": "academic_impact_analysis",
+        "query": query,
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "target": target,
+        "paths": {
+            "list_papers": str(session_dir / "list_papers.json"),
+            "contexts": str(session_dir / "contexts.json"),
+        },
+        "paper_count": len(entries),
+        "displayed_paper_count": len(entries),
+        "total_citation_count": target.get("citationCount"),
+        "papers": entries,
+        "paper_aliases": build_session_paper_aliases(entries),
+        "quick_analysis": default_quick_analysis({"query": query}),
+        "evidence_index": default_evidence_index(),
+        "analysis_mode_last": "list",
+        "warnings": warnings,
+        "list_preferences": {
+            "sort_preference": normalized_sort,
+            "requested_limit": max(1, int(limit)),
+        },
+        "auto_refresh": {
+            "requested_count": max(0, int(auto_refresh_count or 0)),
+            "refreshed_count": 0,
+            "refreshed_ids": [],
+        },
+    }
+    save_session(session_dir, session)
+
+    refresh_limit = min(len(entries), max(0, int(auto_refresh_count or 0)))
+    if not probe_downloads and refresh_limit > 0:
+        refresh_ids = [item.get("id") for item in entries[:refresh_limit] if item.get("id")]
+        if refresh_ids:
+            refresh_result = refresh_probes(session_dir=session_dir, ids=refresh_ids, force=False)
+            session = load_session(session_dir)
+            session["auto_refresh"] = {
+                "requested_count": max(0, int(auto_refresh_count or 0)),
+                "refreshed_count": refresh_result.get("refreshed_count", 0),
+                "refreshed_ids": refresh_ids,
+            }
+            save_session(session_dir, session)
+    return session
+
+
+def attach_local_pdf(session_dir: Path, paper_id: str, file_path: str):
+    session = load_session(session_dir)
+    paper_id = str(paper_id or "").strip().upper()
+    source_path = Path(file_path).expanduser()
+    if not paper_id:
+        raise ValueError("attach-pdf 需要 paper_id。")
+    if not source_path.exists():
+        raise FileNotFoundError(f"未找到 PDF 文件: {source_path}")
+    if source_path.suffix.lower() != ".pdf":
+        raise ValueError("当前只支持绑定 .pdf 文件。")
+
+    item = next((paper for paper in session.get("papers", []) if paper.get("id") == paper_id), None)
+    if item is None:
+        raise ValueError(f"当前会话里不存在 {paper_id}。")
+
+    target_title = item.get("title") or paper_id
+    target_name = f"{DOWNLOAD_PDF.sanitize_filename(target_title)}.pdf"
+    preferred_dir = Path(DOWNLOAD_PDF.DEFAULT_LOCAL_PDF_DIR).expanduser()
+    fallback_dir = session_dir / "uploads"
+    target_path = None
+    copy_errors = []
+    for base_dir in [preferred_dir, fallback_dir]:
+        try:
+            base_dir.mkdir(parents=True, exist_ok=True)
+            candidate_path = base_dir / target_name
+            if source_path.resolve() != candidate_path.resolve():
+                shutil.copy2(source_path, candidate_path)
+            target_path = candidate_path
+            break
+        except Exception as exc:
+            copy_errors.append(f"{base_dir}: {exc}")
+    if target_path is None:
+        raise RuntimeError("无法保存上传的 PDF：" + " | ".join(copy_errors))
+
+    item.setdefault("selection", {})
+    item["selection"]["selected_for_download"] = True
+    item["download_probe"] = {
+        "ok": True,
+        "status": "local_available",
+        "source": "manual_upload",
+        "queries": RUN_PIPELINE.choose_download_queries(item.get("paper", {})),
+        "attempts": [],
+        "candidate_count": 1,
+        "local_file_path": str(target_path),
+        "pdf_candidates": [str(target_path)],
+        "error": None,
+    }
+    item["download_result"] = {
+        "ok": True,
+        "query": target_title,
+        "title": target_title,
+        "pdf_url": "",
+        "pdf_candidates": [str(target_path)],
+        "file_path": str(target_path),
+        "source": "manual_upload",
+    }
+    save_session(session_dir, session)
+    return {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "paper_id": paper_id,
+        "title": target_title,
+        "file_path": str(target_path),
+        "status": "local_available",
+    }
+
+
+def refresh_probes(session_dir: Path, ids: List[str], force: bool):
+    session = load_session(session_dir)
+    selected_ids = set(ids)
+    refreshed = []
+    for item in session.get("papers", []):
+        if selected_ids and item["id"] not in selected_ids:
+            continue
+        if not force and item.get("download_probe", {}).get("status") == "local_available":
+            continue
+        item["download_probe"] = probe_paper_downloadability(item.get("paper", {}))
+        refreshed.append({
+            "id": item["id"],
+            "title": item.get("title"),
+            "download_status": item.get("download_probe", {}).get("status"),
+            "local_file_path": item.get("download_probe", {}).get("local_file_path"),
+            "candidate_count": item.get("download_probe", {}).get("candidate_count"),
+        })
+    save_session(session_dir, session)
+    return {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "refreshed_count": len(refreshed),
+        "refreshed": refreshed,
+    }
+
+
+def run_downloads(session_dir: Path, ids: List[str], auto_only: bool):
+    session = load_session(session_dir)
+    selected_ids = set(ids)
+    papers = session.get("papers", [])
+    updated = []
+    for item in papers:
+        if selected_ids and item["id"] not in selected_ids:
+            continue
+        if auto_only and item.get("download_probe", {}).get("status") != "auto_downloadable":
+            continue
+        item.setdefault("selection", {})
+        item["selection"]["selected_for_download"] = True
+
+        attempts = []
+        final_result = None
+        if (
+            item.get("download_probe", {}).get("status") == "local_available"
+            and item.get("download_probe", {}).get("local_file_path")
+        ):
+            final_result = {
+                "ok": True,
+                "requested_via": item.get("title", ""),
+                "source": item.get("download_probe", {}).get("source") or "local_available",
+                "file_path": item.get("download_probe", {}).get("local_file_path"),
+                "pdf_candidates": item.get("download_probe", {}).get("pdf_candidates", []),
+            }
+        for query in item.get("download_queries", []):
+            if final_result is not None:
+                break
+            result = DOWNLOAD_PDF.download_paper(query)
+            result = dict(result)
+            result["requested_via"] = query
+            attempts.append(result)
+            if result.get("ok"):
+                final_result = dict(result)
+                break
+
+        if final_result is None:
+            final_result = dict(attempts[-1]) if attempts else {
+                "ok": False,
+                "requested_via": "",
+                "error": "未执行任何下载尝试。"
+            }
+        final_result["attempts"] = attempts
+        item["download_result"] = final_result
+        item["download_probe"] = {
+            "ok": True if final_result.get("ok") else item.get("download_probe", {}).get("ok", False),
+            "status": "local_available" if final_result.get("ok") else item.get("download_probe", {}).get("status"),
+            "source": final_result.get("source", item.get("download_probe", {}).get("source")),
+            "local_file_path": final_result.get("file_path"),
+            "candidate_count": len(final_result.get("pdf_candidates", [])),
+            "pdf_candidates": final_result.get("pdf_candidates", []),
+        } if final_result.get("ok") else item.get("download_probe", {})
+        updated.append({
+            "id": item["id"],
+            "title": item["title"],
+            "ok": final_result.get("ok"),
+            "source": final_result.get("source", ""),
+            "file_path": final_result.get("file_path"),
+            "error": final_result.get("error"),
+        })
+
+    save_session(session_dir, session)
+    return {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "updated_count": len(updated),
+        "updated": updated,
+    }
+
+
+def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
+    session = load_session(session_dir)
+    contexts_data = read_json(session_dir / "contexts.json")
+    target = session.get("target", {})
+    papers = session.get("papers", [])
+    selected_ids = set(ids)
+
+    results = []
+    for item in papers:
+        if selected_ids and item["id"] not in selected_ids:
+            continue
+        item.setdefault("selection", {})
+        item["selection"]["selected_for_analysis"] = True
+        paper = item.get("paper", {})
+        item_dir = session_dir / "analysis" / f"{item['id']}_{RUN_PIPELINE.slugify(item.get('title', ''))}"
+        paper_result = RUN_PIPELINE.process_citing_paper(
+            target=target,
+            citing_paper=paper,
+            contexts_data=contexts_data if isinstance(contexts_data, dict) else {},
+            item_dir=item_dir,
+            top_k_spans=top_k_spans,
+            local_pdf_path=item.get("download_probe", {}).get("local_file_path") or "",
+        )
+        item["analysis_result"] = {
+            "status": paper_result.get("status"),
+            "paths": paper_result.get("paths", {}),
+        }
+        results.append(paper_result)
+
+    summary = {
+        "ok": True,
+        "query": session.get("query", ""),
+        "target": target,
+        "output_dir": str(session_dir / "analysis"),
+        "processed_papers": len(results),
+        "results": results,
+    }
+    summary_path = session_dir / "analysis" / "summary.json"
+    write_json(summary_path, summary)
+    report = AGGREGATE_REPORT.build_report(summary)
+    report_json_path, report_md_path = AGGREGATE_REPORT.write_outputs(session_dir / "analysis", report)
+    session["analysis"] = {
+        "summary_path": str(summary_path),
+        "report_json_path": str(report_json_path),
+        "report_md_path": str(report_md_path),
+        "processed_papers": len(results),
+    }
+    session["analysis_mode_last"] = "full"
+    sync_session_derivatives(session_dir, session, update_evidence=True)
+    save_session(session_dir, session)
+    return {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "processed_papers": len(results),
+        "summary_path": str(summary_path),
+        "report_json_path": str(report_json_path),
+        "report_md_path": str(report_md_path),
+    }
+
+
+def review_person_candidate(session_dir: Path, candidate_id: str, action: str, note: str = ""):
+    session = load_session(session_dir)
+    normalized_action = (action or "").strip().lower()
+    if normalized_action not in {"confirm", "reject", "reset"}:
+        raise ValueError(f"不支持的人物候选操作: {action}")
+    matched = None
+    for candidate in session.get("person_candidates", []):
+        if candidate.get("candidate_id") != candidate_id:
+            continue
+        matched = candidate
+        if normalized_action == "confirm":
+            candidate["status"] = "confirmed"
+        elif normalized_action == "reject":
+            candidate["status"] = "rejected"
+        else:
+            candidate["status"] = "pending"
+        candidate["review_note"] = (note or "").strip()
+        candidate["reviewed_at"] = datetime.now().isoformat(timespec="seconds")
+        break
+    if matched is None:
+        raise ValueError(f"未找到人物候选: {candidate_id}")
+    session["overview_stats"] = build_overview_stats(session)
+    save_session(session_dir, session)
+    return {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "candidate_id": candidate_id,
+        "status": matched.get("status"),
+    }
+
+
+def render_phase1_export_markdown(detail_payload: dict):
+    overview = detail_payload.get("target_overview", {})
+    person_summary = detail_payload.get("person_summary", {})
+    lines = [
+        "# 单篇论文引用分析报告",
+        "",
+        f"- 目标论文：{overview.get('title', '')}",
+        f"- 查询：`{overview.get('query', '')}`",
+        f"- 年份/会议：{overview.get('year') or '-'} / {overview.get('venue') or '-'}",
+        f"- 总引用数：{overview.get('total_citation_count') or '-'}",
+        f"- 当前候选论文数：{overview.get('paper_count', 0)}",
+        "",
+        "## 总览统计",
+        "",
+        f"- 已下载：{(overview.get('overview_stats') or {}).get('downloaded_count', 0)}",
+        f"- 已分析：{(overview.get('overview_stats') or {}).get('analyzed_count', 0)}",
+        f"- 人物候选：{(overview.get('overview_stats') or {}).get('candidate_people_count', 0)}",
+        f"- 已确认人物：{(overview.get('overview_stats') or {}).get('confirmed_people_count', 0)}",
+        "",
+        "## 人物候选统计",
+        "",
+        f"- Pending：{person_summary.get('pending_count', 0)}",
+        f"- Confirmed：{person_summary.get('confirmed_count', 0)}",
+        f"- Rejected：{person_summary.get('rejected_count', 0)}",
+        "",
+        "## 引用论文分析",
+        "",
+    ]
+    for item in detail_payload.get("papers", []):
+        summary = item.get("citation_method_summary", {})
+        labels = " / ".join(summary.get("labels", [])) or "-"
+        page_start = summary.get("page_start") or "-"
+        page_end = summary.get("page_end") or page_start
+        lines.extend(
+            [
+                f"### {item.get('id')} {item.get('title', '')}",
+                f"- 年份/会议：{item.get('year') or '-'} / {item.get('venue') or '-'}",
+                f"- 下载状态：{item.get('download_status') or '-'}",
+                f"- 分析状态：{item.get('analysis_status') or '-'}",
+                f"- 引用方式标签：{labels}",
+                f"- 页码范围：{page_start} - {page_end}",
+                f"- 引用次数：{summary.get('citation_occurrence_count', 0)}",
+                f"- 连续引用段数：{summary.get('continuous_mention_count', 0)}",
+                f"- 首次/强表述命中：{'是' if summary.get('first_claim_hit') else '否'}",
+            ]
+        )
+        if summary.get("evidence_excerpt"):
+            lines.append(f"- 证据片段：{summary.get('evidence_excerpt')}")
+        if item.get("person_candidate_hits"):
+            lines.append("- 命中的人物候选：")
+            for hit in item.get("person_candidate_hits", []):
+                lines.append(
+                    f"  - {hit.get('name')} | {hit.get('tag_label')} | {hit.get('status')}"
+                )
+        lines.append("")
+    confirmed_candidates = [
+        item for item in detail_payload.get("person_candidates", []) if item.get("status") == "confirmed"
+    ]
+    if confirmed_candidates:
+        lines.extend(["## 已确认人物候选", ""])
+        for item in confirmed_candidates:
+            links = "、".join(item.get("source_links", [])[:3]) or "-"
+            lines.append(f"- {item.get('name')} | {item.get('tag_label')} | 来源：{links}")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def build_phase1_export_payload(session_dir: Path, session: dict):
+    detail_payload = build_session_detail_payload(session)
+    export_dir = session_dir / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    markdown_path = export_dir / "phase1_report.md"
+    structured_json_path = export_dir / "phase1_structured.json"
+    markdown_path.write_text(render_phase1_export_markdown(detail_payload), encoding="utf-8")
+    structured_json_path.write_text(
+        json.dumps(detail_payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    session["exports"] = {
+        "report_md_path": str(markdown_path),
+        "structured_json_path": str(structured_json_path),
+    }
+    write_json(session_dir / "session.json", session)
+    detail_payload["exports"] = dict(session["exports"])
+    return detail_payload
+
+
+def run_quick_analysis(session_dir: Path):
+    session = load_session(session_dir)
+    session["analysis_mode_last"] = "quick"
+    sync_session_derivatives(session_dir, session, update_quick=True)
+    save_session(session_dir, session)
+    return {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "quick_analysis": session.get("quick_analysis", {}),
+    }
+
+
+def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_spans: int = 8):
+    session = load_session(session_dir)
+    refresh_ids = [item.get("id") for item in session.get("papers", [])[: max(0, refresh_top_n)] if item.get("id")]
+    refresh_result = {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "refreshed_count": 0,
+        "refreshed": [],
+    }
+    if refresh_ids:
+        refresh_result = refresh_probes(session_dir=session_dir, ids=refresh_ids, force=False)
+
+    session = load_session(session_dir)
+    auto_download_ids = [
+        item.get("id")
+        for item in session.get("papers", [])[: max(0, refresh_top_n)]
+        if item.get("download_probe", {}).get("status") == "auto_downloadable" and item.get("id")
+    ]
+    download_result = {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "updated_count": 0,
+        "updated": [],
+    }
+    if auto_download_ids:
+        download_result = run_downloads(session_dir=session_dir, ids=auto_download_ids, auto_only=False)
+
+    session = load_session(session_dir)
+    analyze_ids = [
+        item.get("id")
+        for item in session.get("papers", [])
+        if item.get("download_probe", {}).get("status") == "local_available" and item.get("id")
+    ]
+    analyze_result = {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "processed_papers": 0,
+        "summary_path": "",
+        "report_json_path": "",
+        "report_md_path": "",
+    }
+    if analyze_ids:
+        analyze_result = run_analysis(
+            session_dir=session_dir,
+            ids=analyze_ids,
+            top_k_spans=max(1, top_k_spans),
+        )
+
+    session = load_session(session_dir)
+    session["analysis_mode_last"] = "full"
+    sync_session_derivatives(session_dir, session, update_quick=True, update_evidence=True)
+    save_session(session_dir, session)
+
+    manual_required_titles = [
+        item.get("title")
+        for item in session.get("papers", [])
+        if item.get("download_probe", {}).get("status") == "manual_required"
+    ]
+    return {
+        "ok": True,
+        "session_dir": str(session_dir),
+        "refresh": refresh_result,
+        "download": download_result,
+        "analysis": analyze_result,
+        "quick_analysis": session.get("quick_analysis", {}),
+        "evidence_index": session.get("evidence_index", {}),
+        "manual_required_titles": manual_required_titles,
+    }
+
+
+def print_discover_summary(session: dict):
+    payload = {
+        "ok": True,
+        "query": session.get("query", ""),
+        "schema_version": session.get("schema_version", SESSION_SCHEMA_VERSION),
+        "target": session.get("target", {}),
+        "paper_count": session.get("paper_count", 0),
+        "displayed_paper_count": session.get("paper_count", 0),
+        "total_citation_count": ((session.get("target") or {}).get("citationCount")),
+        "session_path": str(Path(session.get("paths", {}).get("list_papers", "")).parent / "session.json"),
+        "papers": [
+            {
+                "id": item.get("id"),
+                "title": item.get("title"),
+                "year": item.get("year"),
+                "download_status": item.get("download_probe", {}).get("status"),
+                "local_file_path": item.get("download_probe", {}).get("local_file_path"),
+                "candidate_count": item.get("download_probe", {}).get("candidate_count"),
+                "context_confidence": item.get("context_confidence"),
+                "best_context": (item.get("best_context", {}) or {}).get("text", ""),
+            }
+            for item in session.get("papers", [])
+        ]
+    }
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+def build_status_payload(session: dict):
+    papers = session.get("papers", [])
+    counts = {
+        "local_available": 0,
+        "auto_downloadable": 0,
+        "manual_required": 0,
+        "not_probed": 0,
+        "analysis_ready": 0,
+    }
+    items = []
+    for item in papers:
+        probe_status = item.get("download_probe", {}).get("status", "not_probed")
+        counts[probe_status] = counts.get(probe_status, 0) + 1
+        if probe_status == "local_available":
+            counts["analysis_ready"] += 1
+        items.append({
+            "id": item.get("id"),
+            "title": item.get("title"),
+            "download_status": probe_status,
+            "local_file_path": item.get("download_probe", {}).get("local_file_path"),
+            "candidate_count": item.get("download_probe", {}).get("candidate_count"),
+            "analysis_status": item.get("analysis_result", {}).get("status"),
+            "context_confidence": item.get("context_confidence"),
+            "qa_ready": item.get("qa_ready", False),
+        })
+    return {
+        "ok": True,
+        "query": session.get("query", ""),
+        "schema_version": session.get("schema_version", SESSION_SCHEMA_VERSION),
+        "target": session.get("target", {}),
+        "session_dir": session.get("session_dir", ""),
+        "paper_count": len(papers),
+        "displayed_paper_count": len(papers),
+        "total_citation_count": (session.get("target") or {}).get("citationCount"),
+        "analysis_mode": session.get("analysis_mode_last"),
+        "warnings": session.get("warnings", []),
+        "list_preferences": session.get("list_preferences", {}),
+        "download_status_counts": counts,
+        "analysis": session.get("analysis", {}),
+        "quick_analysis": session.get("quick_analysis", default_quick_analysis(session)),
+        "evidence_index": session.get("evidence_index", default_evidence_index()),
+        "overview_stats": session.get("overview_stats", default_overview_stats()),
+        "person_candidates": session.get("person_candidates", []),
+        "exports": session.get("exports", default_exports()),
+        "papers": items,
+    }
+
+
+def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
+    filters = filters or {}
+    status_payload = build_status_payload(session)
+    target = status_payload.get("target", {})
+    paper_lookup = {item.get("id"): item for item in session.get("papers", [])}
+    detail_papers = []
+    for item in status_payload.get("papers", []):
+        raw_item = paper_lookup.get(item.get("id"), {})
+        citation_summary = summarize_citation_method(raw_item)
+        paper_payload = {
+            "id": item.get("id"),
+            "title": item.get("title"),
+            "year": raw_item.get("year"),
+            "venue": raw_item.get("venue"),
+            "download_status": item.get("download_status"),
+            "analysis_status": item.get("analysis_status"),
+            "context_confidence": item.get("context_confidence"),
+            "qa_ready": item.get("qa_ready", False),
+            "candidate_count": len(raw_item.get("person_candidate_hits", [])),
+            "citation_method_summary": citation_summary,
+            "person_candidate_hits": raw_item.get("person_candidate_hits", []),
+        }
+        download_filter = (filters.get("download_status") or "").strip()
+        analysis_filter = (filters.get("analysis_status") or "").strip()
+        strong_only = str(filters.get("strong_only") or "").strip().lower() in {"1", "true", "on", "yes"}
+        candidate_only = str(filters.get("candidate_only") or "").strip().lower() in {"1", "true", "on", "yes"}
+        if download_filter and paper_payload["download_status"] != download_filter:
+            continue
+        if analysis_filter and paper_payload["analysis_status"] != analysis_filter:
+            continue
+        if strong_only and not citation_summary.get("first_claim_hit"):
+            continue
+        if candidate_only and not paper_payload.get("candidate_count"):
+            continue
+        detail_papers.append(paper_payload)
+
+    confirmed_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "confirmed"]
+    pending_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "pending"]
+    rejected_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "rejected"]
+
+    return {
+        "target_overview": {
+            "title": target.get("title", ""),
+            "query": status_payload.get("query", ""),
+            "year": target.get("year"),
+            "venue": target.get("venue"),
+            "doi": (target.get("externalIds") or {}).get("DOI", ""),
+            "arxiv": (target.get("externalIds") or {}).get("ArXiv", ""),
+            "total_citation_count": status_payload.get("total_citation_count"),
+            "paper_count": status_payload.get("paper_count", 0),
+            "overview_stats": status_payload.get("overview_stats", default_overview_stats()),
+            "warnings": status_payload.get("warnings", []),
+            "updated_at": session.get("updated_at") or session.get("created_at"),
+        },
+        "paper_filters": {
+            "download_status_counts": status_payload.get("download_status_counts", {}),
+            "analysis_mode": status_payload.get("analysis_mode"),
+            "active": {
+                "download_status": (filters.get("download_status") or "").strip(),
+                "analysis_status": (filters.get("analysis_status") or "").strip(),
+                "strong_only": str(filters.get("strong_only") or "").strip().lower() in {"1", "true", "on", "yes"},
+                "candidate_only": str(filters.get("candidate_only") or "").strip().lower() in {"1", "true", "on", "yes"},
+            },
+        },
+        "papers": detail_papers,
+        "person_candidates": status_payload.get("person_candidates", []),
+        "person_summary": {
+            "pending_count": len(pending_candidates),
+            "confirmed_count": len(confirmed_candidates),
+            "rejected_count": len(rejected_candidates),
+        },
+        "exports": status_payload.get("exports", default_exports()),
+    }
+
+
+def build_card_state_payload(session: dict):
+    status_payload = build_status_payload(session)
+    target = status_payload.get("target", {})
+    card_items = []
+    for item in status_payload.get("papers", []):
+        download_status = item.get("download_status")
+        analysis_status = item.get("analysis_status")
+        card_items.append({
+            "id": item.get("id"),
+            "title": item.get("title"),
+            "badge": {
+                "download_status": download_status,
+                "analysis_status": analysis_status,
+                "context_confidence": item.get("context_confidence"),
+            },
+            "actions": {
+                "can_refresh_probe": True,
+                "can_download": download_status in {"auto_downloadable", "local_available"},
+                "can_analyze": download_status == "local_available",
+            },
+            "meta": {
+                "local_file_path": item.get("local_file_path"),
+                "candidate_count": item.get("candidate_count"),
+                "qa_ready": item.get("qa_ready", False),
+            }
+        })
+
+    return {
+        "ok": True,
+        "schema_version": status_payload.get("schema_version", SESSION_SCHEMA_VERSION),
+        "card_schema_version": "1.0",
+        "session_dir": status_payload.get("session_dir", ""),
+        "header": {
+            "title": target.get("title", ""),
+            "subtitle": status_payload.get("query", ""),
+            "paper_count": status_payload.get("paper_count", 0),
+            "total_citation_count": status_payload.get("total_citation_count"),
+        },
+        "summary": status_payload.get("download_status_counts", {}),
+        "items": card_items,
+        "analysis": status_payload.get("analysis", {}),
+        "analysis_mode": status_payload.get("analysis_mode"),
+        "warnings": status_payload.get("warnings", []),
+        "list_preferences": status_payload.get("list_preferences", {}),
+        "quick_analysis": status_payload.get("quick_analysis", {}),
+        "qa_ready_count": status_payload.get("evidence_index", {}).get("qa_ready_count", 0),
+        "next_actions": [
+            "下载第2篇、第3篇",
+            "全面分析这篇论文的影响力",
+            "论文P001引用目标论文时，引用了多长的段落？",
+        ],
+    }
+
+
+def build_markdown_session_summary(session: dict, *, max_items: int = 8, status_line: str = ""):
+    card_state = build_card_state_payload(session)
+    summary = card_state.get("summary", {})
+    header = card_state.get("header", {})
+    warnings = card_state.get("warnings", []) or []
+    list_preferences = card_state.get("list_preferences", {}) or {}
+    sort_preference = list_preferences.get("sort_preference") or "context"
+    sort_label = "按最近年份排序" if sort_preference == "recent" else "按引用信号排序"
+
+    lines = []
+    if status_line:
+        lines.append(status_line.strip())
+        lines.append("")
+    lines.append("## 学术影响力分析会话")
+    lines.append(f"目标论文: {header.get('title') or '-'}")
+    lines.append(f"原始查询: {header.get('subtitle') or '-'}")
+    total_citation_count = header.get("total_citation_count")
+    if total_citation_count:
+        lines.append(f"真实总引用数: {total_citation_count}")
+    lines.append(f"当前展示候选数: {header.get('paper_count', 0)}")
+    lines.append(f"排序方式: {sort_label}")
+    lines.append(f"会话目录: {card_state.get('session_dir') or '-'}")
+    if warnings:
+        lines.append(f"提示: {warnings[0]}")
+    lines.append("")
+    lines.append("状态概览:")
+    lines.append(
+        "本地可用 {local_available} | 可自动下载 {auto_downloadable} | 需手动下载 {manual_required} | "
+        "待探测 {not_probed} | 可直接分析 {analysis_ready}".format(
+            local_available=summary.get("local_available", 0),
+            auto_downloadable=summary.get("auto_downloadable", 0),
+            manual_required=summary.get("manual_required", 0),
+            not_probed=summary.get("not_probed", 0),
+            analysis_ready=summary.get("analysis_ready", 0),
+        )
+    )
+    lines.append("")
+    lines.append("| 编号 | 年份 | 下载状态 | 分析状态 | 置信度 | 标题 |")
+    lines.append("| --- | --- | --- | --- | --- | --- |")
+    for item in session.get("papers", [])[:max_items]:
+        lines.append(
+            f"| {item.get('id') or '-'} | {item.get('year') or '-'} | "
+            f"{_status_label(item.get('download_probe', {}).get('status'))} | "
+            f"{_status_label(item.get('analysis_result', {}).get('status'))} | "
+            f"{_context_label(item.get('context_confidence'))} | {item.get('title') or '-'} |"
+        )
+    lines.append("")
+    lines.append("下一步可直接说：下载第2篇、第3篇；或说：全面分析这篇论文的影响力。")
+    return "\n".join(lines)
+
+
+def build_feishu_command_text(action: str, session_dir: str, paper_id: str):
+    if action == "refresh":
+        return f"/paperimpact-refresh {session_dir} {paper_id}"
+    if action == "download":
+        return f"/paperimpact-download {session_dir} {paper_id}"
+    if action == "analyze":
+        return f"/paperimpact-analyze {session_dir} {paper_id}"
+    raise ValueError(f"unknown feishu action: {action}")
+
+
+def _status_label(status: str):
+    mapping = {
+        "local_available": "本地可用",
+        "auto_downloadable": "可自动下载",
+        "manual_required": "需手动下载",
+        "not_probed": "待探测",
+        "probe_failed": "探测失败",
+        "fulltext_analyzed": "已完成全文分析",
+        "mention_only": "弱提及",
+        "reference_only": "仅参考文献",
+        "context_only": "仅上下文",
+    }
+    return mapping.get(status or "", status or "-")
+
+
+def _context_label(confidence: str):
+    mapping = {
+        "high": "高",
+        "medium": "中",
+        "low": "低",
+    }
+    return mapping.get(confidence or "", confidence or "-")
+
+
+def build_feishu_card_payload(session: dict, max_items: int = 8):
+    card_state = build_card_state_payload(session)
+    session_dir = card_state.get("session_dir", "")
+    summary = card_state.get("summary", {})
+    header = card_state.get("header", {})
+
+    elements = [
+        {
+            "tag": "markdown",
+            "content": (
+                f"**目标论文**：{header.get('title') or '-'}\n"
+                f"**原始查询**：{header.get('subtitle') or '-'}\n"
+                f"**真实总引用数**：{header.get('total_citation_count') or '未知'}\n"
+                f"**当前展示候选数**：{header.get('paper_count', 0)}\n"
+                f"**状态统计**：本地可用 {summary.get('local_available', 0)} ｜ "
+                f"自动下载 {summary.get('auto_downloadable', 0)} ｜ "
+                f"手动下载 {summary.get('manual_required', 0)} ｜ "
+                f"待探测 {summary.get('not_probed', 0)}"
+            ),
+        },
+        {"tag": "hr"},
+    ]
+
+    for item in card_state.get("items", [])[:max_items]:
+        download_status = item.get("badge", {}).get("download_status")
+        analysis_status = item.get("badge", {}).get("analysis_status")
+        context_confidence = item.get("badge", {}).get("context_confidence")
+        paper_id = item.get("id", "")
+        title = item.get("title", "")
+        buttons = []
+
+        if item.get("actions", {}).get("can_refresh_probe"):
+            buttons.append({
+                "tag": "button",
+                "type": "default",
+                "text": {"tag": "plain_text", "content": "刷新状态"},
+                "value": {"text": build_feishu_command_text("refresh", session_dir, paper_id)},
+            })
+        if item.get("actions", {}).get("can_download"):
+            buttons.append({
+                "tag": "button",
+                "type": "primary",
+                "text": {"tag": "plain_text", "content": "下载"},
+                "value": {"text": build_feishu_command_text("download", session_dir, paper_id)},
+            })
+        if item.get("actions", {}).get("can_analyze"):
+            buttons.append({
+                "tag": "button",
+                "type": "primary",
+                "text": {"tag": "plain_text", "content": "分析"},
+                "value": {"text": build_feishu_command_text("analyze", session_dir, paper_id)},
+            })
+
+        elements.append({
+            "tag": "markdown",
+            "content": (
+                f"**{paper_id}** {title}\n"
+                f"下载状态：{_status_label(download_status)} ｜ "
+                f"分析状态：{_status_label(analysis_status)} ｜ "
+                f"上下文置信度：{_context_label(context_confidence)}"
+            ),
+        })
+        if buttons:
+            elements.append({
+                "tag": "action",
+                "actions": buttons,
+            })
+        elements.append({"tag": "hr"})
+
+    return {
+        "schema": "2.0",
+        "config": {
+            "wide_screen_mode": True,
+            "enable_forward": True,
+        },
+        "header": {
+            "title": {
+                "tag": "plain_text",
+                "content": "学术影响力分析",
+            },
+            "template": "blue",
+        },
+        "body": {
+            "elements": elements,
+        },
+    }
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(description="学术影响力分析交互式 CLI")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    discover = sub.add_parser("discover", help="发现 citing papers；默认快速返回，不同步探测下载状态")
+    discover.add_argument("query", help="目标论文 DOI、arXiv 编号或标题")
+    discover.add_argument("--session-dir", help="会话目录，默认写入工作区内 sessions/<时间戳>_<slug>")
+    discover.add_argument("--limit", type=int, default=20, help="最多展示多少篇 citing papers，默认 20")
+    discover.add_argument("--probe-downloads", action="store_true", help="同步探测下载能力；默认关闭以便快速返回")
+    discover.add_argument("--auto-refresh-top", type=int, default=0, help="发现后自动刷新前 N 篇候选的下载状态，默认 0")
+
+    status = sub.add_parser("status", help="查看会话状态")
+    status.add_argument("session_dir", help="discover 阶段生成的会话目录")
+
+    card_state = sub.add_parser("card-state", help="输出适合飞书卡片消费的轻量状态摘要")
+    card_state.add_argument("session_dir", help="discover 阶段生成的会话目录")
+
+    feishu_card = sub.add_parser("feishu-card", help="输出官方飞书卡片 JSON")
+    feishu_card.add_argument("session_dir", help="discover 阶段生成的会话目录")
+    feishu_card.add_argument("--max-items", type=int, default=8, help="最多渲染多少个 citing paper 卡片块")
+
+    refresh = sub.add_parser("refresh-probe", help="刷新会话中的下载探测状态")
+    refresh.add_argument("session_dir", help="discover 阶段生成的会话目录")
+    refresh.add_argument("--ids", help="要刷新的论文 id，逗号分隔，例如 P001,P003")
+    refresh.add_argument("--force", action="store_true", help="即使已经 local_available 也重新探测")
+
+    download = sub.add_parser("download", help="下载会话中的选定论文")
+    download.add_argument("session_dir", help="discover 阶段生成的会话目录")
+    download.add_argument("--ids", help="要下载的论文 id，逗号分隔，例如 P001,P003")
+    download.add_argument("--auto-only", action="store_true", help="只下载标注为 auto_downloadable 的论文")
+
+    analyze = sub.add_parser("analyze", help="分析会话中的选定论文")
+    analyze.add_argument("session_dir", help="discover 阶段生成的会话目录")
+    analyze.add_argument("--ids", required=True, help="要分析的论文 id，逗号分隔，例如 P001,P003")
+    analyze.add_argument("--top-k-spans", type=int, default=8, help="送入 analyze_fulltext 的候选段落数，默认 8")
+
+    attach_pdf = sub.add_parser("attach-pdf", help="把本地 PDF 绑定到某篇候选论文，后续按 local_available 处理")
+    attach_pdf.add_argument("session_dir", help="discover 阶段生成的会话目录")
+    attach_pdf.add_argument("paper_id", help="候选论文编号，例如 P004")
+    attach_pdf.add_argument("file_path", help="本地 PDF 路径")
+
+    capabilities = sub.add_parser("capabilities", help="输出当前助手支持的能力说明")
+
+    return parser
+
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.command == "discover":
+        if args.session_dir:
+            session_dir = Path(args.session_dir).expanduser()
+        else:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            session_dir = DEFAULT_SESSIONS_DIR / f"{timestamp}_{RUN_PIPELINE.slugify(args.query, limit=50)}"
+        session = build_discover_session(
+            query=args.query,
+            session_dir=session_dir,
+            limit=max(1, args.limit),
+            probe_downloads=args.probe_downloads,
+            auto_refresh_count=max(0, args.auto_refresh_top),
+        )
+        print_discover_summary(session)
+        return
+
+    if args.command == "status":
+        session = load_session(Path(args.session_dir).expanduser())
+        print(json.dumps(build_status_payload(session), ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "card-state":
+        session = load_session(Path(args.session_dir).expanduser())
+        print(json.dumps(build_card_state_payload(session), ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "feishu-card":
+        session = load_session(Path(args.session_dir).expanduser())
+        print(json.dumps(build_feishu_card_payload(session, max_items=max(1, args.max_items)), ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "refresh-probe":
+        result = refresh_probes(
+            session_dir=Path(args.session_dir).expanduser(),
+            ids=parse_ids(args.ids),
+            force=args.force,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "download":
+        result = run_downloads(
+            session_dir=Path(args.session_dir).expanduser(),
+            ids=parse_ids(args.ids),
+            auto_only=args.auto_only,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "analyze":
+        result = run_analysis(
+            session_dir=Path(args.session_dir).expanduser(),
+            ids=parse_ids(args.ids),
+            top_k_spans=max(1, args.top_k_spans),
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "attach-pdf":
+        result = attach_local_pdf(
+            session_dir=Path(args.session_dir).expanduser(),
+            paper_id=args.paper_id,
+            file_path=args.file_path,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "capabilities":
+        print(json.dumps(build_capabilities_payload(), ensure_ascii=False, indent=2))
+        return
+
+
+if __name__ == "__main__":
+    main()

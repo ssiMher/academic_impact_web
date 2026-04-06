@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Academic Impact Web</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">Academic Impact</p>
+        <h1>用按钮驱动学术影响力分析</h1>
+        <p class="lede">
+          第一版保留旧项目里已经验证过的 Python 能力层，不再把主链路交给 agent 自由发挥。
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2>新建分析会话</h2>
+        <form action="/sessions/discover" method="post" class="stack">
+          <label>
+            目标论文标题 / DOI / arXiv
+            <input type="text" name="query" placeholder="Attention Is All You Need" required />
+          </label>
+          <div class="grid">
+            <label>
+              候选上限
+              <input type="number" name="limit" value="20" min="1" max="100" />
+            </label>
+            <label>
+              自动刷新前 N 篇
+              <input type="number" name="auto_refresh_top" value="0" min="0" max="20" />
+            </label>
+            <label>
+              排序偏好
+              <select name="sort_preference">
+                <option value="context">按上下文信号</option>
+                <option value="recent">按时间倒序</option>
+              </select>
+            </label>
+          </div>
+          <label class="checkbox">
+            <input type="checkbox" name="probe_downloads" />
+            发现阶段同步探测下载能力
+          </label>
+          <button type="submit">Discover</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>最近会话</h2>
+        </div>
+        {% if sessions %}
+        <table>
+          <thead>
+            <tr>
+              <th>会话</th>
+              <th>查询</th>
+              <th>候选数</th>
+              <th>更新时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in sessions %}
+            <tr>
+              <td><a href="/sessions/{{ item.id }}">{{ item.id }}</a></td>
+              <td>{{ item.query }}</td>
+              <td>{{ item.paper_count }}</td>
+              <td>{{ item.updated_at or "-" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="muted">还没有会话。先从上面的 Discover 开始。</p>
+        {% endif %}
+      </section>
+    </main>
+  </body>
+</html>

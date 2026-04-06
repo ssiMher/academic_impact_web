@@ -1,0 +1,275 @@
+[
+  {
+    "id": "sdracer_firmware_fuzzing_2020",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "ASI2015 Detecting data races in interrupt-driven programs based on static analysis and dynamic simulation -> Firmware fuzzing: The state of the art.",
+    "target_paper": {
+      "title": "Detecting data races in interrupt-driven programs based on static analysis and dynamic simulation"
+    },
+    "citing_paper": {
+      "title": "Firmware fuzzing: The state of the art.",
+      "venue": "Asia-Pacific Symposium on Internetware",
+      "year": 2020
+    },
+    "citation_text": "Moreover, SDRacer [51, 52] tries to leverage the virtual platform to detect bugs while monitoring run-time information of systems.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法描述与正面借鉴",
+    "gold_reason": "人工整理结果明确指出该句直接介绍 SDRacer 的方法思路，并给予正面肯定。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合作为正文明确引用的基础样本。"
+  },
+  {
+    "id": "carraybound_super_dataflow_2022",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "ASI2016 Carraybound: Static array bounds checking in c programs based on taint analysis -> An effective buffer overflow detection with super data-flow graphs.",
+    "target_paper": {
+      "title": "Carraybound: Static array bounds checking in c programs based on taint analysis"
+    },
+    "citing_paper": {
+      "title": "An effective buffer overflow detection with super data-flow graphs.",
+      "venue": "ISPA/BDCloud/SocialCom/SustainCom",
+      "year": 2022
+    },
+    "citation_text": "Gao et al. [15] proposed Carraybound to ﬁnd buffer overﬂows caused by array index out-of-bounds. It designed a set of rules for taint analysis and applies data-ﬂow analysis according to the program control-ﬂow graphs and call graphs.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法贡献描述",
+    "gold_reason": "人工分析明确认为该句准确描述了被引方法的技术贡献，属于实质性正文引用。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合作为强语义正文引用样本。"
+  },
+  {
+    "id": "sdracer_tosem_2025_bounded_verification",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "Automatic Detection, Validation, and Repair of Race Conditions in Interrupt-Driven EmbeddedSoftware -> Bounded verification of atomicity violations for interrupt-driven programs via lazy sequentialization.",
+    "target_paper": {
+      "title": "Automatic Detection, Validation, and Repair of Race Conditions in Interrupt-Driven EmbeddedSoftware"
+    },
+    "citing_paper": {
+      "title": "Bounded verification of atomicity violations for interrupt-driven programs via lazy sequentialization.",
+      "venue": "ACM Transactions on Software Engineering and Methodology",
+      "year": 2025
+    },
+    "citation_text": "Wang et al. [40–42] proposed a hybrid approach based on static analysis and dynamic simulation to detect data races in interrupt-driven programs.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法概括性介绍",
+    "gold_reason": "该句直接概括被引工作的混合方法路线，属于清晰可复核的正文引用。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合检查系统是否会把明确方法概括误降级成 mention_only。"
+  },
+  {
+    "id": "ginn_structural_code_understanding_2022",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "OOPSLA2020 Learning semantic program embeddings with graph interval neural network -> A survey of deep learning models for structural code understanding.",
+    "target_paper": {
+      "title": "Learning semantic program embeddings with graph interval neural network"
+    },
+    "citing_paper": {
+      "title": "A survey of deep learning models for structural code understanding.",
+      "venue": "arXiv.org",
+      "year": 2022
+    },
+    "citation_text": "Wang et al.[166] propose a new graph neural architecture called Graph Interval Neural Network(GINN) to learn the code embeddings.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法命名与贡献介绍",
+    "gold_reason": "人工整理结果显示该句明确介绍 GINN 的方法名称与用途，属于强正文引用。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合验证跨主题论文时的泛化效果。"
+  },
+  {
+    "id": "sdracer_path_feasibility_2024",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "Automatic detection and validation of race conditions in interrupt-driven embedded software -> Efficient data race detection for interrupt-driven programs via path feasibility analysis",
+    "target_paper": {
+      "title": "Automatic detection and validation of race conditions in interrupt-driven embedded software"
+    },
+    "citing_paper": {
+      "title": "Efficient data race detection for interrupt-driven programs via path feasibility analysis",
+      "venue": "The Journal of Supercomputing",
+      "year": 2024
+    },
+    "citation_text": "Wang et al. [14] proposed an automated framework SDRacer for detecting and validating data races, which combines static analysis and symbolic execution to identify potential data races, and check the race statement by dynamic verification through a virtual platform.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法总览介绍",
+    "gold_reason": "该句明确概括了 SDRacer 的核心技术组成与用途，属于清晰的正文方法介绍。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合验证系统是否能抓到方法综述型引用。"
+  },
+  {
+    "id": "sdracer_atomicity_staged_pruning_2022",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "Automatic detection and validation of race conditions in interrupt-driven embedded software -> Precise and efficient atomicity violation detection for interrupt-driven programs via staged path pruning.",
+    "target_paper": {
+      "title": "Automatic detection and validation of race conditions in interrupt-driven embedded software"
+    },
+    "citing_paper": {
+      "title": "Precise and efficient atomicity violation detection for interrupt-driven programs via staged path pruning.",
+      "venue": "Proceedings of the 31st ACM SIGSOFT International Symposium on Software Testing and Analysis",
+      "year": 2022
+    },
+    "citation_text": "Wang et al. [47] propose SDRacer, which combines static analysis with symbolic execution and automatically detects data races by generating input data for interrupt-driven embedded software.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法核心技术介绍",
+    "gold_reason": "人工整理明确把该句判为对 SDRacer 方法的正面描述和认可，属于强正文引用。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合作为短句型强引用样本。"
+  },
+  {
+    "id": "bovinspector_repair_routing_2021",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "JCST2020 Automatic buffer overflow warning validation -> Automatic Repair Method for D2D Communication Routing Buffer Overflow Vulnerability in Cellular Network.",
+    "target_paper": {
+      "title": "Automatic buffer overflow warning validation"
+    },
+    "citing_paper": {
+      "title": "Automatic Repair Method for D2D Communication Routing Buffer Overflow Vulnerability in Cellular Network.",
+      "venue": "Scientific Programming",
+      "year": 2021
+    },
+    "citation_text": "Given the program source code and static buffer overflow warning, Bovinspector first performs warning reachability analysis. The Bovinspector then symbolically executes the source code under the guidance of reachability warnings. Each reachable warning is verified and classified by checking whether all path conditions and buffer overflow constraints can be met at the same time. For each verified real warning, Bovinspector will provide suggestions and automatically repair it with 11 repair strategies.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法流程与自动修复能力描述",
+    "gold_reason": "该句完整描述了 BovInspector 的验证与自动修复流程，属于高度可复核的正文方法引用。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合验证系统对长句技术流程描述的识别能力。"
+  },
+  {
+    "id": "bovinspector_tse_2023_effectiveness",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "JCST2020 Automatic buffer overflow warning validation -> Mitigating false positive static analysis warnings: Progress, challenges, and opportunities.",
+    "target_paper": {
+      "title": "Automatic buffer overflow warning validation"
+    },
+    "citing_paper": {
+      "title": "Mitigating false positive static analysis warnings: Progress, challenges, and opportunities.",
+      "venue": "IEEE Transactions on Software Engineering",
+      "year": 2023
+    },
+    "citation_text": "Their study showed that BovInspector can automatically validate on average 60% of total warnings reported by SA tools.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "效果量化评价",
+    "gold_reason": "该句直接引用实验结果来评价 BovInspector 的有效性，属于明确的正文性能肯定。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合验证系统是否会把性能评价误判成弱提及。"
+  },
+  {
+    "id": "ginn_condition_bugs_2023",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "OOPSLA2020 Learning semantic program embeddings with graph interval neural network -> Detecting condition-related bugs with control flow graph neural network.",
+    "target_paper": {
+      "title": "Learning semantic program embeddings with graph interval neural network"
+    },
+    "citing_paper": {
+      "title": "Detecting condition-related bugs with control flow graph neural network.",
+      "venue": "International Symposium on Software Testing and Analysis",
+      "year": 2023
+    },
+    "citation_text": "GINN [44] is a recent graph neural network for learning semantic embeddings of program graphs and has been evaluated on detecting variable misuses and null dereferences. It makes abstractions of program graph representations, uses the hierarchy of intervals (i.e. subgraphs) that generally represent looping constructs for scaling the learning to large graphs.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法原理与已验证任务介绍",
+    "gold_reason": "该句不仅介绍 GINN 的技术核心，还明确指出其已验证的任务场景，属于强正文引用。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合检查系统对图学习方法长句描述的识别效果。"
+  },
+  {
+    "id": "ginn_method_name_recommendation_2021",
+    "source_file": "/home/withe/.openclaw/文献信息.md",
+    "source_anchor": "OOPSLA2020 Learning semantic program embeddings with graph interval neural network -> Lightweight global and local contexts guided method name recommendation with prior knowledge.",
+    "target_paper": {
+      "title": "Learning semantic program embeddings with graph interval neural network"
+    },
+    "citing_paper": {
+      "title": "Lightweight global and local contexts guided method name recommendation with prior knowledge.",
+      "venue": "ESEC/SIGSOFT FSE",
+      "year": 2021
+    },
+    "citation_text": "Wang et al. [63] developed a novel graph neural architecture (GINN), which, unlike the standard GNN, focuses exclusively on intervals for mining the feature representation of a program and operates on a hierarchy of intervals for scaling the learning to large graphs.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法创新性与可扩展性介绍",
+    "gold_reason": "该句明确强调 GINN 区别于标准 GNN 的创新设计与面向大图的可扩展性，属于典型强引用。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": false,
+    "notes": "适合作为方法创新点描述样本。"
+  },
+  {
+    "id": "sdracer_modular_verification_2017_runtime",
+    "source_file": "/tmp/academic_impact_runs/gold_eval_target1_match/002_modular_verification_of_interrupt_driven_software/fulltext_analysis.json",
+    "source_anchor": "runtime discovered case for Detecting Data Races in Interrupt-Driven Programs based on Static Analysis and Dynamic Simulation",
+    "target_paper": {
+      "title": "Detecting Data Races in Interrupt-Driven Programs based on Static Analysis and Dynamic Simulation"
+    },
+    "citing_paper": {
+      "title": "Modular verification of interrupt-driven software",
+      "venue": "International Conference on Automated Software Engineering",
+      "year": 2017
+    },
+    "citation_text": "Wang et al. [39], [40] proposed a hybrid approach that combines static program analysis with dynamic simulation to detect data races in interrupt-driven programs. Although the approach is useful for detecting bugs, it cannot be used to obtain proofs, i.e., proofs that assertions always hold.",
+    "gold_status": "fulltext_analyzed",
+    "gold_function": "方法描述并指出局限",
+    "gold_reason": "该句明确介绍目标论文提出的混合方法，同时补充其不能用于证明断言恒成立，属于可复核的强正文引用。",
+    "gold_findings_min": 1,
+    "mention_type": "explicit_citation",
+    "needs_review": true,
+    "notes": "来自运行后回填样本，不计入正式 gold 指标，需独立人工复核后再转正。"
+  },
+  {
+    "id": "sdracer_tse_2020_runtime_weakmention",
+    "source_file": "/tmp/academic_impact_runs/gold_eval_target1_match/004_automatic_detection_validation_and_repair_of_race_conditions_in_interrupt_driven/fulltext_analysis.json",
+    "source_anchor": "runtime discovered case for Detecting Data Races in Interrupt-Driven Programs based on Static Analysis and Dynamic Simulation",
+    "target_paper": {
+      "title": "Detecting Data Races in Interrupt-Driven Programs based on Static Analysis and Dynamic Simulation"
+    },
+    "citing_paper": {
+      "title": "Automatic Detection, Validation, and Repair of Race Conditions in Interrupt-Driven Embedded Software",
+      "venue": "IEEE Transactions on Software Engineering",
+      "year": 2020
+    },
+    "citation_text": "These include static analysis [23], [36], [52], [77], [81], dynamic monitoring [10], [20], [37], [50], schedule exploration [11], [17], [51], [68], [69], [74], test generation [54], [58] and ...",
+    "gold_status": "mention_only",
+    "gold_function": "背景综述式弱提及",
+    "gold_reason": "当前证据更接近组引用背景综述，正文中虽有相关编号命中，但不足以支持更强的具体语义判断。",
+    "gold_findings_min": 1,
+    "mention_type": "weak_body_mention",
+    "needs_review": true,
+    "notes": "来自运行后回填样本，不计入正式 gold 指标，需独立人工复核后再转正。"
+  },
+  {
+    "id": "sdracer_issta_2017_context_only_runtime",
+    "source_file": "/tmp/academic_impact_runs/gold_eval_target1_match/summary.json",
+    "source_anchor": "runtime discovered case for Detecting Data Races in Interrupt-Driven Programs based on Static Analysis and Dynamic Simulation",
+    "target_paper": {
+      "title": "Detecting Data Races in Interrupt-Driven Programs based on Static Analysis and Dynamic Simulation"
+    },
+    "citing_paper": {
+      "title": "Automatic detection and validation of race conditions in interrupt-driven embedded software",
+      "venue": "International Symposium on Software Testing and Analysis",
+      "year": 2017
+    },
+    "citation_text": "Techniques combined with static and dynamic method [61] could also detect and verify races.",
+    "gold_status": "context_only",
+    "gold_function": "仅 context 支持的简要方法提及",
+    "gold_reason": "当前运行中未获得全文 PDF，只能依赖 citation context，因此应视为 context-only 基准样本。",
+    "gold_findings_min": 0,
+    "mention_type": "explicit_citation",
+    "needs_review": true,
+    "notes": "来自运行后回填样本，不计入正式 gold 指标，需独立人工复核后再转正。"
+  }
+]

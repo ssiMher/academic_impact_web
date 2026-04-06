@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ session.query }}</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="panel">
+        <p><a href="/">← 返回首页</a></p>
+        <p class="eyebrow">Session</p>
+        <h1>{{ detail_payload.target_overview.title or session.query }}</h1>
+        <p class="muted">会话目录：{{ session_id }}</p>
+        <div class="grid meta-grid">
+          <div>
+            <span class="meta-label">原始查询</span>
+            <strong>{{ detail_payload.target_overview.query }}</strong>
+          </div>
+          <div>
+            <span class="meta-label">年份 / 会议</span>
+            <strong>{{ detail_payload.target_overview.year or '-' }} / {{ detail_payload.target_overview.venue or '-' }}</strong>
+          </div>
+          <div>
+            <span class="meta-label">DOI / arXiv</span>
+            <strong>{{ detail_payload.target_overview.doi or detail_payload.target_overview.arxiv or '-' }}</strong>
+          </div>
+          <div>
+            <span class="meta-label">最近更新时间</span>
+            <strong>{{ detail_payload.target_overview.updated_at or '-' }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">01</p>
+            <h2>目标论文基本信息与总览统计</h2>
+          </div>
+        </div>
+        <div class="stats stats-dense">
+          <div class="stat"><span>当前候选论文</span><strong>{{ detail_payload.target_overview.paper_count }}</strong></div>
+          <div class="stat"><span>总引用数</span><strong>{{ detail_payload.target_overview.total_citation_count or '-' }}</strong></div>
+          <div class="stat"><span>已下载</span><strong>{{ detail_payload.target_overview.overview_stats.downloaded_count }}</strong></div>
+          <div class="stat"><span>已分析</span><strong>{{ detail_payload.target_overview.overview_stats.analyzed_count }}</strong></div>
+          <div class="stat"><span>人物候选</span><strong>{{ detail_payload.target_overview.overview_stats.candidate_people_count }}</strong></div>
+          <div class="stat"><span>已确认人物</span><strong>{{ detail_payload.target_overview.overview_stats.confirmed_people_count }}</strong></div>
+        </div>
+        {% if detail_payload.target_overview.warnings %}
+        <div class="callout warning">
+          <strong>Warnings</strong>
+          <ul>
+            {% for warning in detail_payload.target_overview.warnings %}
+            <li>{{ warning }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">02</p>
+            <h2>引用论文列表与状态</h2>
+            <p class="muted">当前显示 {{ detail_payload.papers | length }} / {{ detail_payload.target_overview.paper_count }} 篇</p>
+          </div>
+          <div class="status-chips">
+            {% for key, value in detail_payload.paper_filters.download_status_counts.items() %}
+            <span class="chip">{{ key }}: {{ value }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <form method="get" class="stack">
+          <div class="inline-controls">
+            <label>
+              下载状态筛选
+              <select name="download_status">
+                <option value="">全部</option>
+                {% for key, value in detail_payload.paper_filters.download_status_counts.items() %}
+                <option value="{{ key }}" {% if detail_payload.paper_filters.active.download_status == key %}selected{% endif %}>{{ key }} ({{ value }})</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              分析状态筛选
+              <select name="analysis_status">
+                <option value="">全部</option>
+                <option value="fulltext_analyzed" {% if detail_payload.paper_filters.active.analysis_status == 'fulltext_analyzed' %}selected{% endif %}>fulltext_analyzed</option>
+                <option value="mention_only" {% if detail_payload.paper_filters.active.analysis_status == 'mention_only' %}selected{% endif %}>mention_only</option>
+                <option value="context_only" {% if detail_payload.paper_filters.active.analysis_status == 'context_only' %}selected{% endif %}>context_only</option>
+                <option value="analysis_failed" {% if detail_payload.paper_filters.active.analysis_status == 'analysis_failed' %}selected{% endif %}>analysis_failed</option>
+              </select>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="strong_only" {% if detail_payload.paper_filters.active.strong_only %}checked{% endif %} />
+              仅看强表述命中
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="candidate_only" {% if detail_payload.paper_filters.active.candidate_only %}checked{% endif %} />
+              仅看命中人物候选
+            </label>
+            <div class="actions">
+              <button type="submit">应用筛选</button>
+              <a class="button-link ghost" href="/sessions/{{ session_id }}">清除筛选</a>
+            </div>
+          </div>
+        </form>
+        <form method="post" class="stack">
+          <div class="actions">
+            <button formaction="/sessions/{{ session_id }}/refresh" type="submit">Refresh Probe</button>
+            <button formaction="/sessions/{{ session_id }}/download" type="submit">Download Selected</button>
+            <button formaction="/sessions/{{ session_id }}/analyze" type="submit">Analyze Selected</button>
+          </div>
+          <div class="inline-controls">
+            <label class="checkbox"><input type="checkbox" name="force" /> Refresh 时强制重试</label>
+            <label class="checkbox"><input type="checkbox" name="auto_only" /> Download 时仅处理 auto_downloadable</label>
+            <label>
+              analyze top_k_spans
+              <input type="number" name="top_k_spans" value="8" min="1" max="20" />
+            </label>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>ID</th>
+                <th>标题</th>
+                <th>年份 / 会议</th>
+                <th>下载状态</th>
+                <th>分析状态</th>
+                <th>上下文置信度</th>
+                <th>候选人物</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in detail_payload.papers %}
+              <tr>
+                <td><input type="checkbox" name="paper_ids" value="{{ item.id }}" /></td>
+                <td>{{ item.id }}</td>
+                <td>{{ item.title }}</td>
+                <td>{{ item.year or '-' }} / {{ item.venue or '-' }}</td>
+                <td>{{ item.download_status or '-' }}</td>
+                <td>{{ item.analysis_status or '-' }}</td>
+                <td>{{ item.context_confidence or '-' }}</td>
+                <td>{{ item.candidate_count }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">03</p>
+            <h2>单篇引用方式分析结果</h2>
+          </div>
+        </div>
+        <div class="cards">
+          {% for item in detail_payload.papers %}
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <strong>{{ item.id }} {{ item.title }}</strong>
+                <p class="muted">{{ item.year or '-' }} / {{ item.venue or '-' }}</p>
+              </div>
+              <span class="chip">{{ item.analysis_status or 'not_analyzed' }}</span>
+            </div>
+            <div class="card-metrics">
+              <span class="chip">标签：{{ item.citation_method_summary.labels | join(' / ') if item.citation_method_summary.labels else '-' }}</span>
+              <span class="chip">引用次数：{{ item.citation_method_summary.citation_occurrence_count }}</span>
+              <span class="chip">连续引用段数：{{ item.citation_method_summary.continuous_mention_count }}</span>
+              <span class="chip">首次/强表述：{{ '是' if item.citation_method_summary.first_claim_hit else '否' }}</span>
+              <span class="chip">页码：{{ item.citation_method_summary.page_start or '-' }} - {{ item.citation_method_summary.page_end or item.citation_method_summary.page_start or '-' }}</span>
+            </div>
+            <p>{{ item.citation_method_summary.evidence_excerpt or '暂无可展示的结构化证据片段。' }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">04</p>
+            <h2>人物标签候选区</h2>
+          </div>
+          <div class="status-chips">
+            <span class="chip">Pending: {{ detail_payload.person_summary.pending_count }}</span>
+            <span class="chip">Confirmed: {{ detail_payload.person_summary.confirmed_count }}</span>
+            <span class="chip">Rejected: {{ detail_payload.person_summary.rejected_count }}</span>
+          </div>
+        </div>
+        {% if detail_payload.person_candidates %}
+        <div class="cards">
+          {% for candidate in detail_payload.person_candidates %}
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <strong>{{ candidate.name }}</strong>
+                <p class="muted">{{ candidate.tag_label }} · {{ candidate.status }}</p>
+              </div>
+            </div>
+            <p class="muted">命中论文：{{ candidate.matched_paper_ids | join(', ') or '-' }}</p>
+            {% if candidate.note %}<p>{{ candidate.note }}</p>{% endif %}
+            {% if candidate.source_links %}
+            <ul>
+              {% for link in candidate.source_links %}
+              <li><a href="{{ link }}" target="_blank" rel="noreferrer">{{ link }}</a></li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p class="muted">暂无来源链接，当前不会纳入正式统计。</p>
+            {% endif %}
+            <details>
+              <summary>查看命中证据</summary>
+              <ul>
+                {% for evidence in candidate.evidence %}
+                <li>{{ evidence.paper_id }} · {{ evidence.matched_author }} · {{ evidence.paper_title }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+            <form action="/sessions/{{ session_id }}/candidates/review" method="post" class="stack compact-form">
+              <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}" />
+              <label>
+                备注
+                <input type="text" name="note" value="{{ candidate.review_note or '' }}" placeholder="可选：记录确认依据" />
+              </label>
+              <div class="actions">
+                <button type="submit" name="action" value="confirm">Confirm</button>
+                <button type="submit" name="action" value="reject" class="secondary">Reject</button>
+                <button type="submit" name="action" value="reset" class="ghost">Reset</button>
+              </div>
+            </form>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">当前没有命中任何人物候选。可通过补充 `data/reference/person_tag_registry.json` 提供候选来源。</p>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">05</p>
+            <h2>导出与汇总</h2>
+          </div>
+          <div class="actions">
+            <a class="button-link" href="/sessions/{{ session_id }}/exports/report.md">下载 Markdown 报告</a>
+            <a class="button-link secondary" href="/sessions/{{ session_id }}/exports/structured.json">下载结构化 JSON</a>
+          </div>
+        </div>
+        {% if report_md %}
+        <pre>{{ report_md }}</pre>
+        {% else %}
+        <p class="muted">当前还没有导出报告，请先执行分析或刷新页面。</p>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>调试：原始状态摘要 JSON</summary>
+          <pre>{{ status_json }}</pre>
+        </details>
+      </section>
+    </main>
+  </body>
+</html>

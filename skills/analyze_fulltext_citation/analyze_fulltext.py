@@ -56,6 +56,11 @@ LOCAL_SYSTEM_PROMPT = """你是一个论文引用语义分析助手。
    置信度：0.xx
 
 如果没有找到明确引用，请明确写“未找到明确引用”。
+
+额外判断规则：
+1. 若只是组引用（如 [9,13,2]）或“相关工作之一”的并列背景综述，通常应判为 keep=否，且更接近 grouped_literature_mention，而不是 explicit_citation。
+2. 若只是弱关键词命中、泛泛提到 low-rank / attention / adaptation 等术语，但没有明确把目标论文当作方法、基线、比较对象或扩展对象，也应判为 keep=否。
+3. 表格/列表中的基线行只有在该行明确点名目标方法或编号（例如 “LoRA [9]”）时，才能视为 comparison/baseline 证据；若片段本身未明确出现目标方法/编号，不要因为附近上下文或表题而误判为 keep=是。
 """
 
 DEEPSEEK_SYSTEM_PROMPT = """你是一个严格的JSON整理器。
@@ -89,6 +94,9 @@ JSON格式必须严格为：
 3. confidence 必须是 0 到 1 之间的小数。
 4. 所有 findings 都必须包含 page 和 span_index。
 5. 若只是正文中的组引用/弱提及，而不足以支撑强语义判断，可保留为 keep=false，并将 mention_type 设为 grouped_literature_mention 或 weak_body_mention。
+6. 如果是组引用（如 [9,13,2]）且目标论文未被单独展开说明，优先设为 keep=false + grouped_literature_mention。
+7. 如果是表格/列表基线行，只有在 citation_text 内明确出现目标方法名或对应编号时，才允许 keep=true；否则优先 keep=false。
+8. 对 weak_body_mention，默认 keep=false；不要因为术语相似或邻近上下文而提升为 explicit_citation。
 """
 
 def load_deepseek_key():

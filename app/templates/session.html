@@ -7,24 +7,40 @@
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
+    {% set task_state = detail_payload.task_state or {} %}
+    {% set task_active = task_state.active %}
     <main class="page">
       <section class="panel">
         <p><a href="/">← 返回首页</a></p>
         <p class="eyebrow">Session</p>
         <h1>{{ detail_payload.target_overview.title or session.query }}</h1>
         <p class="muted">会话目录：{{ session_id }}</p>
-        {% if detail_payload.task_state %}
-        <div class="callout {% if detail_payload.task_state.active %}warning{% elif detail_payload.task_state.status == 'failed' %}warning{% else %}info{% endif %}">
+        {% if task_state %}
+        <div class="callout {% if task_active %}warning{% elif task_state.status == 'failed' %}warning{% else %}info{% endif %}">
           <strong>任务状态</strong>
+          {% if task_active %}
           <p>
-            类型：{{ detail_payload.task_state.task_type or '无' }} ｜ 状态：{{ detail_payload.task_state.status or 'idle' }}
-            {% if detail_payload.task_state.message %}｜ {{ detail_payload.task_state.message }}{% endif %}
+            当前正在后台执行
+            {% if task_state.task_type == 'discover' %}引用论文发现{% elif task_state.task_type == 'refresh' %}下载状态刷新{% elif task_state.task_type == 'download' %}论文下载{% elif task_state.task_type == 'analyze' %}全文分析{% else %}任务{% endif %}。
+            页面会每 3 秒自动刷新一次；请等待任务完成，不必重复点击按钮。
           </p>
-          {% if detail_payload.task_state.error %}
-          <p class="muted">错误：{{ detail_payload.task_state.error }}</p>
+          {% elif task_state.status == 'succeeded' %}
+          <p>
+            上一项后台任务已完成：
+            {% if task_state.task_type == 'discover' %}引用论文发现{% elif task_state.task_type == 'refresh' %}下载状态刷新{% elif task_state.task_type == 'download' %}论文下载{% elif task_state.task_type == 'analyze' %}全文分析{% else %}任务{% endif %}
+            已成功结束。{% if task_state.message %}{{ task_state.message }}{% endif %}
+          </p>
+          {% elif task_state.status == 'failed' %}
+          <p>
+            上一项后台任务执行失败：
+            {% if task_state.task_type == 'discover' %}引用论文发现{% elif task_state.task_type == 'refresh' %}下载状态刷新{% elif task_state.task_type == 'download' %}论文下载{% elif task_state.task_type == 'analyze' %}全文分析{% else %}任务{% endif %} 未完成。
+          </p>
+          {% if task_state.error %}
+          <p class="muted">错误详情：{{ task_state.error }}</p>
           {% endif %}
-          {% if detail_payload.task_state.active %}
-          <p class="muted">当前 session 有后台任务运行中，页面会自动轮询并整页刷新。</p>
+          <p class="muted">请检查输入或稍后重试。</p>
+          {% else %}
+          <p>当前没有后台任务正在运行，可以继续操作。</p>
           {% endif %}
         </div>
         {% endif %}
@@ -125,16 +141,16 @@
         </form>
         <form method="post" class="stack">
           <div class="actions">
-            <button formaction="/sessions/{{ session_id }}/refresh" type="submit">Refresh Probe</button>
-            <button formaction="/sessions/{{ session_id }}/download" type="submit">Download Selected</button>
-            <button formaction="/sessions/{{ session_id }}/analyze" type="submit">Analyze Selected</button>
+            <button formaction="/sessions/{{ session_id }}/refresh" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>Refresh Probe</button>
+            <button formaction="/sessions/{{ session_id }}/download" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>Download Selected</button>
+            <button formaction="/sessions/{{ session_id }}/analyze" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>Analyze Selected</button>
           </div>
           <div class="inline-controls">
-            <label class="checkbox"><input type="checkbox" name="force" /> Refresh 时强制重试</label>
-            <label class="checkbox"><input type="checkbox" name="auto_only" /> Download 时仅处理 auto_downloadable</label>
+            <label class="checkbox"><input type="checkbox" name="force" {% if task_active %}disabled{% endif %} /> Refresh 时强制重试</label>
+            <label class="checkbox"><input type="checkbox" name="auto_only" {% if task_active %}disabled{% endif %} /> Download 时仅处理 auto_downloadable</label>
             <label>
               analyze top_k_spans
-              <input type="number" name="top_k_spans" value="8" min="1" max="20" />
+              <input type="number" name="top_k_spans" value="8" min="1" max="20" {% if task_active %}disabled{% endif %} />
             </label>
           </div>
 
@@ -154,7 +170,7 @@
             <tbody>
               {% for item in detail_payload.papers %}
               <tr>
-                <td><input type="checkbox" name="paper_ids" value="{{ item.id }}" /></td>
+                <td><input type="checkbox" name="paper_ids" value="{{ item.id }}" {% if task_active %}disabled{% endif %} /></td>
                 <td>{{ item.id }}</td>
                 <td>{{ item.title }}</td>
                 <td>{{ item.year or '-' }} / {{ item.venue or '-' }}</td>
@@ -179,9 +195,9 @@
             </div>
             <form action="/sessions/{{ session_id }}/attach-pdf" method="post" enctype="multipart/form-data" class="stack compact-form">
               <input type="hidden" name="paper_id" value="{{ item.id }}" />
-              <input type="file" name="pdf_file" accept="application/pdf,.pdf" required />
+              <input type="file" name="pdf_file" accept="application/pdf,.pdf" required {% if task_active %}disabled{% endif %} />
               <div class="actions">
-                <button type="submit">Attach PDF</button>
+                <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>Attach PDF</button>
               </div>
             </form>
           </article>
@@ -312,7 +328,7 @@
         </details>
       </section>
     </main>
-    {% if detail_payload.task_state and detail_payload.task_state.active %}
+    {% if task_active %}
     <script>
       (function () {
         const poll = async () => {

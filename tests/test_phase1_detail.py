@@ -121,6 +121,18 @@ class Phase1DetailTestCase(unittest.TestCase):
             'ok': True,
             'query': 'Attention Is All You Need',
             'created_at': '2099-01-01T00:00:00',
+            'task_state': {
+                'active': False,
+                'task_type': None,
+                'status': 'idle',
+                'message': '',
+                'started_at': None,
+                'updated_at': None,
+                'finished_at': None,
+                'error': '',
+                'requested_ids': [],
+                'top_k_spans': None,
+            },
             'target': {
                 'title': 'Attention Is All You Need',
                 'year': 2017,
@@ -332,6 +344,63 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('Grace Hopper', body)
         self.assertIn('当前限制', body)
         self.assertIn('外部源限流', body)
+
+    def test_session_detail_page_renders_running_task_banner_and_disables_actions(self):
+        session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))
+        session_payload['task_state'] = {
+            'active': True,
+            'task_type': 'analyze',
+            'status': 'running',
+            'message': '正在进行全文分析…',
+            'started_at': '2099-01-01T00:00:00',
+            'updated_at': '2099-01-01T00:00:01',
+            'finished_at': None,
+            'error': '',
+            'requested_ids': ['P001'],
+            'top_k_spans': 8,
+        }
+        (TEST_SESSION_DIR / 'session.json').write_text(
+            json.dumps(session_payload, ensure_ascii=False, indent=2),
+            encoding='utf-8',
+        )
+
+        request = Request({'type': 'http', 'method': 'GET', 'path': f'/sessions/{TEST_SESSION_ID}', 'headers': []})
+        response = asyncio.run(session_detail(request, TEST_SESSION_ID))
+        body = response.body.decode('utf-8')
+
+        self.assertIn('当前正在后台执行', body)
+        self.assertIn('全文分析', body)
+        self.assertIn('页面会每 3 秒自动刷新一次', body)
+        self.assertIn('Analyze Selected</button>', body)
+        self.assertIn('disabled title="当前有后台任务运行中"', body)
+
+    def test_session_detail_page_renders_failed_task_message(self):
+        session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))
+        session_payload['task_state'] = {
+            'active': False,
+            'task_type': 'download',
+            'status': 'failed',
+            'message': 'download 执行失败',
+            'started_at': '2099-01-01T00:00:00',
+            'updated_at': '2099-01-01T00:00:03',
+            'finished_at': '2099-01-01T00:00:03',
+            'error': 'HTTP 429',
+            'requested_ids': ['P002'],
+            'top_k_spans': None,
+        }
+        (TEST_SESSION_DIR / 'session.json').write_text(
+            json.dumps(session_payload, ensure_ascii=False, indent=2),
+            encoding='utf-8',
+        )
+
+        request = Request({'type': 'http', 'method': 'GET', 'path': f'/sessions/{TEST_SESSION_ID}', 'headers': []})
+        response = asyncio.run(session_detail(request, TEST_SESSION_ID))
+        body = response.body.decode('utf-8')
+
+        self.assertIn('上一项后台任务执行失败', body)
+        self.assertIn('论文下载', body)
+        self.assertIn('错误详情：HTTP 429', body)
+        self.assertIn('请检查输入或稍后重试', body)
 
 
 if __name__ == '__main__':

@@ -38,12 +38,12 @@ academic_impact_web/
 
 ## 启动 Web
 
-建议先建虚拟环境：
+建议优先使用 conda 环境：
 
 ```bash
 cd ~/projects/academic_impact_web
-python3 -m venv .venv
-source .venv/bin/activate
+conda create -n academic-impact-web python=3.10 -y
+conda activate academic-impact-web
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
@@ -82,6 +82,7 @@ ACADEMIC_IMPACT_LOCAL_MODEL=Qwen3.5-27B-Q4_K_M.gguf
 - `DEEPSEEK_API_KEY`：用于 JSON 整理阶段
 - `ACADEMIC_IMPACT_LOCAL_LLM_URL`：本地全文语义分析服务地址
 - `ACADEMIC_IMPACT_LOCAL_MODEL`：本地模型名
+- `ACADEMIC_IMPACT_DOWNLOAD_DIR`：推荐显式配置为你自己有写权限的 PDF 存储目录
 
 如果未配置本地 LLM 服务或拿不到 PDF，分析会退化为 `context_only`，并在页面与导出中注明原因。
 

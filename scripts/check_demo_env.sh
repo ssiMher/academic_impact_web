@@ -7,6 +7,7 @@ cd "$ROOT_DIR"
 DEFAULT_WEB_PORT="${WEB_PORT:-18000}"
 DEFAULT_MODEL_PORT="${MODEL_PORT:-18002}"
 ENV_FILE="${ENV_FILE:-$ROOT_DIR/.env}"
+CONDA_ENV_NAME="${CONDA_ENV_NAME:-}"
 
 echo "[check] project root: $ROOT_DIR"
 
@@ -67,12 +68,29 @@ else
 fi
 
 echo "[check] python env"
-if [[ ! -x "$ROOT_DIR/.venv/bin/python" ]]; then
-  echo "[warn] .venv/bin/python not found; please create/install venv first"
+if [[ -n "$CONDA_ENV_NAME" ]]; then
+  if ! command -v conda >/dev/null 2>&1; then
+    echo "[error] CONDA_ENV_NAME is set but conda command is not available"
+    exit 1
+  fi
+  if conda run -n "$CONDA_ENV_NAME" python --version >/dev/null 2>&1; then
+    echo "[ok] conda env is runnable: $CONDA_ENV_NAME"
+  else
+    echo "[error] failed to run python in conda env: $CONDA_ENV_NAME"
+    exit 1
+  fi
 else
-  echo "[ok] found virtualenv python: $ROOT_DIR/.venv/bin/python"
+  if command -v python >/dev/null 2>&1; then
+    echo "[ok] current python is available: $(python --version 2>&1)"
+  else
+    echo "[error] python command not found"
+    exit 1
+  fi
 fi
 
 echo
 echo "[next] if everything looks correct, run:"
 echo "       bash scripts/start_web_demo.sh"
+if [[ -n "$CONDA_ENV_NAME" ]]; then
+  echo "       (using conda env: $CONDA_ENV_NAME)"
+fi

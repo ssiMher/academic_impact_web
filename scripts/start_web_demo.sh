@@ -14,6 +14,7 @@ ENV_FILE="${ENV_FILE:-$ROOT_DIR/.env}"
 LOG_DIR="${LOG_DIR:-$HOME/logs/academic_impact_web}"
 WEB_TMUX_SESSION="${WEB_TMUX_SESSION:-aiw-web}"
 MODEL_TMUX_SESSION="${MODEL_TMUX_SESSION:-aiw-model}"
+CONDA_ENV_NAME="${CONDA_ENV_NAME:-}"
 
 # Replace this with your actual model startup command,
 # or pass it in at runtime via the MODEL_START_CMD environment variable.
@@ -37,6 +38,19 @@ echo "[info] web host: $WEB_HOST"
 echo "[info] web port: $WEB_PORT"
 echo "[info] model port: $MODEL_PORT"
 echo "[info] log dir: $LOG_DIR"
+if [[ -n "$CONDA_ENV_NAME" ]]; then
+  echo "[info] conda env: $CONDA_ENV_NAME"
+fi
+
+ACTIVATE_CMD=""
+if [[ -n "$CONDA_ENV_NAME" ]]; then
+  if ! command -v conda >/dev/null 2>&1; then
+    echo "[error] CONDA_ENV_NAME is set but conda command is not available"
+    exit 1
+  fi
+  CONDA_BASE="$(conda info --base)"
+  ACTIVATE_CMD="source '$CONDA_BASE/etc/profile.d/conda.sh' && conda activate '$CONDA_ENV_NAME' && "
+fi
 
 if ss -ltn | grep -q ":${WEB_PORT}\b"; then
   echo "[error] web port ${WEB_PORT} is already in use"
@@ -51,14 +65,14 @@ fi
 if tmux has-session -t "$MODEL_TMUX_SESSION" 2>/dev/null; then
   echo "[warn] tmux session already exists: $MODEL_TMUX_SESSION"
 else
-  tmux new-session -d -s "$MODEL_TMUX_SESSION" "cd '$ROOT_DIR' && source .venv/bin/activate && $MODEL_START_CMD > '$LOG_DIR/model.log' 2>&1"
+  tmux new-session -d -s "$MODEL_TMUX_SESSION" "cd '$ROOT_DIR' && ${ACTIVATE_CMD}$MODEL_START_CMD > '$LOG_DIR/model.log' 2>&1"
   echo "[ok] started tmux session: $MODEL_TMUX_SESSION"
 fi
 
 if tmux has-session -t "$WEB_TMUX_SESSION" 2>/dev/null; then
   echo "[warn] tmux session already exists: $WEB_TMUX_SESSION"
 else
-  tmux new-session -d -s "$WEB_TMUX_SESSION" "cd '$ROOT_DIR' && source .venv/bin/activate && .venv/bin/python -m uvicorn app.main:app --host '$WEB_HOST' --port '$WEB_PORT' > '$LOG_DIR/web.log' 2>&1"
+  tmux new-session -d -s "$WEB_TMUX_SESSION" "cd '$ROOT_DIR' && ${ACTIVATE_CMD}python -m uvicorn app.main:app --host '$WEB_HOST' --port '$WEB_PORT' > '$LOG_DIR/web.log' 2>&1"
   echo "[ok] started tmux session: $WEB_TMUX_SESSION"
 fi
 
@@ -81,3 +95,5 @@ echo "       curl http://127.0.0.1:${MODEL_PORT}/v1/models"
 echo
 echo "[hint] for group demo access, set:"
 echo "       WEB_HOST=0.0.0.0 bash scripts/start_web_demo.sh"
+echo "[hint] to use conda, set:"
+echo "       CONDA_ENV_NAME=academic-impact-web bash scripts/start_web_demo.sh"

@@ -152,6 +152,26 @@
             </tbody>
           </table>
         </form>
+        <div class="cards">
+          {% for item in detail_payload.papers %}
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <strong>{{ item.id }} {{ item.title }}</strong>
+                <p class="muted">上传本地 PDF 后即可直接走 Analyze Selected，无需 CLI attach-pdf。</p>
+              </div>
+              <span class="chip">{{ item.download_status or 'not_probed' }}</span>
+            </div>
+            <form action="/sessions/{{ session_id }}/attach-pdf" method="post" enctype="multipart/form-data" class="stack compact-form">
+              <input type="hidden" name="paper_id" value="{{ item.id }}" />
+              <input type="file" name="pdf_file" accept="application/pdf,.pdf" required />
+              <div class="actions">
+                <button type="submit">Attach PDF</button>
+              </div>
+            </form>
+          </article>
+          {% endfor %}
+        </div>
       </section>
 
       <section class="panel">

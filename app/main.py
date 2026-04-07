@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -109,6 +109,24 @@ async def analyze_session(
     form = await request.form()
     ids = form.getlist("paper_ids")
     impact_core.analyze_papers(session_id, ids, top_k_spans=top_k_spans)
+    return redirect_to_session(session_id)
+
+
+@app.post("/sessions/{session_id}/attach-pdf")
+async def attach_pdf(
+    session_id: str,
+    paper_id: str = Form(...),
+    pdf_file: UploadFile = File(...),
+):
+    filename = pdf_file.filename or ""
+    if not filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="当前只支持上传 PDF 文件。")
+
+    content = await pdf_file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="上传的 PDF 文件为空。")
+
+    impact_core.attach_uploaded_pdf(session_id, paper_id, filename, content)
     return redirect_to_session(session_id)
 
 

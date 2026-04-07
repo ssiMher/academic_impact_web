@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import tempfile
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -132,6 +133,23 @@ def download_papers(session_id: str, ids: list[str] | None = None, *, auto_only:
 
 def analyze_papers(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8):
     return impact_cli().run_analysis(resolve_session_dir(session_id), ids or [], top_k_spans)
+
+
+def attach_uploaded_pdf(session_id: str, paper_id: str, filename: str, content: bytes):
+    session_dir = resolve_session_dir(session_id)
+    uploads_dir = session_dir / "uploads"
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+
+    suffix = Path(filename or "upload.pdf").suffix or ".pdf"
+    temp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=uploads_dir, suffix=suffix, delete=False) as tmp:
+            tmp.write(content)
+            temp_path = Path(tmp.name)
+        return impact_cli().attach_local_pdf(session_dir, paper_id, str(temp_path))
+    finally:
+        if temp_path and temp_path.exists():
+            temp_path.unlink()
 
 
 def review_person_candidate(session_id: str, candidate_id: str, *, action: str, note: str = ""):

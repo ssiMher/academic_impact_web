@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "description": "Fixed real-sample fulltext regression set for web/CLI attach+analyze validation.",
+  "samples": [
+    {
+      "target_query": "Attention Is All You Need",
+      "session_id": "20260406_194205_attention_is_all_you_need",
+      "paper_id": "P002",
+      "title": "A deep learning enabled in-silico animal study approach for bone tissue engineering",
+      "expected": {
+        "final_status": "mention_only",
+        "has_findings": true,
+        "min_labels": [
+          "weak_body_mention"
+        ]
+      }
+    },
+    {
+      "target_query": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "session_id": "20260407_141500_lora_stable_fulltext_smoke",
+      "paper_id": "P007",
+      "title": "AdaLoRA-QAT: Adaptive Low-Rank and Quantization-Aware Segmentation",
+      "expected": {
+        "final_status": "fulltext_analyzed",
+        "has_findings": true,
+        "min_labels": [
+          "method"
+        ]
+      }
+    },
+    {
+      "target_query": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "session_id": "20260407_143000_lora_goal_fulltext_smoke",
+      "paper_id": "P020",
+      "title": "An Adapter-free Fine-tuning Approach for Tuning 3D Foundation Models",
+      "expected": {
+        "final_status": "fulltext_analyzed",
+        "has_findings": true,
+        "min_labels": [
+          "baseline"
+        ]
+      }
+    },
+    {
+      "target_query": "Training-Free Group Relative Policy Optimization",
+      "session_id": "20260407_150900_training_free_group_relative_policy_optimization",
+      "paper_id": "P004",
+      "title": "Youtu-Agent: Scaling Agent Productivity with Automated Generation and Hybrid Policy Optimization",
+      "expected": {
+        "final_status": "fulltext_analyzed",
+        "has_findings": true,
+        "min_labels": [
+          "application"
+        ]
+      }
+    },
+    {
+      "target_query": "Training-Free Group Relative Policy Optimization",
+      "session_id": "20260407_150900_training_free_group_relative_policy_optimization",
+      "paper_id": "P018",
+      "title": "Sonar-TS: Search-Then-Verify Natural Language Querying for Time Series Databases",
+      "expected": {
+        "final_status": "fulltext_analyzed",
+        "has_findings": true,
+        "min_labels": [
+          "comparison"
+        ]
+      }
+    }
+  ]
+}

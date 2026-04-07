@@ -97,6 +97,30 @@ def load_deepseek_key():
         return key
     return None
 
+def extract_local_analysis_output(response_json):
+    choices = response_json.get("choices") or []
+    first_choice = choices[0] if choices else {}
+    message = first_choice.get("message") or {}
+    content = (message.get("content") or "").strip()
+    reasoning_content = (message.get("reasoning_content") or "").strip()
+
+    analysis_text = content
+    output_source = "content"
+    if not analysis_text and reasoning_content:
+        analysis_text = reasoning_content
+        output_source = "reasoning_content"
+    elif not analysis_text:
+        output_source = "blank"
+
+    return {
+        "analysis_text": analysis_text,
+        "output_source": output_source,
+        "finish_reason": first_choice.get("finish_reason"),
+        "content_len": len(content),
+        "reasoning_len": len(reasoning_content),
+    }
+
+
 def call_local_27b(messages, max_tokens=900):
     req = {
         "model": LOCAL_MODEL,
@@ -107,7 +131,7 @@ def call_local_27b(messages, max_tokens=900):
     r = requests.post(LOCAL_VLLM_URL, json=req, timeout=240)
     r.raise_for_status()
     data = r.json()
-    return data["choices"][0]["message"]["content"]
+    return extract_local_analysis_output(data)
 
 def call_deepseek(messages, api_key, max_tokens=800):
     headers = {
@@ -306,8 +330,16 @@ def analyze_payload(payload):
         }
 
     local_user_prompt = build_local_prompt(payload)
+    local_debug = {
+        "candidate_span_count": len(payload.get("candidate_spans", [])),
+        "prompt_chars": len(local_user_prompt),
+        "output_source": None,
+        "finish_reason": None,
+        "content_len": 0,
+        "reasoning_len": 0,
+    }
     try:
-        raw_analysis = call_local_27b([
+        local_result = call_local_27b([
             {"role": "system", "content": LOCAL_SYSTEM_PROMPT},
             {"role": "user", "content": local_user_prompt}
         ], max_tokens=900)
@@ -317,10 +349,24 @@ def analyze_payload(payload):
             "ok": False,
             "error": error_message,
             "error_type": error_type,
-            "_debug": {
-                "candidate_span_count": len(payload.get("candidate_spans", [])),
-                "prompt_chars": len(local_user_prompt),
-            },
+            "_debug": local_debug,
+        }
+
+    local_debug.update({
+        "output_source": local_result.get("output_source"),
+        "finish_reason": local_result.get("finish_reason"),
+        "content_len": local_result.get("content_len", 0),
+        "reasoning_len": local_result.get("reasoning_len", 0),
+    })
+    raw_analysis = local_result.get("analysis_text", "")
+
+    if not raw_analysis:
+        local_debug["local_analysis_preview"] = ""
+        return {
+            "ok": False,
+            "error": "本地 27B 分析服务返回空输出，无法进入 JSON 整理阶段。",
+            "error_type": "blank_model_output",
+            "_debug": local_debug,
         }
 
     deepseek_user_prompt = build_deepseek_prompt(payload, raw_analysis)
@@ -335,7 +381,7 @@ def analyze_payload(payload):
             "error": f"DeepSeek JSON 整理阶段请求失败：{exc}",
             "error_type": "deepseek_request_failed",
             "_debug": {
-                "candidate_span_count": len(payload.get("candidate_spans", [])),
+                **local_debug,
                 "local_analysis_preview": raw_analysis[:500],
             },
         }
@@ -352,10 +398,9 @@ def analyze_payload(payload):
     parsed = maybe_add_weak_mention_findings(payload, parsed)
 
     parsed["_debug"] = {
-        "candidate_span_count": len(payload.get("candidate_spans", [])),
+        **local_debug,
         "candidate_pages": sorted(list({s["page"] for s in payload.get("candidate_spans", [])})),
         "local_analysis_preview": raw_analysis[:500],
-        "prompt_chars": len(local_user_prompt),
     }
     return parsed
 

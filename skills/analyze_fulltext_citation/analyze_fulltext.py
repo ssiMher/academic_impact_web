@@ -2,6 +2,7 @@ import sys
 import json
 import requests
 import os
+import re
 from pathlib import Path
 from typing import Tuple
 
@@ -303,6 +304,28 @@ def maybe_add_weak_mention_findings(payload, parsed):
     return parsed
 
 
+def normalize_finding_consistency(parsed):
+    if not isinstance(parsed, dict):
+        return parsed
+
+    findings = parsed.get("findings")
+    if not isinstance(findings, list):
+        return parsed
+
+    grouped_pattern = re.compile(r"\[\s*\d+\s*(?:[,，;；]\s*\d+\s*)+\]")
+
+    for finding in findings:
+        if not isinstance(finding, dict):
+            continue
+        if finding.get("keep") is False and finding.get("mention_type") == "explicit_citation":
+            citation_text = finding.get("citation_text", "") or ""
+            if grouped_pattern.search(citation_text):
+                finding["mention_type"] = "grouped_literature_mention"
+            else:
+                finding["mention_type"] = "weak_body_mention"
+    return parsed
+
+
 def load_payload(payload_arg: str):
     payload_arg = (payload_arg or "").strip()
     if not payload_arg:
@@ -404,6 +427,7 @@ def analyze_payload(payload):
         }
 
     parsed = maybe_add_weak_mention_findings(payload, parsed)
+    parsed = normalize_finding_consistency(parsed)
 
     parsed["_debug"] = {
         **local_debug,

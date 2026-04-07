@@ -114,6 +114,43 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertEqual(result['_debug']['local_analysis_preview'], '')
         mock_deepseek.assert_not_called()
 
+    def test_normalize_finding_consistency_removes_explicit_citation_when_keep_false(self):
+        parsed = {
+            'ok': True,
+            'citing_title': 'Consistency Test',
+            'findings': [
+                {
+                    'page': 2,
+                    'span_index': 1,
+                    'citation_text': 'Recent studies [9,13,2] have explored various PEFT techniques.',
+                    'keep': False,
+                    'aspect': 'background',
+                    'stance': 'neutral',
+                    'function': 'test',
+                    'reason': 'test',
+                    'confidence': 0.6,
+                    'mention_type': 'explicit_citation',
+                },
+                {
+                    'page': 3,
+                    'span_index': 7,
+                    'citation_text': 'Low-rank re-parameterization further improves efficiency [9].',
+                    'keep': False,
+                    'aspect': 'background',
+                    'stance': 'neutral',
+                    'function': 'test',
+                    'reason': 'test',
+                    'confidence': 0.6,
+                    'mention_type': 'explicit_citation',
+                },
+            ],
+        }
+
+        result = self.module.normalize_finding_consistency(parsed)
+
+        self.assertEqual(result['findings'][0]['mention_type'], 'grouped_literature_mention')
+        self.assertEqual(result['findings'][1]['mention_type'], 'weak_body_mention')
+
 
 if __name__ == '__main__':
     unittest.main()

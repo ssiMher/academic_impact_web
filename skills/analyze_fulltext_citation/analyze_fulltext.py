@@ -106,6 +106,51 @@ def load_deepseek_key():
         return key
     return None
 
+
+def generate_target_aliases(title: str):
+    aliases = []
+    seen = set()
+
+    def add_alias(value: str):
+        raw = (value or "").strip()
+        if not raw:
+            return
+        compact_key = re.sub(r"[^a-z0-9]+", "", raw.lower())
+        key = re.sub(r"\s+", " ", raw.lower())
+        if len(compact_key) < 2 or key in seen:
+            return
+        seen.add(key)
+        aliases.append(raw)
+
+    raw_title = (title or "").strip()
+    prefix = raw_title.split(":", 1)[0].strip() if ":" in raw_title else ""
+    if prefix and len(prefix) <= 24 and len(prefix.split()) <= 4:
+        add_alias(prefix)
+
+    words = re.findall(r"[a-z0-9]+(?:-[a-z0-9]+)?", raw_title.lower())
+    acronym_stop = {"a", "an", "the", "of", "and", "to", "in", "on", "for", "with", "is"}
+    significant = [w for w in words if w and w not in acronym_stop]
+
+    initials = []
+    for word in significant:
+        parts = [part for part in word.split("-") if part]
+        if len(parts) > 1:
+            initials.extend(part[0] for part in parts)
+        elif parts:
+            initials.append(parts[0][0])
+    acronym = "".join(initials)
+    if 2 <= len(acronym) <= 12:
+        add_alias(acronym.upper())
+
+    if significant and "-" in significant[0] and len(significant) >= 3:
+        lead = "".join(part[0] for part in significant[0].split("-") if part).upper()
+        tail = "".join(word[0] for word in significant[1:] if word).upper()
+        if lead and tail:
+            add_alias(f"{lead}-{tail}")
+            add_alias(lead + tail)
+
+    return aliases
+
 def extract_local_analysis_output(response_json):
     choices = response_json.get("choices") or []
     first_choice = choices[0] if choices else {}
@@ -212,6 +257,7 @@ def try_parse_json(text):
 
 def build_local_prompt(payload):
     spans = payload.get("candidate_spans", [])[:MAX_LOCAL_SPANS]
+    target_aliases = payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
     chunks = []
     total_chars = 0
     for s in spans:
@@ -241,6 +287,7 @@ def build_local_prompt(payload):
 
     return f"""目标论文标题：{payload.get('target_title', '')}
 目标论文年份：{payload.get('target_year', '')}
+目标论文别名/缩写：{", ".join(target_aliases) if target_aliases else "无"}
 引用论文标题：{payload.get('citing_title', '')}
 
 下面是从引用论文全文中筛出的候选段落：
@@ -250,10 +297,12 @@ def build_local_prompt(payload):
 """
 
 def build_deepseek_prompt(payload, raw_analysis):
+    target_aliases = payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
     return f"""请把下面这段自然语言分析整理成严格JSON。
 
 目标论文标题：{payload.get('target_title', '')}
 目标论文年份：{payload.get('target_year', '')}
+目标论文别名/缩写：{", ".join(target_aliases) if target_aliases else "无"}
 引用论文标题：{payload.get('citing_title', '')}
 
 自然语言分析如下：

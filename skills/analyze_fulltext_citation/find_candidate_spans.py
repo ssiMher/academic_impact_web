@@ -76,6 +76,88 @@ def extract_title_keywords(title: str) -> List[str]:
     return list(dict.fromkeys(words))[:10]
 
 
+def normalize_compact_text(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", normalize_text(s))
+
+
+def generate_target_aliases(title: str, explicit_aliases: Optional[List[str]] = None) -> List[str]:
+    aliases = []
+
+    def add_alias(value: str):
+        raw = (value or "").strip()
+        if not raw:
+            return
+        compact_key = normalize_compact_text(raw)
+        key = normalize_text(raw)
+        if len(compact_key) < 2:
+            return
+        if key not in seen:
+            seen.add(key)
+            aliases.append(raw)
+
+    seen = set()
+    for alias in explicit_aliases or []:
+        add_alias(alias)
+
+    raw_title = (title or "").strip()
+    prefix = raw_title.split(":", 1)[0].strip() if ":" in raw_title else ""
+    if prefix and len(prefix) <= 24 and len(prefix.split()) <= 4:
+        add_alias(prefix)
+
+    words = re.findall(r"[a-z0-9]+(?:-[a-z0-9]+)?", normalize_text(raw_title))
+    acronym_stop = {"a", "an", "the", "of", "and", "to", "in", "on", "for", "with", "is"}
+    significant = [w for w in words if w and w not in acronym_stop]
+
+    initials = []
+    for word in significant:
+        parts = [part for part in word.split("-") if part]
+        if not parts:
+            continue
+        if len(parts) > 1:
+            initials.extend(part[0] for part in parts)
+        else:
+            initials.append(parts[0][0])
+
+    acronym = "".join(initials)
+    if 2 <= len(acronym) <= 12:
+        add_alias(acronym)
+
+    if significant and "-" in significant[0] and len(significant) >= 3:
+        lead = "".join(part[0] for part in significant[0].split("-") if part)
+        tail = "".join(word[0] for word in significant[1:] if word)
+        if lead and tail:
+            add_alias(f"{lead}-{tail}")
+            add_alias(lead + tail)
+
+    return aliases
+
+
+def find_alias_hits(text: str, aliases: List[str]) -> List[str]:
+    text_n = normalize_text(text)
+    text_compact = normalize_compact_text(text)
+    hits = []
+    seen = set()
+
+    for alias in aliases or []:
+        raw = (alias or "").strip()
+        if not raw:
+            continue
+        alias_n = normalize_text(raw)
+        alias_compact = normalize_compact_text(raw)
+        matched = False
+
+        if alias_n and re.search(rf"(?<![a-z0-9]){re.escape(alias_n)}(?![a-z0-9])", text_n):
+            matched = True
+        elif alias_compact and len(alias_compact) >= 3 and any(ch in raw for ch in "- ") and alias_compact in text_compact:
+            matched = True
+
+        if matched and alias_compact not in seen:
+            seen.add(alias_compact)
+            hits.append(raw)
+
+    return hits
+
+
 def is_usable_context(context_obj: Dict) -> bool:
     if not isinstance(context_obj, dict):
         return False
@@ -305,7 +387,12 @@ def collect_body_paragraphs(fulltext_json: Dict) -> Tuple[List[Dict], Optional[i
     return body_paras, ref_start
 
 
-def score_reference_paragraph(para: str, title_keywords: List[str], target_doi: Optional[str]) -> Dict:
+def score_reference_paragraph(
+    para: str,
+    title_keywords: List[str],
+    target_doi: Optional[str],
+    target_aliases: Optional[List[str]] = None,
+) -> Dict:
     para_n = normalize_text(para)
     score = 0
     keyword_hits = []
@@ -320,6 +407,11 @@ def score_reference_paragraph(para: str, title_keywords: List[str], target_doi: 
         if kw in para_n:
             keyword_hits.append(kw)
             score += 2
+
+    for alias in find_alias_hits(para, target_aliases or []):
+        if alias not in keyword_hits:
+            keyword_hits.append(alias)
+            score += 3
 
     if is_probable_reference_entry(para):
         score += 2
@@ -358,7 +450,12 @@ def extract_possible_indices(text: str) -> List[Dict]:
     return uniq
 
 
-def find_signal_positions(para: str, title_keywords: List[str], target_doi: Optional[str]) -> List[int]:
+def find_signal_positions(
+    para: str,
+    title_keywords: List[str],
+    target_doi: Optional[str],
+    target_aliases: Optional[List[str]] = None,
+) -> List[int]:
     para_n = normalize_text(para)
     signal_positions = []
 
@@ -377,6 +474,13 @@ def find_signal_positions(para: str, title_keywords: List[str], target_doi: Opti
             signal_positions.append(pos)
             start = pos + len(kw)
 
+    for alias in target_aliases or []:
+        alias_n = normalize_text(alias)
+        if not alias_n:
+            continue
+        for match in re.finditer(rf"(?<![a-z0-9]){re.escape(alias_n)}(?![a-z0-9])", para_n):
+            signal_positions.append(match.start())
+
     return sorted(set(signal_positions))
 
 
@@ -384,12 +488,13 @@ def pick_best_index_near_signal(
     para: str,
     indices: List[Dict],
     title_keywords: List[str],
-    target_doi: Optional[str]
+    target_doi: Optional[str],
+    target_aliases: Optional[List[str]] = None,
 ) -> Optional[Dict]:
     if not indices:
         return None
 
-    signal_positions = find_signal_positions(para, title_keywords, target_doi)
+    signal_positions = find_signal_positions(para, title_keywords, target_doi, target_aliases=target_aliases)
     if not signal_positions:
         return indices[0]
 
@@ -424,16 +529,17 @@ def find_citation_index_in_references(fulltext_json: Dict, target_title: str, ta
         return None, None
 
     title_keywords = extract_title_keywords(target_title)
+    target_aliases = generate_target_aliases(target_title)
     best = None
 
     for para_obj in ref_paras:
         para = para_obj["text"]
-        s = score_reference_paragraph(para, title_keywords, target_doi)
+        s = score_reference_paragraph(para, title_keywords, target_doi, target_aliases=target_aliases)
         if s["score"] <= 0:
             continue
 
         indices = extract_possible_indices(para)
-        best_idx = pick_best_index_near_signal(para, indices, title_keywords, target_doi)
+        best_idx = pick_best_index_near_signal(para, indices, title_keywords, target_doi, target_aliases=target_aliases)
 
         picked_index = None
         picked_index_style = None
@@ -492,7 +598,12 @@ def find_citation_index_in_references(fulltext_json: Dict, target_title: str, ta
     return None, None
 
 
-def paragraph_score_fallback(text: str, target_title: str, target_doi: Optional[str] = None) -> Tuple[int, List[str]]:
+def paragraph_score_fallback(
+    text: str,
+    target_title: str,
+    target_doi: Optional[str] = None,
+    target_aliases: Optional[List[str]] = None,
+) -> Tuple[int, List[str]]:
     text_n = normalize_text(text)
     kws = extract_title_keywords(target_title)
 
@@ -502,6 +613,11 @@ def paragraph_score_fallback(text: str, target_title: str, target_doi: Optional[
         if kw in text_n:
             score += 2
             hits.append(kw)
+
+    for alias in find_alias_hits(text, target_aliases or []):
+        if alias not in hits:
+            score += 3
+            hits.append(alias)
 
     if target_doi and normalize_text(target_doi) in text_n:
         score += 8
@@ -636,8 +752,9 @@ def find_spans_by_context_similarity(body_paras: List[Dict], contexts: List[str]
 
 def find_spans_by_fallback_keywords(body_paras: List[Dict], target_title: str, target_doi: Optional[str] = None) -> List[Dict]:
     candidates = []
+    target_aliases = generate_target_aliases(target_title)
     for para in body_paras:
-        score, hits = paragraph_score_fallback(para["text"], target_title, target_doi)
+        score, hits = paragraph_score_fallback(para["text"], target_title, target_doi, target_aliases=target_aliases)
         if score <= 0:
             continue
         if is_probable_reference_entry(para["text"]):

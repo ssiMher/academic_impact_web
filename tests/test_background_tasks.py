@@ -63,6 +63,10 @@ class BackgroundTasksTestCase(unittest.TestCase):
                 )
                 return {"ok": True}
 
+            @staticmethod
+            def load_session(session_dir: Path):
+                return json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
+
         with mock.patch.object(impact_core, "impact_cli", return_value=FakeCli()):
             started, state = impact_core.start_analyze_task(TEST_ANALYZE_SESSION_ID, ["P001"], top_k_spans=8)
             self.assertTrue(started)

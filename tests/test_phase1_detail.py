@@ -342,8 +342,13 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('导出与汇总', body)
         self.assertIn('/exports/report.md', body)
         self.assertIn('Grace Hopper', body)
+        self.assertIn('会话', body)
         self.assertIn('当前限制', body)
         self.assertIn('外部源限流', body)
+        self.assertIn('刷新探测状态', body)
+        self.assertIn('下载所选论文', body)
+        self.assertIn('分析所选论文', body)
+        self.assertIn('上传并绑定 PDF', body)
 
     def test_session_detail_page_renders_running_task_banner_and_disables_actions(self):
         session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))
@@ -371,7 +376,7 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('当前正在后台执行', body)
         self.assertIn('全文分析', body)
         self.assertIn('页面会每 3 秒自动刷新一次', body)
-        self.assertIn('Analyze Selected</button>', body)
+        self.assertIn('分析所选论文</button>', body)
         self.assertIn('disabled title="当前有后台任务运行中"', body)
 
     def test_session_detail_page_renders_failed_task_message(self):
@@ -401,6 +406,35 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('论文下载', body)
         self.assertIn('错误详情：HTTP 429', body)
         self.assertIn('请检查输入或稍后重试', body)
+
+    def test_analysis_failure_reason_renders_stage_specific_message(self):
+        analysis_path = TEST_SESSION_DIR / 'analysis' / 'P001_test' / 'fulltext_analysis.json'
+        analysis_path.write_text(
+            json.dumps(
+                {
+                    'ok': False,
+                    'error_type': 'local_model_request_failed',
+                    'error_stage': 'local_model_request_failed',
+                    'error': '模型服务超时',
+                    'findings': [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding='utf-8',
+        )
+        session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))
+        session_payload['papers'][0]['analysis_result']['status'] = 'analysis_failed'
+        (TEST_SESSION_DIR / 'session.json').write_text(
+            json.dumps(session_payload, ensure_ascii=False, indent=2),
+            encoding='utf-8',
+        )
+
+        _, _, detail_payload, _ = impact_core.load_status(TEST_SESSION_ID)
+        first_paper = next(item for item in detail_payload['papers'] if item['id'] == 'P001')
+        self.assertIn('local_model_request_failed', first_paper['analysis_reason']['tags'])
+        self.assertIn('本地模型请求阶段失败', first_paper['analysis_reason']['message'])
+        self.assertIn('模型服务超时', first_paper['analysis_reason']['errors'])
 
 
 if __name__ == '__main__':

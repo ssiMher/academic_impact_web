@@ -542,6 +542,11 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
             *[attempt.get("error", "") for attempt in attempts],
         ]
     )
+    analysis_paths = item.get("analysis_result", {}).get("paths", {})
+    analysis_data = load_json_if_exists(analysis_paths.get("analysis", ""))
+    analysis_error_type = (analysis_data or {}).get("error_type", "") if isinstance(analysis_data, dict) else ""
+    analysis_error = (analysis_data or {}).get("error", "") if isinstance(analysis_data, dict) else ""
+    analysis_error_stage = (analysis_data or {}).get("error_stage", "") if isinstance(analysis_data, dict) else ""
     tags = []
     details = []
 
@@ -555,11 +560,43 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
         if fallback_message:
             details.append(fallback_message)
     elif status == "fulltext_extract_failed":
-        tags.append("全文提取失败")
-        details.append("已获得 PDF，但全文提取失败，无法继续做全文级语义分析。")
+        if analysis_error_type == "extract_text_failed":
+            tags.extend(["extract_text_failed", "全文提取失败"])
+            details.append("已获得 PDF，但全文提取阶段失败，无法进入候选段落定位。")
+        else:
+            tags.append("全文提取失败")
+            details.append("已获得 PDF，但全文提取失败，无法继续做全文级语义分析。")
     elif status == "analysis_failed":
         tags.append("全文语义分析失败")
-        details.append("已获得候选段落，但全文语义分析阶段失败。")
+        stage_tag_map = {
+            "candidate_span_failed": "candidate_span_failed",
+            "local_model_request_failed": "local_model_request_failed",
+            "blank_model_output": "blank_model_output",
+            "deepseek_request_failed": "deepseek_request_failed",
+            "deepseek_json_parse_failed": "deepseek_json_parse_failed",
+            "write_output_failed": "write_output_failed",
+        }
+        stage_detail_map = {
+            "candidate_span_failed": "候选段落定位阶段失败，未能生成可分析的正文候选。",
+            "local_model_request_failed": "本地模型请求阶段失败，全文语义分析未能完成。",
+            "blank_model_output": "本地模型返回空输出，未能进入整理阶段。",
+            "deepseek_request_failed": "DeepSeek 整理阶段请求失败，未能产出结构化分析结果。",
+            "deepseek_json_parse_failed": "DeepSeek 返回结果无法解析为 JSON，未能产出结构化分析结果。",
+            "write_output_failed": "分析过程中的结果写出失败，请检查服务器目录权限或磁盘空间。",
+        }
+        if analysis_error_type in stage_tag_map:
+            tags.append(stage_tag_map[analysis_error_type])
+            details.append(stage_detail_map[analysis_error_type])
+        else:
+            details.append("已获得候选段落，但全文语义分析阶段失败。")
+    elif status == "write_output_failed":
+        tags.extend(["write_output_failed", "结果写出失败"])
+        details.append("分析过程中的结果写出失败，请检查目录权限、磁盘空间或文件系统状态。")
+
+    if analysis_error_stage and analysis_error_stage not in tags:
+        tags.append(analysis_error_stage)
+    if analysis_error:
+        raw_errors.append(analysis_error)
 
     tags = unique_strings(tags)
     details = unique_strings(details)

@@ -396,7 +396,9 @@ def analyze_payload(payload):
     if not api_key:
         return {
             "ok": False,
-            "error": "未找到 DEEPSEEK_API_KEY。请先 export，或写入项目根目录的 .env / .env.local"
+            "error": "未找到 DEEPSEEK_API_KEY。请先 export，或写入项目根目录的 .env / .env.local",
+            "error_type": "deepseek_request_failed",
+            "error_stage": "deepseek_request_failed",
         }
 
     if not payload.get("candidate_spans"):
@@ -424,11 +426,13 @@ def analyze_payload(payload):
             {"role": "user", "content": local_user_prompt}
         ], max_tokens=900)
     except requests.RequestException as exc:
-        error_type, error_message = classify_request_exception(exc)
+        error_detail_type, error_message = classify_request_exception(exc)
         return {
             "ok": False,
             "error": error_message,
-            "error_type": error_type,
+            "error_type": "local_model_request_failed",
+            "error_stage": "local_model_request_failed",
+            "error_detail_type": error_detail_type,
             "_debug": local_debug,
         }
 
@@ -446,6 +450,7 @@ def analyze_payload(payload):
             "ok": False,
             "error": "本地 27B 分析服务返回空输出，无法进入 JSON 整理阶段。",
             "error_type": "blank_model_output",
+            "error_stage": "blank_model_output",
             "_debug": local_debug,
         }
 
@@ -460,6 +465,7 @@ def analyze_payload(payload):
             "ok": False,
             "error": f"DeepSeek JSON 整理阶段请求失败：{exc}",
             "error_type": "deepseek_request_failed",
+            "error_stage": "deepseek_request_failed",
             "_debug": {
                 **local_debug,
                 "local_analysis_preview": raw_analysis[:500],
@@ -471,6 +477,8 @@ def analyze_payload(payload):
         return {
             "ok": False,
             "error": "DeepSeek 输出无法解析为 JSON",
+            "error_type": "deepseek_json_parse_failed",
+            "error_stage": "deepseek_json_parse_failed",
             "local_raw_analysis_preview": raw_analysis[:800],
             "deepseek_raw_preview": raw_json[:800]
         }

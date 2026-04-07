@@ -76,6 +76,30 @@ def write_json(path: Path, data):
     path.write_text(json.dumps(sanitized, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def make_failure_note(error_type: str, error: str = "") -> Dict:
+    messages = {
+        "extract_text_failed": "PDF 已获得，但全文提取失败，无法进入全文分析。",
+        "candidate_span_failed": "全文已提取，但候选段落定位失败，无法进入全文分析。",
+        "local_model_request_failed": "候选段落已生成，但本地模型请求失败，无法完成全文分析。",
+        "blank_model_output": "候选段落已生成，但本地模型返回空输出，无法完成全文分析。",
+        "deepseek_request_failed": "本地模型已返回分析结果，但 DeepSeek 整理阶段请求失败。",
+        "deepseek_json_parse_failed": "本地模型与 DeepSeek 已返回结果，但 JSON 解析失败。",
+        "write_output_failed": "分析过程完成了一部分，但写出结果文件失败。",
+    }
+    return {
+        "evidence_label": error_type,
+        "message": messages.get(error_type, "全文分析流程失败。") + (f" 详情：{error}" if error else ""),
+    }
+
+
+def safe_write_json(path: Path, data) -> Tuple[bool, str]:
+    try:
+        write_json(path, data)
+        return True, ""
+    except Exception as exc:
+        return False, str(exc)
+
+
 def normalize_title_key(text: str) -> str:
     text = (text or "").strip().lower()
     text = re.sub(r"[^a-z0-9]+", " ", text)
@@ -288,21 +312,59 @@ def process_citing_paper(
     download_result["attempts"] = download_attempts
     result["download"] = download_result
     download_path = item_dir / "download.json"
-    write_json(download_path, download_result)
+    ok, write_error = safe_write_json(download_path, download_result)
+    if not ok:
+        result["status"] = "write_output_failed"
+        result["status_note"] = make_failure_note("write_output_failed", write_error)
+        result["analysis"] = {
+            "ok": False,
+            "error_type": "write_output_failed",
+            "error": write_error,
+            "message": result["status_note"]["message"],
+        }
+        return result
     result["paths"]["download"] = str(download_path)
 
     if not download_result.get("ok"):
         fallback_result = make_context_fallback_result(citing_paper, contexts_data)
         fallback_path = item_dir / "context_fallback.json"
-        write_json(fallback_path, fallback_result)
+        ok, write_error = safe_write_json(fallback_path, fallback_result)
+        if not ok:
+            result["status"] = "write_output_failed"
+            result["status_note"] = make_failure_note("write_output_failed", write_error)
+            result["analysis"] = {
+                "ok": False,
+                "error_type": "write_output_failed",
+                "error": write_error,
+                "message": result["status_note"]["message"],
+            }
+            return result
         result["fallback_analysis"] = fallback_result
         result["paths"]["fallback_analysis"] = str(fallback_path)
         result["status"] = "context_only"
         return result
 
-    fulltext_result = EXTRACT_TEXT.extract_pdf_text(download_result["file_path"])
+    try:
+        fulltext_result = EXTRACT_TEXT.extract_pdf_text(download_result["file_path"])
+    except Exception as exc:
+        fulltext_result = {
+            "ok": False,
+            "error": str(exc),
+            "error_type": "extract_text_failed",
+            "error_stage": "extract_text_failed",
+        }
     fulltext_path = item_dir / "fulltext.json"
-    write_json(fulltext_path, fulltext_result)
+    ok, write_error = safe_write_json(fulltext_path, fulltext_result)
+    if not ok:
+        result["status"] = "write_output_failed"
+        result["status_note"] = make_failure_note("write_output_failed", write_error)
+        result["analysis"] = {
+            "ok": False,
+            "error_type": "write_output_failed",
+            "error": write_error,
+            "message": result["status_note"]["message"],
+        }
+        return result
     result["fulltext"] = {
         "ok": fulltext_result.get("ok"),
         "page_count": fulltext_result.get("page_count"),
@@ -310,18 +372,65 @@ def process_citing_paper(
     result["paths"]["fulltext"] = str(fulltext_path)
 
     if not fulltext_result.get("ok"):
+        failure_analysis = {
+            "ok": False,
+            "citing_title": citing_paper.get("title", ""),
+            "findings": [],
+            "error_type": "extract_text_failed",
+            "error_stage": "extract_text_failed",
+            "error": fulltext_result.get("error", ""),
+        }
+        analysis_path = item_dir / "fulltext_analysis.json"
+        ok, write_error = safe_write_json(analysis_path, failure_analysis)
+        if not ok:
+            result["status"] = "write_output_failed"
+            result["status_note"] = make_failure_note("write_output_failed", write_error)
+            result["analysis"] = {
+                "ok": False,
+                "error_type": "write_output_failed",
+                "error": write_error,
+                "message": result["status_note"]["message"],
+            }
+            return result
+        result["paths"]["analysis"] = str(analysis_path)
         result["status"] = "fulltext_extract_failed"
+        result["status_note"] = make_failure_note("extract_text_failed", fulltext_result.get("error", ""))
+        result["analysis"] = {
+            "ok": False,
+            "error_type": "extract_text_failed",
+            "error": fulltext_result.get("error", ""),
+            "message": result["status_note"]["message"],
+        }
         return result
 
-    candidate_result = FIND_SPANS.find_candidate_spans(
-        fulltext_result,
-        target_title=target.get("title", ""),
-        target_doi=(target.get("externalIds") or {}).get("DOI"),
-        contexts_json_path=str(item_dir.parent / "contexts.json"),
-        citing_title=citing_paper.get("title"),
-    )
+    try:
+        candidate_result = FIND_SPANS.find_candidate_spans(
+            fulltext_result,
+            target_title=target.get("title", ""),
+            target_doi=(target.get("externalIds") or {}).get("DOI"),
+            contexts_json_path=str(item_dir.parent / "contexts.json"),
+            citing_title=citing_paper.get("title"),
+        )
+    except Exception as exc:
+        candidate_result = {
+            "ok": False,
+            "error": str(exc),
+            "error_type": "candidate_span_failed",
+            "error_stage": "candidate_span_failed",
+            "spans": [],
+        }
     candidate_path = item_dir / "candidate_spans.json"
-    write_json(candidate_path, candidate_result)
+    ok, write_error = safe_write_json(candidate_path, candidate_result)
+    if not ok:
+        result["status"] = "write_output_failed"
+        result["status_note"] = make_failure_note("write_output_failed", write_error)
+        result["analysis"] = {
+            "ok": False,
+            "error_type": "write_output_failed",
+            "error": write_error,
+            "message": result["status_note"]["message"],
+        }
+        return result
     result["candidate_spans"] = {
         "ok": candidate_result.get("ok"),
         "count": candidate_result.get("count"),
@@ -330,6 +439,38 @@ def process_citing_paper(
     }
     result["paths"]["candidate_spans"] = str(candidate_path)
 
+    if not candidate_result.get("ok"):
+        failure_analysis = {
+            "ok": False,
+            "citing_title": citing_paper.get("title", ""),
+            "findings": [],
+            "error_type": "candidate_span_failed",
+            "error_stage": "candidate_span_failed",
+            "error": candidate_result.get("error", ""),
+        }
+        analysis_path = item_dir / "fulltext_analysis.json"
+        ok, write_error = safe_write_json(analysis_path, failure_analysis)
+        if not ok:
+            result["status"] = "write_output_failed"
+            result["status_note"] = make_failure_note("write_output_failed", write_error)
+            result["analysis"] = {
+                "ok": False,
+                "error_type": "write_output_failed",
+                "error": write_error,
+                "message": result["status_note"]["message"],
+            }
+            return result
+        result["paths"]["analysis"] = str(analysis_path)
+        result["status"] = "analysis_failed"
+        result["status_note"] = make_failure_note("candidate_span_failed", candidate_result.get("error", ""))
+        result["analysis"] = {
+            "ok": False,
+            "error_type": "candidate_span_failed",
+            "error": candidate_result.get("error", ""),
+            "message": result["status_note"]["message"],
+        }
+        return result
+
     payload = {
         "target_title": target.get("title", ""),
         "target_year": target.get("year"),
@@ -337,14 +478,37 @@ def process_citing_paper(
         "candidate_spans": candidate_result.get("spans", [])[:top_k_spans],
     }
     payload_path = item_dir / "analyze_payload.json"
-    write_json(payload_path, payload)
+    ok, write_error = safe_write_json(payload_path, payload)
+    if not ok:
+        result["status"] = "write_output_failed"
+        result["status_note"] = make_failure_note("write_output_failed", write_error)
+        result["analysis"] = {
+            "ok": False,
+            "error_type": "write_output_failed",
+            "error": write_error,
+            "message": result["status_note"]["message"],
+        }
+        return result
     result["paths"]["analyze_payload"] = str(payload_path)
 
     analysis_started = monotonic()
     analysis_result = ANALYZE_FULLTEXT.analyze_payload(payload)
     analysis_duration_seconds = round(monotonic() - analysis_started, 2)
     analysis_path = item_dir / "fulltext_analysis.json"
-    write_json(analysis_path, analysis_result)
+    ok, write_error = safe_write_json(analysis_path, analysis_result)
+    if not ok:
+        result["status"] = "write_output_failed"
+        result["status_note"] = make_failure_note("write_output_failed", write_error)
+        result["analysis"] = {
+            "ok": False,
+            "candidate_span_count": len(payload.get("candidate_spans", [])),
+            "findings_count": len(analysis_result.get("findings", [])) if isinstance(analysis_result.get("findings"), list) else 0,
+            "duration_seconds": analysis_duration_seconds,
+            "error_type": "write_output_failed",
+            "error": write_error,
+            "message": result["status_note"]["message"],
+        }
+        return result
     final_status, final_note = classify_fulltext_status(candidate_result, analysis_result)
     result["analysis"] = {
         "ok": analysis_result.get("ok"),
@@ -353,10 +517,17 @@ def process_citing_paper(
         "duration_seconds": analysis_duration_seconds,
         "final_status": final_status,
         "message": final_note["message"],
+        "error_type": analysis_result.get("error_type"),
+        "error_stage": analysis_result.get("error_stage"),
+        "error": analysis_result.get("error", ""),
     }
     result["paths"]["analysis"] = str(analysis_path)
     result["status"] = final_status if analysis_result.get("ok") else "analysis_failed"
-    result["status_note"] = final_note if analysis_result.get("ok") else None
+    if analysis_result.get("ok"):
+        result["status_note"] = final_note
+    else:
+        error_type = analysis_result.get("error_type") or "analysis_failed"
+        result["status_note"] = make_failure_note(error_type, analysis_result.get("error", ""))
     return result
 
 

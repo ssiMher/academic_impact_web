@@ -183,13 +183,31 @@ def get_task_status(session_id: str):
 
 def _run_background_task(session_id: str, task_type: str, worker, *, success_message: str):
     try:
-        worker()
+        outcome = worker()
     except Exception as exc:
         mark_task_finished(
             session_id,
             status="failed",
             message=f"{task_type} 执行失败",
             error=str(exc),
+        )
+        return
+
+    if isinstance(outcome, dict) and outcome.get("status") == "failed":
+        mark_task_finished(
+            session_id,
+            status="failed",
+            message=outcome.get("message", f"{task_type} 执行失败"),
+            error=outcome.get("error", ""),
+        )
+        return
+
+    if isinstance(outcome, dict) and outcome.get("status") == "succeeded":
+        mark_task_finished(
+            session_id,
+            status="succeeded",
+            message=outcome.get("message", success_message),
+            error="",
         )
         return
 
@@ -440,6 +458,37 @@ def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_s
     ids = ids or []
     def worker():
         impact_cli().run_analysis(resolve_session_dir(session_id), ids, top_k_spans)
+        session = load_session(session_id)
+        papers = {item.get("id"): item for item in session.get("papers", [])}
+        for paper_id in ids:
+            item = papers.get(paper_id) or {}
+            status = (item.get("analysis_result") or {}).get("status")
+            if status not in {"analysis_failed", "fulltext_extract_failed", "write_output_failed"}:
+                continue
+            analysis_path = ((item.get("analysis_result") or {}).get("paths") or {}).get("analysis", "")
+            analysis_data = {}
+            if analysis_path:
+                path = Path(analysis_path)
+                if path.exists():
+                    try:
+                        analysis_data = json.loads(path.read_text(encoding="utf-8"))
+                    except Exception:
+                        analysis_data = {}
+            error_type = analysis_data.get("error_type") or ("extract_text_failed" if status == "fulltext_extract_failed" else status)
+            message_map = {
+                "extract_text_failed": "全文提取失败",
+                "candidate_span_failed": "候选段落定位失败",
+                "local_model_request_failed": "本地模型请求失败",
+                "blank_model_output": "本地模型返回空输出",
+                "deepseek_request_failed": "DeepSeek 请求失败",
+                "deepseek_json_parse_failed": "DeepSeek JSON 解析失败",
+                "write_output_failed": "结果写出失败",
+            }
+            return {
+                "status": "failed",
+                "message": message_map.get(error_type, "全文分析失败"),
+                "error": analysis_data.get("error") or ((item.get("analysis_result") or {}).get("status") or ""),
+            }
 
     return _start_background_task(
         session_id,

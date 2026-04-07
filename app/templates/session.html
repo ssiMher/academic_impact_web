@@ -12,12 +12,12 @@
     <main class="page">
       <section class="panel">
         <p><a href="/">← 返回首页</a></p>
-        <p class="eyebrow">Session</p>
+        <p class="eyebrow">会话</p>
         <h1>{{ detail_payload.target_overview.title or session.query }}</h1>
         <p class="muted">会话目录：{{ session_id }}</p>
         {% if task_state %}
         <div class="callout {% if task_active %}warning{% elif task_state.status == 'failed' %}warning{% else %}info{% endif %}">
-          <strong>任务状态</strong>
+          <strong>后台任务状态</strong>
           {% if task_active %}
           <p>
             当前正在后台执行
@@ -81,7 +81,7 @@
         </div>
         {% if detail_payload.target_overview.warnings %}
         <div class="callout warning">
-          <strong>Warnings</strong>
+          <strong>注意事项</strong>
           <ul>
             {% for warning in detail_payload.target_overview.warnings %}
             <li>{{ warning }}</li>
@@ -141,9 +141,9 @@
         </form>
         <form method="post" class="stack">
           <div class="actions">
-            <button formaction="/sessions/{{ session_id }}/refresh" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>Refresh Probe</button>
-            <button formaction="/sessions/{{ session_id }}/download" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>Download Selected</button>
-            <button formaction="/sessions/{{ session_id }}/analyze" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>Analyze Selected</button>
+            <button formaction="/sessions/{{ session_id }}/refresh" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>刷新探测状态</button>
+            <button formaction="/sessions/{{ session_id }}/download" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>下载所选论文</button>
+            <button formaction="/sessions/{{ session_id }}/analyze" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>分析所选论文</button>
           </div>
           <div class="inline-controls">
             <label class="checkbox"><input type="checkbox" name="force" {% if task_active %}disabled{% endif %} /> Refresh 时强制重试</label>
@@ -189,7 +189,7 @@
             <div class="card-header">
               <div>
                 <strong>{{ item.id }} {{ item.title }}</strong>
-                <p class="muted">上传本地 PDF 后即可直接走 Analyze Selected，无需 CLI attach-pdf。</p>
+                <p class="muted">上传本地 PDF 后即可直接点击“分析所选论文”，无需 CLI attach-pdf。</p>
               </div>
               <span class="chip">{{ item.download_status or 'not_probed' }}</span>
             </div>
@@ -197,7 +197,7 @@
               <input type="hidden" name="paper_id" value="{{ item.id }}" />
               <input type="file" name="pdf_file" accept="application/pdf,.pdf" required {% if task_active %}disabled{% endif %} />
               <div class="actions">
-                <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>Attach PDF</button>
+                <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>上传并绑定 PDF</button>
               </div>
             </form>
           </article>
@@ -235,6 +235,16 @@
               {% if item.analysis_reason.tags %}{{ item.analysis_reason.tags | join(' / ') }}{% endif %}
               {% if item.analysis_reason.message %} · {{ item.analysis_reason.message }}{% endif %}
             </p>
+            {% if item.analysis_reason.errors %}
+            <details>
+              <summary>查看错误详情</summary>
+              <ul>
+                {% for error in item.analysis_reason.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+            {% endif %}
             {% endif %}
             <p>{{ item.citation_method_summary.evidence_excerpt or '暂无可展示的结构化证据片段。' }}</p>
           </article>
@@ -249,9 +259,9 @@
             <h2>人物标签候选区</h2>
           </div>
           <div class="status-chips">
-            <span class="chip">Pending: {{ detail_payload.person_summary.pending_count }}</span>
-            <span class="chip">Confirmed: {{ detail_payload.person_summary.confirmed_count }}</span>
-            <span class="chip">Rejected: {{ detail_payload.person_summary.rejected_count }}</span>
+            <span class="chip">待处理：{{ detail_payload.person_summary.pending_count }}</span>
+            <span class="chip">已确认：{{ detail_payload.person_summary.confirmed_count }}</span>
+            <span class="chip">已拒绝：{{ detail_payload.person_summary.rejected_count }}</span>
           </div>
         </div>
         {% if detail_payload.person_candidates %}
@@ -290,9 +300,9 @@
                 <input type="text" name="note" value="{{ candidate.review_note or '' }}" placeholder="可选：记录确认依据" />
               </label>
               <div class="actions">
-                <button type="submit" name="action" value="confirm">Confirm</button>
-                <button type="submit" name="action" value="reject" class="secondary">Reject</button>
-                <button type="submit" name="action" value="reset" class="ghost">Reset</button>
+                <button type="submit" name="action" value="confirm">确认</button>
+                <button type="submit" name="action" value="reject" class="secondary">拒绝</button>
+                <button type="submit" name="action" value="reset" class="ghost">重置</button>
               </div>
             </form>
           </article>

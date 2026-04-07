@@ -313,6 +313,21 @@ def default_exports():
     }
 
 
+def default_task_state():
+    return {
+        "active": False,
+        "task_type": None,
+        "status": "idle",
+        "message": "",
+        "started_at": None,
+        "updated_at": None,
+        "finished_at": None,
+        "error": "",
+        "requested_ids": [],
+        "top_k_spans": None,
+    }
+
+
 def infer_impact_level(paper_count: int, medium_or_high_count: int, high_count: int) -> Tuple[str, str]:
     if paper_count >= 10 or high_count >= 2 or medium_or_high_count >= 4:
         return "high", "较高"
@@ -1038,6 +1053,7 @@ def load_session(session_dir: Path):
     session.setdefault("person_candidates", [])
     session.setdefault("overview_stats", default_overview_stats())
     session.setdefault("exports", default_exports())
+    session.setdefault("task_state", default_task_state())
     session["paper_count"] = len(session.get("papers", []))
     for item in session.get("papers", []):
         item.setdefault("download_queries", RUN_PIPELINE.choose_download_queries(item.get("paper", {})))
@@ -1077,6 +1093,13 @@ def build_discover_session(
     sort_preference: str = "context",
 ):
     session_dir.mkdir(parents=True, exist_ok=True)
+    existing_session = {}
+    session_path = session_dir / "session.json"
+    if session_path.exists():
+        try:
+            existing_session = read_json(session_path)
+        except Exception:
+            existing_session = {}
     normalized_sort = (sort_preference or "context").strip().lower()
     fetch_limit = max(limit, auto_refresh_count or 0, 20)
     list_result = LIST_PAPERS.list_all_citations(
@@ -1170,6 +1193,7 @@ def build_discover_session(
             "refreshed_count": 0,
             "refreshed_ids": [],
         },
+        "task_state": existing_session.get("task_state", default_task_state()),
     }
     save_session(session_dir, session)
 

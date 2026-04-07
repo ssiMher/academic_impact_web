@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import tempfile
+import threading
+import time
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -11,6 +14,7 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SKILLS_ROOT = PROJECT_ROOT / "skills"
 SESSIONS_ROOT = PROJECT_ROOT / "data" / "sessions"
+_SESSION_TASK_LOCKS: dict[str, threading.Lock] = {}
 
 
 def _load_module(path: Path, name: str):
@@ -43,6 +47,179 @@ def resolve_session_dir(session_id: str) -> Path:
     if not session_dir.exists():
         raise FileNotFoundError(f"未找到会话目录: {session_id}")
     return session_dir
+
+
+def _task_lock(session_id: str) -> threading.Lock:
+    lock = _SESSION_TASK_LOCKS.get(session_id)
+    if lock is None:
+        lock = threading.Lock()
+        _SESSION_TASK_LOCKS[session_id] = lock
+    return lock
+
+
+def default_task_state() -> dict[str, Any]:
+    return {
+        "active": False,
+        "task_type": None,
+        "status": "idle",
+        "message": "",
+        "started_at": None,
+        "updated_at": None,
+        "finished_at": None,
+        "error": "",
+        "requested_ids": [],
+        "top_k_spans": None,
+    }
+
+
+def ensure_task_state(session: dict[str, Any]) -> dict[str, Any]:
+    task_state = session.get("task_state")
+    if not isinstance(task_state, dict):
+        task_state = default_task_state()
+        session["task_state"] = task_state
+    merged = default_task_state()
+    merged.update(task_state)
+    session["task_state"] = merged
+    return merged
+
+
+def _session_json_path(session_id: str) -> Path:
+    return resolve_session_dir(session_id) / "session.json"
+
+
+def load_session_record(session_id: str) -> dict[str, Any]:
+    session_dir = resolve_session_dir(session_id)
+    session_path = session_dir / "session.json"
+    if not session_path.exists():
+        raise FileNotFoundError(f"未找到 session.json: {session_path}")
+    last_error = None
+    session = None
+    for _ in range(5):
+        try:
+            session = json.loads(session_path.read_text(encoding="utf-8"))
+            break
+        except json.JSONDecodeError as exc:
+            last_error = exc
+            time.sleep(0.02)
+    if session is None:
+        raise last_error
+    session.setdefault("query", "")
+    session.setdefault("papers", [])
+    session.setdefault("target", {})
+    session.setdefault("warnings", [])
+    session.setdefault("analysis", {})
+    session.setdefault("exports", {})
+    ensure_task_state(session)
+    return session
+
+
+def write_session_record(session_id: str, session: dict[str, Any]):
+    session_dir = resolve_session_dir(session_id)
+    session_dir.mkdir(parents=True, exist_ok=True)
+    ensure_task_state(session)
+    session_path = session_dir / "session.json"
+    session_path.write_text(json.dumps(session, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def update_task_state(session_id: str, **updates):
+    with _task_lock(session_id):
+        session = load_session_record(session_id)
+        task_state = ensure_task_state(session)
+        task_state.update(updates)
+        task_state["updated_at"] = datetime.now().isoformat(timespec="seconds")
+        session["task_state"] = task_state
+        write_session_record(session_id, session)
+        return dict(task_state)
+
+
+def mark_task_running(session_id: str, task_type: str, *, requested_ids: list[str] | None = None, top_k_spans: int | None = None, message: str = ""):
+    with _task_lock(session_id):
+        session = load_session_record(session_id)
+        task_state = ensure_task_state(session)
+        if task_state.get("active"):
+            return False, dict(task_state)
+        now = datetime.now().isoformat(timespec="seconds")
+        task_state.update(
+            {
+                "active": True,
+                "task_type": task_type,
+                "status": "running",
+                "message": message,
+                "started_at": now,
+                "updated_at": now,
+                "finished_at": None,
+                "error": "",
+                "requested_ids": list(requested_ids or []),
+                "top_k_spans": top_k_spans,
+            }
+        )
+        session["task_state"] = task_state
+        write_session_record(session_id, session)
+        return True, dict(task_state)
+
+
+def mark_task_finished(session_id: str, *, status: str, message: str = "", error: str = ""):
+    updates = {
+        "active": False,
+        "status": status,
+        "message": message,
+        "error": error,
+        "finished_at": datetime.now().isoformat(timespec="seconds"),
+    }
+    return update_task_state(session_id, **updates)
+
+
+def get_task_status(session_id: str):
+    session = load_session_record(session_id)
+    task_state = ensure_task_state(session)
+    return {
+        "ok": True,
+        "session_id": session_id,
+        "task_state": task_state,
+        "paper_count": len(session.get("papers", [])),
+        "updated_at": session.get("updated_at") or session.get("created_at"),
+    }
+
+
+def _run_background_task(session_id: str, task_type: str, worker, *, success_message: str):
+    try:
+        worker()
+    except Exception as exc:
+        mark_task_finished(
+            session_id,
+            status="failed",
+            message=f"{task_type} 执行失败",
+            error=str(exc),
+        )
+        return
+
+    mark_task_finished(
+        session_id,
+        status="succeeded",
+        message=success_message,
+        error="",
+    )
+
+
+def _start_background_task(session_id: str, task_type: str, worker, *, requested_ids: list[str] | None = None, top_k_spans: int | None = None, message: str = "", success_message: str = ""):
+    started, task_state = mark_task_running(
+        session_id,
+        task_type,
+        requested_ids=requested_ids,
+        top_k_spans=top_k_spans,
+        message=message,
+    )
+    if not started:
+        return False, task_state
+
+    thread = threading.Thread(
+        target=_run_background_task,
+        args=(session_id, task_type, worker),
+        kwargs={"success_message": success_message},
+        daemon=True,
+    )
+    thread.start()
+    return True, task_state
 
 
 def list_sessions(limit: int = 20) -> list[dict[str, Any]]:
@@ -96,8 +273,95 @@ def create_session(
     return session_id, session
 
 
+def create_pending_session(
+    query: str,
+    *,
+    limit: int = 20,
+    probe_downloads: bool = False,
+    auto_refresh_top: int = 0,
+    sort_preference: str = "context",
+):
+    slug = run_pipeline().slugify(query, limit=50)
+    session_id = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{slug}"
+    session_dir = SESSIONS_ROOT / session_id
+    session_dir.mkdir(parents=True, exist_ok=True)
+    session = {
+        "ok": True,
+        "query": query,
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "target": {},
+        "papers": [],
+        "warnings": [],
+        "analysis": {},
+        "exports": {},
+        "list_preferences": {
+            "sort_preference": sort_preference,
+            "requested_limit": limit,
+        },
+        "pending_discover": {
+            "limit": limit,
+            "probe_downloads": probe_downloads,
+            "auto_refresh_top": auto_refresh_top,
+            "sort_preference": sort_preference,
+        },
+        "task_state": default_task_state(),
+    }
+    write_session_record(session_id, session)
+    return session_id
+
+
+def start_discover_task(
+    query: str,
+    *,
+    limit: int = 20,
+    probe_downloads: bool = False,
+    auto_refresh_top: int = 0,
+    sort_preference: str = "context",
+):
+    session_id = create_pending_session(
+        query,
+        limit=limit,
+        probe_downloads=probe_downloads,
+        auto_refresh_top=auto_refresh_top,
+        sort_preference=sort_preference,
+    )
+    session_dir = resolve_session_dir(session_id)
+
+    def worker():
+        result = impact_cli().build_discover_session(
+            query=query,
+            session_dir=session_dir,
+            limit=limit,
+            probe_downloads=probe_downloads,
+            auto_refresh_count=auto_refresh_top,
+            sort_preference=sort_preference,
+        )
+        if not result.get("ok", True):
+            raise RuntimeError(result.get("error", "discover 失败"))
+
+    _start_background_task(
+        session_id,
+        "discover",
+        worker,
+        requested_ids=[],
+        message="正在发现引用论文…",
+        success_message="Discover 完成",
+    )
+    return session_id
+
+
 def load_session(session_id: str):
-    return impact_cli().load_session(resolve_session_dir(session_id))
+    session_dir = resolve_session_dir(session_id)
+    last_error = None
+    for _ in range(5):
+        try:
+            return impact_cli().load_session(session_dir)
+        except json.JSONDecodeError as exc:
+            last_error = exc
+            time.sleep(0.02)
+    if last_error is not None:
+        raise last_error
+    return impact_cli().load_session(session_dir)
 
 
 def refresh_phase1_exports(session_id: str, session: dict[str, Any] | None = None):
@@ -108,11 +372,18 @@ def refresh_phase1_exports(session_id: str, session: dict[str, Any] | None = Non
 
 def load_status(session_id: str, filters: dict[str, Any] | None = None):
     session = load_session(session_id)
+    task_state = ensure_task_state(session)
     status_payload = impact_cli().build_status_payload(session)
-    detail_payload = refresh_phase1_exports(session_id, session=session)
+    if task_state.get("active"):
+        detail_payload = impact_cli().build_session_detail_payload(session, filters or {})
+        detail_payload["exports"] = dict(session.get("exports", {}))
+    else:
+        detail_payload = refresh_phase1_exports(session_id, session=session)
     if filters:
         detail_payload = impact_cli().build_session_detail_payload(session, filters)
         detail_payload["exports"] = dict(session.get("exports", {}))
+    status_payload["task_state"] = dict(task_state)
+    detail_payload["task_state"] = dict(task_state)
     status_payload["exports"] = detail_payload.get("exports", {})
     report_md = ""
     report_path = detail_payload.get("exports", {}).get("report_md_path")
@@ -133,6 +404,52 @@ def download_papers(session_id: str, ids: list[str] | None = None, *, auto_only:
 
 def analyze_papers(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8):
     return impact_cli().run_analysis(resolve_session_dir(session_id), ids or [], top_k_spans)
+
+
+def start_refresh_task(session_id: str, ids: list[str] | None = None, *, force: bool = False):
+    ids = ids or []
+    def worker():
+        impact_cli().refresh_probes(resolve_session_dir(session_id), ids, force)
+
+    return _start_background_task(
+        session_id,
+        "refresh",
+        worker,
+        requested_ids=ids,
+        message="正在刷新下载探测状态…",
+        success_message="Refresh 完成",
+    )
+
+
+def start_download_task(session_id: str, ids: list[str] | None = None, *, auto_only: bool = False):
+    ids = ids or []
+    def worker():
+        impact_cli().run_downloads(resolve_session_dir(session_id), ids, auto_only)
+
+    return _start_background_task(
+        session_id,
+        "download",
+        worker,
+        requested_ids=ids,
+        message="正在下载所选论文…",
+        success_message="Download 完成",
+    )
+
+
+def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8):
+    ids = ids or []
+    def worker():
+        impact_cli().run_analysis(resolve_session_dir(session_id), ids, top_k_spans)
+
+    return _start_background_task(
+        session_id,
+        "analyze",
+        worker,
+        requested_ids=ids,
+        top_k_spans=top_k_spans,
+        message="正在进行全文分析…",
+        success_message="Analyze 完成",
+    )
 
 
 def attach_uploaded_pdf(session_id: str, paper_id: str, filename: str, content: bytes):

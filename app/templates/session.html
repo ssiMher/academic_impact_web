@@ -13,6 +13,21 @@
         <p class="eyebrow">Session</p>
         <h1>{{ detail_payload.target_overview.title or session.query }}</h1>
         <p class="muted">会话目录：{{ session_id }}</p>
+        {% if detail_payload.task_state %}
+        <div class="callout {% if detail_payload.task_state.active %}warning{% elif detail_payload.task_state.status == 'failed' %}warning{% else %}info{% endif %}">
+          <strong>任务状态</strong>
+          <p>
+            类型：{{ detail_payload.task_state.task_type or '无' }} ｜ 状态：{{ detail_payload.task_state.status or 'idle' }}
+            {% if detail_payload.task_state.message %}｜ {{ detail_payload.task_state.message }}{% endif %}
+          </p>
+          {% if detail_payload.task_state.error %}
+          <p class="muted">错误：{{ detail_payload.task_state.error }}</p>
+          {% endif %}
+          {% if detail_payload.task_state.active %}
+          <p class="muted">当前 session 有后台任务运行中，页面会自动轮询并整页刷新。</p>
+          {% endif %}
+        </div>
+        {% endif %}
         <div class="grid meta-grid">
           <div>
             <span class="meta-label">原始查询</span>
@@ -297,5 +312,27 @@
         </details>
       </section>
     </main>
+    {% if detail_payload.task_state and detail_payload.task_state.active %}
+    <script>
+      (function () {
+        const poll = async () => {
+          try {
+            const response = await fetch('/sessions/{{ session_id }}/task-status', { cache: 'no-store' });
+            if (!response.ok) return;
+            const payload = await response.json();
+            if (!payload.task_state) return;
+            if (!payload.task_state.active || payload.task_state.status !== 'running') {
+              window.location.reload();
+              return;
+            }
+            window.location.reload();
+          } catch (_err) {
+            // Ignore transient polling errors in the minimal first version.
+          }
+        };
+        window.setInterval(poll, 3000);
+      })();
+    </script>
+    {% endif %}
   </body>
 </html>

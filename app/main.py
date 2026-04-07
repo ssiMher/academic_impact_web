@@ -39,7 +39,7 @@ async def discover(
     auto_refresh_top: int = Form(0),
     sort_preference: str = Form("context"),
 ):
-    session_id, _session = impact_core.create_session(
+    session_id = impact_core.start_discover_task(
         query=query,
         limit=limit,
         probe_downloads=probe_downloads,
@@ -87,7 +87,7 @@ async def refresh_session(request: Request, session_id: str):
     form = await request.form()
     ids = form.getlist("paper_ids")
     force = bool(form.get("force"))
-    impact_core.refresh_probes(session_id, ids, force=force)
+    impact_core.start_refresh_task(session_id, ids, force=force)
     return redirect_to_session(session_id)
 
 
@@ -96,7 +96,7 @@ async def download_session(request: Request, session_id: str):
     form = await request.form()
     ids = form.getlist("paper_ids")
     auto_only = bool(form.get("auto_only"))
-    impact_core.download_papers(session_id, ids, auto_only=auto_only)
+    impact_core.start_download_task(session_id, ids, auto_only=auto_only)
     return redirect_to_session(session_id)
 
 
@@ -108,7 +108,7 @@ async def analyze_session(
 ):
     form = await request.form()
     ids = form.getlist("paper_ids")
-    impact_core.analyze_papers(session_id, ids, top_k_spans=top_k_spans)
+    impact_core.start_analyze_task(session_id, ids, top_k_spans=top_k_spans)
     return redirect_to_session(session_id)
 
 
@@ -146,3 +146,8 @@ async def download_export(session_id: str, export_name: str):
     path = impact_core.resolve_export_path(session_id, export_name)
     media_type = "application/json" if export_name.endswith(".json") else "text/markdown"
     return FileResponse(path, media_type=media_type, filename=path.name)
+
+
+@app.get("/sessions/{session_id}/task-status")
+async def task_status(session_id: str):
+    return impact_core.get_task_status(session_id)

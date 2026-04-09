@@ -560,9 +560,17 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
         if fallback_message:
             details.append(fallback_message)
     elif status == "fulltext_extract_failed":
-        if analysis_error_type == "extract_text_failed":
-            tags.extend(["extract_text_failed", "全文提取失败"])
-            details.append("已获得 PDF，但全文提取阶段失败，无法进入候选段落定位。")
+        extract_failure_map = {
+            "extract_text_failed": (["extract_text_failed", "全文提取失败"], "已获得 PDF，但全文提取阶段失败，无法进入候选段落定位。"),
+            "pdf_parse_failed": (["pdf_parse_failed", "PDF 解析失败"], "已获得 PDF，但 pypdf、PyMuPDF、pdfplumber 均未能稳定解析文本。"),
+            "empty_text_pdf": (["empty_text_pdf", "文本几乎为空"], "PDF 可以打开，但提取到的文本几乎为空，暂时无法继续全文分析。"),
+            "likely_scanned_pdf": (["likely_scanned_pdf", "疑似扫描版 PDF"], "PDF 可以打开，但更像扫描版/图片版，当前无 OCR 主路径，暂时无法继续全文分析。"),
+        }
+        mapped = extract_failure_map.get(analysis_error_type)
+        if mapped:
+            tag_list, detail = mapped
+            tags.extend(tag_list)
+            details.append(detail)
         else:
             tags.append("全文提取失败")
             details.append("已获得 PDF，但全文提取失败，无法继续做全文级语义分析。")

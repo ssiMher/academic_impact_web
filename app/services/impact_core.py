@@ -477,6 +477,9 @@ def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_s
             error_type = analysis_data.get("error_type") or ("extract_text_failed" if status == "fulltext_extract_failed" else status)
             message_map = {
                 "extract_text_failed": "全文提取失败",
+                "pdf_parse_failed": "PDF 解析失败",
+                "empty_text_pdf": "PDF 文本几乎为空",
+                "likely_scanned_pdf": "疑似扫描版 PDF",
                 "candidate_span_failed": "候选段落定位失败",
                 "local_model_request_failed": "本地模型请求失败",
                 "blank_model_output": "本地模型返回空输出",

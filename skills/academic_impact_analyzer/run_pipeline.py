@@ -79,6 +79,9 @@ def write_json(path: Path, data):
 def make_failure_note(error_type: str, error: str = "") -> Dict:
     messages = {
         "extract_text_failed": "PDF 已获得，但全文提取失败，无法进入全文分析。",
+        "pdf_parse_failed": "PDF 已获得，但多个解析器都未能稳定解析文本。",
+        "empty_text_pdf": "PDF 已获得，但提取到的文本几乎为空，无法进入全文分析。",
+        "likely_scanned_pdf": "PDF 已获得，但更像扫描版/图片版，当前无法直接进入全文分析。",
         "candidate_span_failed": "全文已提取，但候选段落定位失败，无法进入全文分析。",
         "local_model_request_failed": "候选段落已生成，但本地模型请求失败，无法完成全文分析。",
         "blank_model_output": "候选段落已生成，但本地模型返回空输出，无法完成全文分析。",
@@ -350,7 +353,7 @@ def process_citing_paper(
         fulltext_result = {
             "ok": False,
             "error": str(exc),
-            "error_type": "extract_text_failed",
+            "error_type": "pdf_parse_failed",
             "error_stage": "extract_text_failed",
         }
     fulltext_path = item_dir / "fulltext.json"
@@ -372,12 +375,13 @@ def process_citing_paper(
     result["paths"]["fulltext"] = str(fulltext_path)
 
     if not fulltext_result.get("ok"):
+        failure_error_type = fulltext_result.get("error_type") or "extract_text_failed"
         failure_analysis = {
             "ok": False,
             "citing_title": citing_paper.get("title", ""),
             "findings": [],
-            "error_type": "extract_text_failed",
-            "error_stage": "extract_text_failed",
+            "error_type": failure_error_type,
+            "error_stage": fulltext_result.get("error_stage", "extract_text_failed"),
             "error": fulltext_result.get("error", ""),
         }
         analysis_path = item_dir / "fulltext_analysis.json"
@@ -394,10 +398,10 @@ def process_citing_paper(
             return result
         result["paths"]["analysis"] = str(analysis_path)
         result["status"] = "fulltext_extract_failed"
-        result["status_note"] = make_failure_note("extract_text_failed", fulltext_result.get("error", ""))
+        result["status_note"] = make_failure_note(failure_error_type, fulltext_result.get("error", ""))
         result["analysis"] = {
             "ok": False,
-            "error_type": "extract_text_failed",
+            "error_type": failure_error_type,
             "error": fulltext_result.get("error", ""),
             "message": result["status_note"]["message"],
         }

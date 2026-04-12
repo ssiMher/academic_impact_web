@@ -88,7 +88,9 @@ LOCAL_SYSTEM_PROMPT = """你是一个论文引用语义分析助手。
 SINGLE_MODEL_SYSTEM_PROMPT = """你是一个严格的论文引用语义分析器。
 你的任务是根据候选段落判断其中哪些段落真正引用了目标论文，并直接输出严格合法的 JSON。
 
-只输出 JSON，不要输出解释、Thinking Process、Markdown、代码块或任何额外文本。
+只输出 JSON，不要输出解释、推理过程、Markdown、代码块或任何额外文本。
+如果模型支持 thinking / reasoner 模式，必须关闭 thinking。不要输出 <think> 标签或任何思考通道内容。
+最终答案的第一个字符必须是 {，最后一个字符必须是 }。
 
 JSON 格式必须严格为：
 {
@@ -227,6 +229,10 @@ def generate_target_aliases(title: str):
     return aliases
 
 def extract_local_analysis_output(response_json):
+    return extract_chat_analysis_output(response_json, use_reasoning_fallback=True)
+
+
+def extract_chat_analysis_output(response_json, *, use_reasoning_fallback: bool):
     choices = response_json.get("choices") or []
     first_choice = choices[0] if choices else {}
     message = first_choice.get("message") or {}
@@ -235,14 +241,18 @@ def extract_local_analysis_output(response_json):
 
     analysis_text = content
     output_source = "content"
-    if not analysis_text and reasoning_content:
+    if not analysis_text and reasoning_content and use_reasoning_fallback:
         analysis_text = reasoning_content
         output_source = "reasoning_content"
+    elif not analysis_text and reasoning_content:
+        output_source = "reasoning_content_ignored"
     elif not analysis_text:
         output_source = "blank"
 
     return {
         "analysis_text": analysis_text,
+        "content": content,
+        "reasoning_content": reasoning_content,
         "output_source": output_source,
         "finish_reason": first_choice.get("finish_reason"),
         "content_len": len(content),
@@ -263,7 +273,16 @@ def call_local_27b(messages, max_tokens=900):
     return extract_local_analysis_output(data)
 
 
-def call_openai_compatible_chat(messages, *, url: str, model: str, api_key: Optional[str] = None, max_tokens=1200, response_format_json=True):
+def call_openai_compatible_chat(
+    messages,
+    *,
+    url: str,
+    model: str,
+    api_key: Optional[str] = None,
+    max_tokens=1200,
+    response_format_json=True,
+    use_reasoning_fallback=True,
+):
     headers = {"Content-Type": "application/json"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
@@ -289,7 +308,7 @@ def call_openai_compatible_chat(messages, *, url: str, model: str, api_key: Opti
         else:
             raise
     data = r.json()
-    return extract_local_analysis_output(data)
+    return extract_chat_analysis_output(data, use_reasoning_fallback=use_reasoning_fallback)
 
 
 def call_deepseek(messages, api_key, max_tokens=800):
@@ -344,21 +363,65 @@ def classify_request_exception(exc: Exception) -> Tuple[str, str]:
         f"分析模型服务请求失败：{text}",
     )
 
+def strip_thinking_blocks(text: str) -> str:
+    text = re.sub(r"(?is)<think>.*?</think>", "", text or "")
+    text = re.sub(r"(?is)<think>.*$", "", text)
+    return text.strip()
+
+
+def choose_json_candidate(values):
+    if not values:
+        return None
+    for value in reversed(values):
+        if isinstance(value, dict) and isinstance(value.get("findings"), list):
+            return value
+    for value in reversed(values):
+        if isinstance(value, dict):
+            return value
+    return values[-1]
+
+
+def parse_json_candidates(candidates):
+    values = []
+    for candidate in candidates:
+        candidate = (candidate or "").strip()
+        if not candidate:
+            continue
+        try:
+            values.append(json.loads(candidate))
+        except Exception:
+            continue
+    return choose_json_candidate(values)
+
+
+def parse_embedded_json_values(text: str):
+    decoder = json.JSONDecoder()
+    values = []
+    for match in re.finditer(r"[\{\[]", text):
+        try:
+            value, _end = decoder.raw_decode(text[match.start():])
+        except ValueError:
+            continue
+        values.append(value)
+    return values
+
+
 def try_parse_json(text):
-    text = text.strip()
+    text = (text or "").strip()
+    if not text:
+        return None
     try:
         return json.loads(text)
-    except:
+    except Exception:
         pass
 
-    start = text.find("{")
-    end = text.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        try:
-            return json.loads(text[start:end+1])
-        except:
-            pass
-    return None
+    cleaned = strip_thinking_blocks(text)
+    fenced_blocks = re.findall(r"(?is)```(?:json)?\s*(.*?)```", cleaned)
+    parsed = parse_json_candidates(fenced_blocks)
+    if parsed is not None:
+        return parsed
+
+    return choose_json_candidate(parse_embedded_json_values(cleaned))
 
 def build_local_prompt(payload):
     spans = payload.get("candidate_spans", [])[:MAX_LOCAL_SPANS]
@@ -408,7 +471,10 @@ def build_single_model_prompt(payload):
     return f"""{local_prompt}
 
 请不要输出自然语言报告。请直接输出符合 system 指定 schema 的严格 JSON。
+如果你支持 thinking 模式，请使用 /no_think，并且不要输出任何推理过程。
+最终答案必须只包含一个 JSON object。
 目标论文别名/缩写再次确认：{", ".join(target_aliases) if target_aliases else "无"}
+/no_think
 """
 
 
@@ -636,8 +702,9 @@ def analyze_payload_single_model(payload):
             url=LLM_URL,
             model=LLM_MODEL,
             api_key=load_analysis_api_key(LLM_URL),
-            max_tokens=1400,
+            max_tokens=4096,
             response_format_json=True,
+            use_reasoning_fallback=False,
         )
     except requests.RequestException as exc:
         error_detail_type, error_message = classify_request_exception(exc)
@@ -657,11 +724,20 @@ def analyze_payload_single_model(payload):
         "reasoning_len": model_result.get("reasoning_len", 0),
     })
     raw_json = model_result.get("analysis_text", "")
+    raw_json_source = model_result.get("output_source")
+    reasoning_content = model_result.get("reasoning_content", "")
     if not raw_json:
         debug["model_raw_preview"] = ""
+        debug["reasoning_preview"] = reasoning_content[:800]
+        error = "分析模型没有返回最终 JSON content，无法解析结构化 JSON。"
+        if reasoning_content:
+            error = (
+                "分析模型只返回了 reasoning_content，没有返回最终 JSON content。"
+                "请确认 thinking 已关闭，或模型输出预算足够生成最终答案。"
+            )
         return {
             "ok": False,
-            "error": "分析模型返回空输出，无法解析结构化 JSON。",
+            "error": error,
             "error_type": "blank_model_output",
             "error_stage": "blank_model_output",
             "_debug": debug,
@@ -675,6 +751,7 @@ def analyze_payload_single_model(payload):
             "error_type": "single_model_json_parse_failed",
             "error_stage": "single_model_json_parse_failed",
             "model_raw_preview": raw_json[:800],
+            "model_raw_source": raw_json_source,
             "_debug": debug,
         }
 

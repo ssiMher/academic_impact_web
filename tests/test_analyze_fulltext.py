@@ -217,6 +217,88 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertEqual(finding['confidence'], 0.6)
         self.assertEqual(finding['mention_type'], 'explicit_citation')
 
+    def test_single_model_extracts_fenced_json_from_content(self):
+        payload = {
+            'citing_title': 'Fenced JSON Test',
+            'candidate_spans': [{'page': 6, 'span_index': 1, 'text': 'dummy'}],
+        }
+        model_result = {
+            'analysis_text': (
+                '<think>{"ok": true, "findings": [{"page": 99, "span_index": 99}]}</think>\n'
+                '```json\n'
+                '{"ok": true, "citing_title": "Fenced JSON Test", "findings": ['
+                '{"page": 6, "span_index": 1, "citation_text": "real", "keep": true}'
+                ']}\n'
+                '```'
+            ),
+            'output_source': 'content',
+            'finish_reason': 'stop',
+            'content_len': 180,
+            'reasoning_len': 0,
+        }
+
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='single_model'), \
+                mock.patch.object(self.module, 'call_openai_compatible_chat', return_value=model_result):
+            result = self.module.analyze_payload(payload)
+
+        self.assertTrue(result['ok'])
+        self.assertEqual(result['findings'][0]['page'], 6)
+        self.assertEqual(result['findings'][0]['span_index'], 1)
+
+    def test_single_model_extracts_prefixed_json_from_content(self):
+        payload = {
+            'citing_title': 'Prefixed JSON Test',
+            'candidate_spans': [{'page': 7, 'span_index': 3, 'text': 'dummy'}],
+        }
+        model_result = {
+            'analysis_text': (
+                'Here is the JSON:\n'
+                '{"ok": true, "citing_title": "Prefixed JSON Test", "findings": ['
+                '{"page": 7, "span_index": 3, "citation_text": "real", "keep": false}'
+                ']}'
+            ),
+            'output_source': 'content',
+            'finish_reason': 'stop',
+            'content_len': 160,
+            'reasoning_len': 0,
+        }
+
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='single_model'), \
+                mock.patch.object(self.module, 'call_openai_compatible_chat', return_value=model_result):
+            result = self.module.analyze_payload(payload)
+
+        self.assertTrue(result['ok'])
+        self.assertEqual(result['findings'][0]['page'], 7)
+        self.assertFalse(result['findings'][0]['keep'])
+
+    def test_single_model_does_not_parse_thinking_trace_as_final_json(self):
+        payload = {
+            'citing_title': 'Reasoning Only Test',
+            'candidate_spans': [{'page': 8, 'span_index': 1, 'text': 'dummy'}],
+        }
+        model_result = {
+            'analysis_text': '',
+            'content': '',
+            'reasoning_content': (
+                'Thinking Process:\n'
+                '1. Analyze the request.\n'
+                '{"ok": true, "citing_title": "schema echo", "findings": []}'
+            ),
+            'output_source': 'reasoning_content_ignored',
+            'finish_reason': 'length',
+            'content_len': 0,
+            'reasoning_len': 96,
+        }
+
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='single_model'), \
+                mock.patch.object(self.module, 'call_openai_compatible_chat', return_value=model_result):
+            result = self.module.analyze_payload(payload)
+
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['error_type'], 'blank_model_output')
+        self.assertEqual(result['_debug']['output_source'], 'reasoning_content_ignored')
+        self.assertIn('Thinking Process', result['_debug']['reasoning_preview'])
+
     def test_openai_compatible_chat_retries_without_response_format_on_400(self):
         http_error = self.module.requests.HTTPError
 
@@ -255,11 +337,41 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
                 [{'role': 'user', 'content': 'hi'}],
                 url='http://127.0.0.1:18002/v1/chat/completions',
                 model='test-model',
+                use_reasoning_fallback=False,
             )
 
         self.assertEqual(result['analysis_text'], '{"ok": true, "findings": []}')
         self.assertIn('response_format', posts[0])
         self.assertNotIn('response_format', posts[1])
+
+    def test_openai_compatible_chat_can_ignore_reasoning_fallback(self):
+        payload = {
+            'choices': [
+                {
+                    'message': {
+                        'content': '',
+                        'reasoning_content': 'Thinking Process: not final JSON',
+                    },
+                    'finish_reason': 'length',
+                }
+            ]
+        }
+
+        with mock.patch.object(
+            self.module.requests,
+            'post',
+            return_value=mock.Mock(raise_for_status=lambda: None, json=lambda: payload),
+        ):
+            result = self.module.call_openai_compatible_chat(
+                [{'role': 'user', 'content': 'hi'}],
+                url='http://127.0.0.1:18002/v1/chat/completions',
+                model='test-model',
+                use_reasoning_fallback=False,
+            )
+
+        self.assertEqual(result['analysis_text'], '')
+        self.assertEqual(result['output_source'], 'reasoning_content_ignored')
+        self.assertEqual(result['reasoning_len'], len('Thinking Process: not final JSON'))
 
     def test_normalize_finding_consistency_removes_explicit_citation_when_keep_false(self):
         parsed = {

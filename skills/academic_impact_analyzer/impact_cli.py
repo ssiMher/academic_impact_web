@@ -1485,6 +1485,9 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
             top_k_spans=top_k_spans,
             local_pdf_path=item.get("download_probe", {}).get("local_file_path") or "",
         )
+        paper_result["id"] = item["id"]
+        paper_result["paper_id"] = item["id"]
+        paper_result["analysis_status"] = paper_result.get("status")
         item["analysis_result"] = {
             "status": paper_result.get("status"),
             "paths": paper_result.get("paths", {}),

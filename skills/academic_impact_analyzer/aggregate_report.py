@@ -47,6 +47,8 @@ def build_entry(item: dict):
     status_note = item.get("status_note", {})
 
     entry = {
+        "id": item.get("id") or item.get("paper_id"),
+        "paper_id": item.get("paper_id") or item.get("id"),
         "title": citing.get("title", ""),
         "year": citing.get("year"),
         "venue": citing.get("venue"),
@@ -65,7 +67,9 @@ def build_entry(item: dict):
 
     if analysis:
         entry["findings_count"] = analysis.get("findings_count", 0)
-        entry["analysis_status"] = analysis.get("final_status")
+        entry["analysis_status"] = analysis.get("final_status") or item.get("analysis_status") or status
+    else:
+        entry["analysis_status"] = item.get("analysis_status") or status
 
     if fallback:
         entry["fallback_context_count"] = len(fallback.get("fallback_contexts", []))

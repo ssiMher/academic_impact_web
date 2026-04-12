@@ -45,13 +45,14 @@ STOPWORD_TOKENS = {
 }
 
 ANALYSIS_STATUS_LABELS = {
-    "fulltext_analyzed": "已完成全文分析",
+    "fulltext_analyzed": "全文分析完成",
     "mention_only": "弱提及",
     "reference_only": "仅参考文献命中",
     "fulltext_no_finding": "全文未发现可靠证据",
-    "context_only": "仅 citation context",
+    "context_only": "仅上下文分析",
     "fulltext_extract_failed": "全文提取失败",
     "analysis_failed": "语义分析失败",
+    "write_output_failed": "结果写出失败",
 }
 
 NUMBER_WORDS = {
@@ -540,6 +541,25 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
             download_probe.get("error", ""),
             download_result.get("error", ""),
             *[attempt.get("error", "") for attempt in attempts],
+            *[
+                entry.get("error", "")
+                for payload in [download_probe, download_result]
+                for entry in (payload.get("download_errors", []) or [])
+                if isinstance(entry, dict)
+            ],
+        ]
+    )
+    download_error_types = unique_strings(
+        [
+            download_probe.get("error_type", ""),
+            download_result.get("error_type", ""),
+            *[attempt.get("error_type", "") for attempt in attempts],
+            *[
+                entry.get("error_type", "")
+                for payload in [download_probe, download_result]
+                for entry in (payload.get("download_errors", []) or [])
+                if isinstance(entry, dict)
+            ],
         ]
     )
     analysis_paths = item.get("analysis_result", {}).get("paths", {})
@@ -553,6 +573,17 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
     if status == "context_only":
         tags.extend(["未获得 PDF", "仅 citation context", "未经全文验证"])
         details.append("未获得全文 PDF，当前结果仅基于 citation contexts，未经全文验证。")
+        download_failure_map = {
+            "fake_pdf_html_interstitial": (["fake_pdf_html_interstitial", "假 PDF / HTML 拦截页"], "这不是模型问题，而是下载到的文件实际上是 HTML/反爬页面，不是真正 PDF。"),
+            "downloaded_non_pdf": (["downloaded_non_pdf", "无效 PDF / 假 PDF"], "这不是模型问题，而是下载到的文件并非真实 PDF。"),
+        }
+        for error_type in download_error_types:
+            mapped = download_failure_map.get(error_type)
+            if not mapped:
+                continue
+            tag_list, detail = mapped
+            tags.extend(tag_list)
+            details.append(detail)
         if any(is_rate_limited_error(error) for error in raw_errors):
             tags.append("外部源限流")
             details.append("下载阶段命中过外部源限流（HTTP 429）。")
@@ -578,6 +609,9 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
         tags.append("全文语义分析失败")
         stage_tag_map = {
             "candidate_span_failed": "candidate_span_failed",
+            "single_model_request_failed": "single_model_request_failed",
+            "single_model_json_parse_failed": "single_model_json_parse_failed",
+            "single_model_schema_invalid": "single_model_schema_invalid",
             "local_model_request_failed": "local_model_request_failed",
             "blank_model_output": "blank_model_output",
             "deepseek_request_failed": "deepseek_request_failed",
@@ -586,8 +620,11 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
         }
         stage_detail_map = {
             "candidate_span_failed": "候选段落定位阶段失败，未能生成可分析的正文候选。",
+            "single_model_request_failed": "分析模型请求阶段失败，全文语义分析未能完成。",
+            "single_model_json_parse_failed": "分析模型返回结果无法解析为 JSON，未能产出结构化分析结果。",
+            "single_model_schema_invalid": "分析模型返回 JSON 结构不符合全文分析 schema，未能产出可靠结构化结果。",
             "local_model_request_failed": "本地模型请求阶段失败，全文语义分析未能完成。",
-            "blank_model_output": "本地模型返回空输出，未能进入整理阶段。",
+            "blank_model_output": "分析模型返回空输出，未能进入结构化结果处理阶段。",
             "deepseek_request_failed": "DeepSeek 整理阶段请求失败，未能产出结构化分析结果。",
             "deepseek_json_parse_failed": "DeepSeek 返回结果无法解析为 JSON，未能产出结构化分析结果。",
             "write_output_failed": "分析过程中的结果写出失败，请检查服务器目录权限或磁盘空间。",
@@ -1267,6 +1304,10 @@ def attach_local_pdf(session_dir: Path, paper_id: str, file_path: str):
         raise FileNotFoundError(f"未找到 PDF 文件: {source_path}")
     if source_path.suffix.lower() != ".pdf":
         raise ValueError("当前只支持绑定 .pdf 文件。")
+    authenticity = DOWNLOAD_PDF.inspect_pdf_file(str(source_path))
+    if not authenticity.get("ok"):
+        error_type = authenticity.get("error_type", "downloaded_non_pdf")
+        raise ValueError(f"绑定失败：{error_type}。{authenticity.get('error', '该文件不是真实 PDF。')}")
 
     item = next((paper for paper in session.get("papers", []) if paper.get("id") == paper_id), None)
     if item is None:
@@ -1777,7 +1818,9 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             "year": raw_item.get("year"),
             "venue": raw_item.get("venue"),
             "download_status": item.get("download_status"),
+            "download_status_label": _status_label(item.get("download_status")),
             "analysis_status": item.get("analysis_status"),
+            "analysis_status_label": ANALYSIS_STATUS_LABELS.get(item.get("analysis_status"), item.get("analysis_status") or "-"),
             "context_confidence": item.get("context_confidence"),
             "qa_ready": item.get("qa_ready", False),
             "candidate_count": len(raw_item.get("person_candidate_hits", [])),
@@ -1961,10 +2004,13 @@ def _status_label(status: str):
         "manual_required": "需手动下载",
         "not_probed": "待探测",
         "probe_failed": "探测失败",
-        "fulltext_analyzed": "已完成全文分析",
+        "fulltext_analyzed": "全文分析完成",
         "mention_only": "弱提及",
         "reference_only": "仅参考文献",
-        "context_only": "仅上下文",
+        "context_only": "仅上下文分析",
+        "fulltext_extract_failed": "全文提取失败",
+        "analysis_failed": "语义分析失败",
+        "write_output_failed": "结果写出失败",
     }
     return mapping.get(status or "", status or "-")
 

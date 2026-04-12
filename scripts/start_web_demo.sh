@@ -15,11 +15,12 @@ LOG_DIR="${LOG_DIR:-$HOME/logs/academic_impact_web}"
 WEB_TMUX_SESSION="${WEB_TMUX_SESSION:-aiw-web}"
 MODEL_TMUX_SESSION="${MODEL_TMUX_SESSION:-aiw-model}"
 CONDA_ENV_NAME="${CONDA_ENV_NAME:-}"
+PYTHON_CMD="${PYTHON_CMD:-python}"
 
 # Replace this with your actual model startup command,
 # or pass it in at runtime via the MODEL_START_CMD environment variable.
 # It should launch an OpenAI-compatible endpoint that matches
-# ACADEMIC_IMPACT_LOCAL_LLM_URL in your .env.
+# ACADEMIC_IMPACT_LLM_URL in your .env.
 MODEL_START_CMD="${MODEL_START_CMD:-echo 'MODEL_START_CMD is not set. Edit scripts/start_web_demo.sh or pass MODEL_START_CMD=\"<your command>\" when launching this script.'; sleep infinity}"
 
 mkdir -p "$LOG_DIR"
@@ -50,6 +51,8 @@ if [[ -n "$CONDA_ENV_NAME" ]]; then
   fi
   CONDA_BASE="$(conda info --base)"
   ACTIVATE_CMD="source '$CONDA_BASE/etc/profile.d/conda.sh' && conda activate '$CONDA_ENV_NAME' && "
+elif [[ "$PYTHON_CMD" == "python" ]] && ! command -v python >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1; then
+  PYTHON_CMD="python3"
 fi
 
 if ss -ltn | grep -q ":${WEB_PORT}\b"; then
@@ -72,7 +75,7 @@ fi
 if tmux has-session -t "$WEB_TMUX_SESSION" 2>/dev/null; then
   echo "[warn] tmux session already exists: $WEB_TMUX_SESSION"
 else
-  tmux new-session -d -s "$WEB_TMUX_SESSION" "cd '$ROOT_DIR' && ${ACTIVATE_CMD}python -m uvicorn app.main:app --host '$WEB_HOST' --port '$WEB_PORT' > '$LOG_DIR/web.log' 2>&1"
+  tmux new-session -d -s "$WEB_TMUX_SESSION" "cd '$ROOT_DIR' && ${ACTIVATE_CMD}$PYTHON_CMD -m uvicorn app.main:app --host '$WEB_HOST' --port '$WEB_PORT' > '$LOG_DIR/web.log' 2>&1"
   echo "[ok] started tmux session: $WEB_TMUX_SESSION"
 fi
 

@@ -5,8 +5,8 @@
 主 README 只保留以下要求：
 
 - 项目内 `.env` 已配置
-- `ACADEMIC_IMPACT_LOCAL_LLM_URL` 可访问
-- `ACADEMIC_IMPACT_LOCAL_MODEL` 与服务实际暴露模型名一致
+- `ACADEMIC_IMPACT_LLM_URL` 可访问
+- `ACADEMIC_IMPACT_LLM_MODEL` 与服务实际暴露模型名一致
 
 具体服务器部署、启动、重启与端口管理命令，统一维护在这一层运维附录里，而不放进主 Quick Start。
 
@@ -76,15 +76,28 @@ curl http://114.212.82.168:8002/v1/models
 项目根目录 `.env` 中至少应包含：
 
 ```bash
-DEEPSEEK_API_KEY=...
-ACADEMIC_IMPACT_LOCAL_LLM_URL=http://114.212.82.168:8002/v1/chat/completions
-ACADEMIC_IMPACT_LOCAL_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+ACADEMIC_IMPACT_ANALYSIS_MODE=single_model
+ACADEMIC_IMPACT_LLM_URL=http://114.212.82.168:8002/v1/chat/completions
+ACADEMIC_IMPACT_LLM_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+ACADEMIC_IMPACT_LLM_API_KEY=
 ```
 
 说明：
 
-- `ACADEMIC_IMPACT_LOCAL_LLM_URL` 应指向 **OpenAI-compatible chat completions** 地址
-- `ACADEMIC_IMPACT_LOCAL_MODEL` 必须与 `/v1/models` 暴露出来的模型名一致
+- `ACADEMIC_IMPACT_ANALYSIS_MODE` 默认是 `single_model`，由一个 OpenAI-compatible 模型直接完成引用语义判断并输出结构化 JSON
+- `ACADEMIC_IMPACT_LLM_URL` 应指向 **OpenAI-compatible chat completions** 地址
+- `ACADEMIC_IMPACT_LLM_MODEL` 必须与 `/v1/models` 暴露出来的模型名一致
+- `ACADEMIC_IMPACT_LLM_API_KEY` 本地无鉴权服务可留空；DeepSeek、DashScope/Qwen 等 API 服务需填写真实 key
+- 旧变量 `ACADEMIC_IMPACT_LOCAL_LLM_URL` / `ACADEMIC_IMPACT_LOCAL_MODEL` 仍作为兼容 fallback 保留，不建议新部署继续使用
+
+如果需要临时回退旧双阶段链路：
+
+```bash
+ACADEMIC_IMPACT_ANALYSIS_MODE=legacy_two_stage
+ACADEMIC_IMPACT_LOCAL_LLM_URL=http://114.212.82.168:8002/v1/chat/completions
+ACADEMIC_IMPACT_LOCAL_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+DEEPSEEK_API_KEY=...
+```
 
 ## 项目侧最小自检
 
@@ -120,7 +133,7 @@ make fulltext-check \
 
 表现：
 
-- `.env` 中的 `ACADEMIC_IMPACT_LOCAL_MODEL` 与 `/v1/models` 返回值不同
+- `.env` 中的 `ACADEMIC_IMPACT_LLM_MODEL` 与 `/v1/models` 返回值不同
 - 请求虽然发到服务，但模型选择失败或返回异常
 
 优先检查：

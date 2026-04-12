@@ -38,7 +38,8 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
             'reasoning_len': 18,
         }
 
-        with mock.patch.object(self.module, 'load_deepseek_key', return_value='test-key'), \
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='legacy_two_stage'), \
+                mock.patch.object(self.module, 'load_deepseek_key', return_value='test-key'), \
                 mock.patch.object(self.module, 'call_local_27b', return_value=local_result), \
                 mock.patch.object(
                     self.module,
@@ -74,7 +75,8 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
             self.assertIn('页码：3', messages[1]['content'])
             return '{"ok": true, "citing_title": "Test Reasoning Fallback", "findings": []}'
 
-        with mock.patch.object(self.module, 'load_deepseek_key', return_value='test-key'), \
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='legacy_two_stage'), \
+                mock.patch.object(self.module, 'load_deepseek_key', return_value='test-key'), \
                 mock.patch.object(self.module, 'call_local_27b', return_value=local_result), \
                 mock.patch.object(self.module, 'call_deepseek', side_effect=fake_call_deepseek):
             result = self.module.analyze_payload(payload)
@@ -101,7 +103,8 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
             'reasoning_len': 0,
         }
 
-        with mock.patch.object(self.module, 'load_deepseek_key', return_value='test-key'), \
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='legacy_two_stage'), \
+                mock.patch.object(self.module, 'load_deepseek_key', return_value='test-key'), \
                 mock.patch.object(self.module, 'call_local_27b', return_value=local_result), \
                 mock.patch.object(self.module, 'call_deepseek') as mock_deepseek:
             result = self.module.analyze_payload(payload)
@@ -113,6 +116,150 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertEqual(result['_debug']['reasoning_len'], 0)
         self.assertEqual(result['_debug']['local_analysis_preview'], '')
         mock_deepseek.assert_not_called()
+
+    def test_analyze_payload_single_model_direct_json(self):
+        payload = {
+            'target_title': 'LoRA: Low-Rank Adaptation of Large Language Models',
+            'target_year': 2021,
+            'citing_title': 'Single Model Test',
+            'candidate_spans': [{'page': 5, 'span_index': 2, 'text': 'LoRA [9] is a baseline.'}],
+        }
+        model_result = {
+            'analysis_text': (
+                '{"ok": true, "citing_title": "Single Model Test", "findings": ['
+                '{"page": 5, "span_index": 2, "citation_text": "LoRA [9]", '
+                '"keep": true, "aspect": "baseline", "stance": "neutral", '
+                '"function": "作为基线比较", "reason": "明确点名 LoRA", '
+                '"confidence": 0.86, "mention_type": "explicit_citation"}]}'
+            ),
+            'output_source': 'content',
+            'finish_reason': 'stop',
+            'content_len': 250,
+            'reasoning_len': 0,
+        }
+
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='single_model'), \
+                mock.patch.object(self.module, 'call_openai_compatible_chat', return_value=model_result):
+            result = self.module.analyze_payload(payload)
+
+        self.assertTrue(result['ok'])
+        self.assertEqual(result['_debug']['analysis_mode'], 'single_model')
+        self.assertEqual(result['findings'][0]['page'], 5)
+        self.assertTrue(result['findings'][0]['keep'])
+
+    def test_single_model_rejects_non_object_json(self):
+        payload = {
+            'citing_title': 'Schema Test',
+            'candidate_spans': [{'page': 1, 'span_index': 1, 'text': 'dummy'}],
+        }
+        model_result = {
+            'analysis_text': '[]',
+            'output_source': 'content',
+            'finish_reason': 'stop',
+            'content_len': 2,
+            'reasoning_len': 0,
+        }
+
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='single_model'), \
+                mock.patch.object(self.module, 'call_openai_compatible_chat', return_value=model_result):
+            result = self.module.analyze_payload(payload)
+
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['error_type'], 'single_model_schema_invalid')
+
+    def test_single_model_rejects_non_object_finding(self):
+        payload = {
+            'citing_title': 'Finding Schema Test',
+            'candidate_spans': [{'page': 1, 'span_index': 1, 'text': 'dummy'}],
+        }
+        model_result = {
+            'analysis_text': '{"ok": true, "findings": ["bad"]}',
+            'output_source': 'content',
+            'finish_reason': 'stop',
+            'content_len': 35,
+            'reasoning_len': 0,
+        }
+
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='single_model'), \
+                mock.patch.object(self.module, 'call_openai_compatible_chat', return_value=model_result):
+            result = self.module.analyze_payload(payload)
+
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['error_type'], 'single_model_schema_invalid')
+
+    def test_single_model_normalizes_partial_finding_defaults(self):
+        payload = {
+            'citing_title': 'Partial Finding Test',
+            'candidate_spans': [{'page': 2, 'span_index': 4, 'text': 'LoRA [9]'}],
+        }
+        model_result = {
+            'analysis_text': (
+                '{"ok": true, "findings": ['
+                '{"page": "2", "span_index": "4", "keep": "yes", '
+                '"aspect": "unexpected", "stance": "mixed"}]}'
+            ),
+            'output_source': 'content',
+            'finish_reason': 'stop',
+            'content_len': 120,
+            'reasoning_len': 0,
+        }
+
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='single_model'), \
+                mock.patch.object(self.module, 'call_openai_compatible_chat', return_value=model_result):
+            result = self.module.analyze_payload(payload)
+
+        finding = result['findings'][0]
+        self.assertTrue(finding['keep'])
+        self.assertEqual(finding['page'], 2)
+        self.assertEqual(finding['span_index'], 4)
+        self.assertEqual(finding['aspect'], 'other')
+        self.assertEqual(finding['stance'], 'neutral')
+        self.assertEqual(finding['confidence'], 0.6)
+        self.assertEqual(finding['mention_type'], 'explicit_citation')
+
+    def test_openai_compatible_chat_retries_without_response_format_on_400(self):
+        http_error = self.module.requests.HTTPError
+
+        class FakeResponse:
+            def __init__(self, status_code, payload):
+                self.status_code = status_code
+                self._payload = payload
+
+            def raise_for_status(self):
+                if self.status_code >= 400:
+                    exc = http_error(f'{self.status_code} Client Error')
+                    exc.response = self
+                    raise exc
+
+            def json(self):
+                return self._payload
+
+        posts = []
+        success_payload = {
+            'choices': [
+                {
+                    'message': {'content': '{"ok": true, "findings": []}'},
+                    'finish_reason': 'stop',
+                }
+            ]
+        }
+
+        def fake_post(url, headers, json, timeout):
+            posts.append(json)
+            if len(posts) == 1:
+                return FakeResponse(400, {})
+            return FakeResponse(200, success_payload)
+
+        with mock.patch.object(self.module.requests, 'post', side_effect=fake_post):
+            result = self.module.call_openai_compatible_chat(
+                [{'role': 'user', 'content': 'hi'}],
+                url='http://127.0.0.1:18002/v1/chat/completions',
+                model='test-model',
+            )
+
+        self.assertEqual(result['analysis_text'], '{"ok": true, "findings": []}')
+        self.assertIn('response_format', posts[0])
+        self.assertNotIn('response_format', posts[1])
 
     def test_normalize_finding_consistency_removes_explicit_citation_when_keep_false(self):
         parsed = {

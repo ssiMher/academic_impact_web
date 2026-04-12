@@ -52,6 +52,28 @@ uvicorn app.main:app --reload
 
 - `http://127.0.0.1:8000`
 
+## 运行测试
+
+安装依赖后，在项目根目录运行统一测试入口：
+
+```bash
+cd ~/projects/academic_impact_web
+pip install -r requirements.txt
+make test
+```
+
+等价的原生命令是：
+
+```bash
+PYTHONPATH=. python3 -m unittest discover -s tests -q
+```
+
+说明：
+
+- 页面层测试会导入 FastAPI / Starlette / Jinja2，需先安装 `requirements.txt`。
+- fulltext 相关单元测试只检查本地函数语义，不会用“跳过测试”掩盖服务或配置问题。
+- 需要检查模型服务配置、PDF 可用性时，单独运行 `make fulltext-check`。
+
 ## 项目内环境配置
 
 全文分析相关配置统一走**项目内环境变量**，不再默认回退到 `~/.openclaw/.env`。
@@ -66,29 +88,36 @@ cp .env.example .env
 最小配置项：
 
 ```bash
-DEEPSEEK_API_KEY=...
-ACADEMIC_IMPACT_LOCAL_LLM_URL=http://127.0.0.1:8002/v1/chat/completions
-ACADEMIC_IMPACT_LOCAL_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+ACADEMIC_IMPACT_ANALYSIS_MODE=single_model
+ACADEMIC_IMPACT_LLM_URL=http://127.0.0.1:8002/v1/chat/completions
+ACADEMIC_IMPACT_LLM_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+ACADEMIC_IMPACT_LLM_API_KEY=
 ```
 
-这 3 个值都需要人工确认/填写：
+这 4 个值都需要人工确认/填写：
 
-- `DEEPSEEK_API_KEY`：必须手工填入真实 key
-- `ACADEMIC_IMPACT_LOCAL_LLM_URL`：必须填成你本地实际可访问的 OpenAI-compatible 服务地址
-- `ACADEMIC_IMPACT_LOCAL_MODEL`：必须填成该服务实际加载的模型名
+- `ACADEMIC_IMPACT_ANALYSIS_MODE`：默认 `single_model`，由一个模型直接完成语义判断并输出结构化 JSON
+- `ACADEMIC_IMPACT_LLM_URL`：必须填成实际可访问的 OpenAI-compatible `/chat/completions` 地址
+- `ACADEMIC_IMPACT_LLM_MODEL`：必须填成该服务实际加载/暴露的模型名
+- `ACADEMIC_IMPACT_LLM_API_KEY`：本地无鉴权服务可留空；DeepSeek、DashScope/Qwen 等 API 服务需填真实 key
 
 说明：
 
-- `DEEPSEEK_API_KEY`：用于 JSON 整理阶段
-- `ACADEMIC_IMPACT_LOCAL_LLM_URL`：本地全文语义分析服务地址
-- `ACADEMIC_IMPACT_LOCAL_MODEL`：本地模型名
+- `ACADEMIC_IMPACT_LLM_URL` 示例：
+  - `http://127.0.0.1:8002/v1/chat/completions`
+  - `https://api.deepseek.com/chat/completions`
+  - `https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions`
+- `ACADEMIC_IMPACT_LLM_MODEL` 示例：`Qwen3.5-27B-Q4_K_M.gguf`、`deepseek-chat`、`qwen-plus`
+- 旧变量仍兼容：未设置 `ACADEMIC_IMPACT_LLM_URL` / `ACADEMIC_IMPACT_LLM_MODEL` 时，会读取 `ACADEMIC_IMPACT_LOCAL_LLM_URL` / `ACADEMIC_IMPACT_LOCAL_MODEL`
+- 如果 URL 是 DeepSeek 且未设置 `ACADEMIC_IMPACT_LLM_API_KEY`，会兼容读取 `DEEPSEEK_API_KEY`
+- 临时回退旧两段链路时，可设置 `ACADEMIC_IMPACT_ANALYSIS_MODE=legacy_two_stage`
 - `ACADEMIC_IMPACT_DOWNLOAD_DIR`：推荐显式配置为你自己有写权限的 PDF 存储目录
 
-如果未配置本地 LLM 服务或拿不到 PDF，分析会退化为 `context_only`，并在页面与导出中注明原因。
+如果未配置 LLM 服务或拿不到 PDF，分析会退化为 `context_only`，并在页面与导出中注明原因。
 
 ## 让 fulltext analysis 真正可用
 
-在项目根目录配置好 `.env` 后，还需要一个**可访问的 OpenAI-compatible LLM 服务**。主 Quick Start 只保留连通性要求，具体服务部署/启动命令统一放到 [`docs/ops/fulltext-llm.md`](docs/ops/fulltext-llm.md)。
+在项目根目录配置好 `.env` 后，还需要一个**可访问的 OpenAI-compatible LLM 服务**。默认 `single_model` 模式要求该模型直接返回符合现有 schema 的 JSON；具体服务部署/启动命令统一放到 [`docs/ops/fulltext-llm.md`](docs/ops/fulltext-llm.md)。
 
 准备好后，可先运行最小自检：
 

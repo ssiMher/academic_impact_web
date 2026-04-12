@@ -5,9 +5,12 @@ PHASE1_SMOKE_TOP_K_SPANS ?= 3
 PHASE1_SMOKE_SORT ?= recent
 FULLTEXT_CHECK_SESSION_ID ?=
 FULLTEXT_CHECK_PAPER_ID ?=
-PYTHON_CMD ?= python
+PYTHON_CMD ?= python3
 
-.PHONY: phase1-smoke fulltext-check
+.PHONY: test phase1-smoke fulltext-check
+test:
+	PYTHONPATH=.:$${PYTHONPATH:-} $(PYTHON_CMD) -m unittest discover -s tests -q
+
 phase1-smoke:
 	$(PYTHON_CMD) scripts/phase1_smoke.py \
 		--query "$(PHASE1_SMOKE_QUERY)" \

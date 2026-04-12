@@ -18,28 +18,106 @@ from app.services import impact_core
 from project_env import load_project_env
 
 
-REQUIRED_ENV_KEYS = [
-    "DEEPSEEK_API_KEY",
-    "ACADEMIC_IMPACT_LOCAL_LLM_URL",
-    "ACADEMIC_IMPACT_LOCAL_MODEL",
-]
+VALID_ANALYSIS_MODES = {"single_model", "legacy_two_stage"}
+
+
+def is_deepseek_url(url: str) -> bool:
+    parsed = urlparse(url or "")
+    return "deepseek.com" in (parsed.netloc or "").lower()
+
+
+def is_dashscope_url(url: str) -> bool:
+    parsed = urlparse(url or "")
+    return "dashscope.aliyuncs.com" in (parsed.netloc or "").lower()
+
+
+def normalized_analysis_mode() -> str:
+    return (os.getenv("ACADEMIC_IMPACT_ANALYSIS_MODE") or "single_model").strip() or "single_model"
+
+
+def effective_llm_config() -> dict[str, Any]:
+    load_project_env(ROOT)
+    mode = normalized_analysis_mode()
+    if mode == "legacy_two_stage":
+        url = (os.getenv("ACADEMIC_IMPACT_LOCAL_LLM_URL") or "").strip()
+        model = (os.getenv("ACADEMIC_IMPACT_LOCAL_MODEL") or "").strip()
+        api_key = (os.getenv("DEEPSEEK_API_KEY") or "").strip()
+        url_source = "ACADEMIC_IMPACT_LOCAL_LLM_URL" if url else ""
+        model_source = "ACADEMIC_IMPACT_LOCAL_MODEL" if model else ""
+        api_key_source = "DEEPSEEK_API_KEY" if api_key else ""
+        api_key_required = True
+    else:
+        url = (os.getenv("ACADEMIC_IMPACT_LLM_URL") or "").strip()
+        url_source = "ACADEMIC_IMPACT_LLM_URL" if url else ""
+        if not url:
+            url = (os.getenv("ACADEMIC_IMPACT_LOCAL_LLM_URL") or "").strip()
+            url_source = "ACADEMIC_IMPACT_LOCAL_LLM_URL" if url else ""
+
+        model = (os.getenv("ACADEMIC_IMPACT_LLM_MODEL") or "").strip()
+        model_source = "ACADEMIC_IMPACT_LLM_MODEL" if model else ""
+        if not model:
+            model = (os.getenv("ACADEMIC_IMPACT_LOCAL_MODEL") or "").strip()
+            model_source = "ACADEMIC_IMPACT_LOCAL_MODEL" if model else ""
+
+        api_key = (os.getenv("ACADEMIC_IMPACT_LLM_API_KEY") or "").strip()
+        api_key_source = "ACADEMIC_IMPACT_LLM_API_KEY" if api_key else ""
+        if not api_key and is_deepseek_url(url):
+            api_key = (os.getenv("DEEPSEEK_API_KEY") or "").strip()
+            api_key_source = "DEEPSEEK_API_KEY" if api_key else ""
+        api_key_required = is_deepseek_url(url) or is_dashscope_url(url)
+    return {
+        "analysis_mode": mode,
+        "analysis_mode_valid": mode in VALID_ANALYSIS_MODES,
+        "url": url,
+        "url_source": url_source,
+        "model": model,
+        "model_source": model_source,
+        "api_key_configured": bool(api_key),
+        "api_key_source": api_key_source,
+        "api_key_required": api_key_required,
+    }
 
 
 def env_status() -> dict[str, Any]:
-    load_project_env(ROOT)
+    config = effective_llm_config()
+    keys = [
+        "ACADEMIC_IMPACT_LLM_URL",
+        "ACADEMIC_IMPACT_LLM_MODEL",
+        "ACADEMIC_IMPACT_LLM_API_KEY",
+        "ACADEMIC_IMPACT_ANALYSIS_MODE",
+        "ACADEMIC_IMPACT_LOCAL_LLM_URL",
+        "ACADEMIC_IMPACT_LOCAL_MODEL",
+        "DEEPSEEK_API_KEY",
+    ]
     values = {}
     missing = []
-    for key in REQUIRED_ENV_KEYS:
+    for key in keys:
         raw = (os.getenv(key) or "").strip()
         configured = bool(raw)
         values[key] = {"configured": configured}
-        if configured and key == "ACADEMIC_IMPACT_LOCAL_LLM_URL":
+        if configured and key in {"ACADEMIC_IMPACT_LLM_URL", "ACADEMIC_IMPACT_LOCAL_LLM_URL"}:
             values[key]["value"] = raw
-        elif configured and key == "ACADEMIC_IMPACT_LOCAL_MODEL":
+        elif configured and key in {"ACADEMIC_IMPACT_LLM_MODEL", "ACADEMIC_IMPACT_LOCAL_MODEL", "ACADEMIC_IMPACT_ANALYSIS_MODE"}:
             values[key]["value"] = raw
-        if not configured:
-            missing.append(key)
-    return {"items": values, "missing_keys": missing}
+
+    if not config["analysis_mode_valid"]:
+        missing.append("ACADEMIC_IMPACT_ANALYSIS_MODE")
+    elif config["analysis_mode"] == "legacy_two_stage":
+        if not config["url"]:
+            missing.append("ACADEMIC_IMPACT_LOCAL_LLM_URL")
+        if not config["model"]:
+            missing.append("ACADEMIC_IMPACT_LOCAL_MODEL")
+        if not config["api_key_configured"]:
+            missing.append("DEEPSEEK_API_KEY")
+    else:
+        if not config["url"]:
+            missing.append("ACADEMIC_IMPACT_LLM_URL")
+        if not config["model"]:
+            missing.append("ACADEMIC_IMPACT_LLM_MODEL")
+        if config["api_key_required"] and not config["api_key_configured"]:
+            missing.append("ACADEMIC_IMPACT_LLM_API_KEY")
+
+    return {"items": values, "missing_keys": missing, "effective": config}
 
 
 def candidate_probe_urls(local_llm_url: str) -> list[str]:
@@ -74,7 +152,7 @@ def service_status(local_llm_url: str) -> dict[str, Any]:
             "configured": False,
             "reachable": False,
             "status": "config_missing",
-            "message": "未配置 ACADEMIC_IMPACT_LOCAL_LLM_URL，未执行服务连通性检查。",
+            "message": "未配置有效 LLM URL，未执行服务连通性检查。",
         }
 
     errors = []
@@ -87,7 +165,7 @@ def service_status(local_llm_url: str) -> dict[str, Any]:
                 "status": "reachable",
                 "probe_url": url,
                 "http_status": response.status_code,
-                "message": f"本地 LLM 服务可连通（{url} -> HTTP {response.status_code}）。",
+                "message": f"LLM 服务可连通（{url} -> HTTP {response.status_code}）。",
             }
         except requests.RequestException as exc:
             errors.append({"url": url, "error": f"{type(exc).__name__}: {exc}"})
@@ -98,7 +176,7 @@ def service_status(local_llm_url: str) -> dict[str, Any]:
         "status": "service_unreachable",
         "probe_url": candidate_probe_urls(value)[0] if candidate_probe_urls(value) else value,
         "errors": errors,
-        "message": "本地 LLM 服务不可达，请确认服务进程、地址和端口。",
+        "message": "LLM 服务不可达，请确认服务进程、地址、端口和网络。",
     }
 
 
@@ -158,8 +236,7 @@ def main():
     args = parser.parse_args()
 
     env = env_status()
-    local_llm_url = os.getenv("ACADEMIC_IMPACT_LOCAL_LLM_URL", "")
-    service = service_status(local_llm_url)
+    service = service_status((env.get("effective") or {}).get("url", ""))
     paper = None
     if args.session_id and args.paper_id:
         paper = paper_status(args.session_id, args.paper_id.strip().upper())

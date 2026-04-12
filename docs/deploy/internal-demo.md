@@ -40,18 +40,28 @@ mkdir -p ~/logs/academic_impact_web
 至少确认这些值：
 
 ```env
-DEEPSEEK_API_KEY=...
-ACADEMIC_IMPACT_LOCAL_LLM_URL=http://127.0.0.1:18002/v1/chat/completions
-ACADEMIC_IMPACT_LOCAL_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+ACADEMIC_IMPACT_ANALYSIS_MODE=single_model
+ACADEMIC_IMPACT_LLM_URL=http://127.0.0.1:18002/v1/chat/completions
+ACADEMIC_IMPACT_LLM_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+ACADEMIC_IMPACT_LLM_API_KEY=
 ACADEMIC_IMPACT_DOWNLOAD_DIR=/home/YOUR_USER/data/academic_impact_web/downloads
 ```
 
 你需要手工改：
 
-- `DEEPSEEK_API_KEY`
-- `ACADEMIC_IMPACT_LOCAL_LLM_URL`
-- `ACADEMIC_IMPACT_LOCAL_MODEL`
+- `ACADEMIC_IMPACT_LLM_URL`
+- `ACADEMIC_IMPACT_LLM_MODEL`
+- `ACADEMIC_IMPACT_LLM_API_KEY`（本地无鉴权模型可留空；DeepSeek / DashScope 等 API 需要填写）
 - `ACADEMIC_IMPACT_DOWNLOAD_DIR`
+
+旧的双阶段链路仍作为临时回退保留。如果需要回退，设置：
+
+```env
+ACADEMIC_IMPACT_ANALYSIS_MODE=legacy_two_stage
+ACADEMIC_IMPACT_LOCAL_LLM_URL=http://127.0.0.1:18002/v1/chat/completions
+ACADEMIC_IMPACT_LOCAL_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+DEEPSEEK_API_KEY=...
+```
 
 ### 必改 2：端口
 

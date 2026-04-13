@@ -59,6 +59,13 @@ MAX_LOCAL_SPANS = 4
 MAX_CONTEXT_WINDOW_CHARS_PER_SPAN = 1800
 MAX_RAW_TEXT_CHARS_PER_SPAN = 1200
 MAX_TOTAL_PROMPT_CHARS = 9000
+try:
+    MAX_FULLTEXT_DIRECT_CHARS = int(
+        get_project_env("ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS", "90000", project_root=ROOT)
+        or "90000"
+    )
+except (TypeError, ValueError):
+    MAX_FULLTEXT_DIRECT_CHARS = 90000
 
 LOCAL_SYSTEM_PROMPT = """你是一个论文引用语义分析助手。
 你的任务是根据候选段落，判断其中哪些段落真正引用了目标论文，并给出自然语言分析。
@@ -90,7 +97,7 @@ LOCAL_SYSTEM_PROMPT = """你是一个论文引用语义分析助手。
 """
 
 SINGLE_MODEL_SYSTEM_PROMPT = """你是一个严格的论文引用语义分析器。
-你的任务是根据候选段落判断其中哪些段落真正引用了目标论文，并直接输出严格合法的 JSON。
+你的任务是根据候选段落或全文内容判断其中哪些位置真正引用了目标论文，并直接输出严格合法的 JSON。
 
 只输出 JSON，不要输出解释、推理过程、Markdown、代码块或任何额外文本。
 如果模型支持 thinking / reasoner 模式，必须关闭 thinking。不要输出 <think> 标签或任何思考通道内容。
@@ -121,9 +128,10 @@ JSON 格式必须严格为：
 2. 若只是组引用（如 [9,13,2]）或“相关工作之一”的并列背景综述，通常 keep=false，mention_type=grouped_literature_mention。
 3. 若只是弱关键词命中、泛泛提到 low-rank / attention / adaptation 等术语，但没有明确把目标论文当作方法、基线、比较对象或扩展对象，keep=false，mention_type=weak_body_mention。
 4. 表格/列表中的基线行只有在 citation_text 内明确出现目标方法名或对应编号时，才允许 keep=true；否则优先 keep=false。
-5. 如果没有找到明确引用，findings 必须是空数组。
-6. confidence 必须是 0 到 1 之间的小数。
-7. 所有 findings 都必须包含 page 和 span_index。
+5. 参考文献列表 / References / Bibliography / Works Cited 中的目标论文条目不算语义引用；如果唯一证据来自参考文献列表，findings 必须是空数组。
+6. 如果没有找到明确引用，findings 必须是空数组。
+7. confidence 必须是 0 到 1 之间的小数。
+8. 所有 findings 都必须包含 page 和 span_index。fulltext_direct 模式下 span_index 可表示该页内第几个命中片段，从 1 开始。
 """
 
 DEEPSEEK_SYSTEM_PROMPT = """你是一个严格的JSON整理器。
@@ -172,6 +180,15 @@ def load_deepseek_key():
 def normalized_analysis_mode() -> str:
     mode = (get_project_env("ACADEMIC_IMPACT_ANALYSIS_MODE", ANALYSIS_MODE, project_root=ROOT) or "").strip()
     return mode or "single_model"
+
+
+def normalize_analysis_scope(value: Optional[str]) -> str:
+    scope = (value or "candidate_spans").strip().lower().replace("-", "_")
+    if scope in {"candidate", "candidate_span", "spans"}:
+        return "candidate_spans"
+    if scope in {"fulltext", "full_text", "direct", "fulltext_direct"}:
+        return "fulltext_direct"
+    return "candidate_spans"
 
 
 def is_deepseek_url(url: str) -> bool:
@@ -493,6 +510,9 @@ def build_local_prompt(payload):
 
 def build_single_model_prompt(payload):
     target_aliases = payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
+    if normalize_analysis_scope(payload.get("analysis_scope")) == "fulltext_direct":
+        return build_fulltext_direct_prompt(payload, target_aliases)
+
     local_prompt = build_local_prompt(payload)
     return f"""{local_prompt}
 
@@ -500,6 +520,71 @@ def build_single_model_prompt(payload):
 如果你支持 thinking 模式，请使用 /no_think，并且不要输出任何推理过程。
 最终答案必须只包含一个 JSON object。
 目标论文别名/缩写再次确认：{", ".join(target_aliases) if target_aliases else "无"}
+/no_think
+"""
+
+
+def normalize_fulltext_pages(payload):
+    pages = payload.get("fulltext_pages")
+    if not isinstance(pages, list):
+        pages = []
+
+    normalized = []
+    for index, page in enumerate(pages, start=1):
+        if not isinstance(page, dict):
+            continue
+        text = str(page.get("text") or "").strip()
+        if not text:
+            continue
+        page_number = coerce_int(page.get("page")) or index
+        normalized.append({"page": page_number, "text": text})
+
+    if normalized:
+        return normalized
+
+    fulltext_text = str(payload.get("fulltext_text") or "").strip()
+    if fulltext_text:
+        return [{"page": 1, "text": fulltext_text}]
+    return []
+
+
+def build_fulltext_direct_prompt(payload, target_aliases=None):
+    target_aliases = target_aliases or payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
+    pages = normalize_fulltext_pages(payload)
+    chunks = []
+    total_chars = 0
+
+    for page in pages:
+        block = f"[Page {page['page']}]\n{page['text']}\n"
+        if total_chars + len(block) > MAX_FULLTEXT_DIRECT_CHARS:
+            remaining = MAX_FULLTEXT_DIRECT_CHARS - total_chars
+            if remaining <= 0:
+                break
+            chunks.append(block[:remaining])
+            total_chars += remaining
+            break
+        chunks.append(block)
+        total_chars += len(block)
+
+    joined = "\n\n".join(chunks)
+
+    return f"""目标论文标题：{payload.get('target_title', '')}
+目标论文年份：{payload.get('target_year', '')}
+目标论文别名/缩写：{", ".join(target_aliases) if target_aliases else "无"}
+引用论文标题：{payload.get('citing_title', '')}
+分析范围：fulltext_direct
+
+下面是引用论文全文文本，请直接通读全文判断目标论文是否被真正引用：
+{joined}
+
+请输出严格 JSON，不要输出自然语言报告。
+判断时请特别注意：
+1. References / Bibliography / Works Cited / 参考文献 区域中的目标论文条目只说明该论文在文末列表中出现，不构成语义引用 finding。
+2. 只有正文、图表说明、实验设置、方法介绍或数据集说明中明确使用目标论文时，才输出 keep=true 的 finding。
+3. 对每个 finding，page 使用原始页码，span_index 使用该页内第几个命中片段，从 1 开始。
+4. 如果唯一命中来自参考文献列表，findings 必须是空数组。
+如果你支持 thinking 模式，请使用 /no_think，并且不要输出任何推理过程。
+最终答案必须只包含一个 JSON object。
 /no_think
 """
 
@@ -695,21 +780,46 @@ def finalize_parsed_result(payload, parsed):
 
 
 def analyze_payload_single_model(payload):
-    if not payload.get("candidate_spans"):
+    analysis_scope = normalize_analysis_scope(payload.get("analysis_scope"))
+    fulltext_pages = normalize_fulltext_pages(payload) if analysis_scope == "fulltext_direct" else []
+    fulltext_chars = sum(len(page.get("text", "")) for page in fulltext_pages)
+
+    if analysis_scope == "candidate_spans" and not payload.get("candidate_spans"):
         return {
             "ok": True,
             "citing_title": payload.get("citing_title", ""),
             "findings": [],
             "_debug": {
                 "analysis_mode": "single_model",
+                "analysis_scope": analysis_scope,
                 "candidate_span_count": 0,
+            },
+        }
+
+    if analysis_scope == "fulltext_direct" and not fulltext_pages:
+        return {
+            "ok": False,
+            "citing_title": payload.get("citing_title", ""),
+            "findings": [],
+            "error": "fulltext_direct 模式缺少可分析的全文文本。",
+            "error_type": "fulltext_direct_empty_text",
+            "error_stage": "fulltext_direct_empty_text",
+            "_debug": {
+                "analysis_mode": "single_model",
+                "analysis_scope": analysis_scope,
+                "candidate_span_count": len(payload.get("candidate_spans", [])),
+                "fulltext_page_count": 0,
+                "fulltext_chars": 0,
             },
         }
 
     user_prompt = build_single_model_prompt(payload)
     debug = {
         "analysis_mode": "single_model",
+        "analysis_scope": analysis_scope,
         "candidate_span_count": len(payload.get("candidate_spans", [])),
+        "fulltext_page_count": len(fulltext_pages),
+        "fulltext_chars": fulltext_chars,
         "prompt_chars": len(user_prompt),
         "llm_url": LLM_URL,
         "llm_model": LLM_MODEL,
@@ -796,7 +906,8 @@ def analyze_payload_single_model(payload):
 
     parsed["_debug"] = {
         **debug,
-        "candidate_pages": sorted(list({s["page"] for s in payload.get("candidate_spans", [])})),
+        "candidate_pages": sorted(list({s.get("page") for s in payload.get("candidate_spans", []) if isinstance(s, dict) and s.get("page") is not None})),
+        "fulltext_pages": sorted(list({page.get("page") for page in fulltext_pages if page.get("page") is not None})),
         "model_raw_preview": raw_json[:500],
     }
     return parsed

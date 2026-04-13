@@ -93,6 +93,7 @@ ACADEMIC_IMPACT_LLM_URL=http://127.0.0.1:8002/v1/chat/completions
 ACADEMIC_IMPACT_LLM_MODEL=Qwen3.5-27B-Q4_K_M.gguf
 ACADEMIC_IMPACT_LLM_API_KEY=
 ACADEMIC_IMPACT_LLM_DISABLE_THINKING=true
+ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS=90000
 ```
 
 这 4 个值都需要人工确认/填写：
@@ -102,6 +103,7 @@ ACADEMIC_IMPACT_LLM_DISABLE_THINKING=true
 - `ACADEMIC_IMPACT_LLM_MODEL`：必须填成该服务实际加载/暴露的模型名
 - `ACADEMIC_IMPACT_LLM_API_KEY`：本地无鉴权服务可留空；DeepSeek、DashScope/Qwen 等 API 服务需填真实 key
 - `ACADEMIC_IMPACT_LLM_DISABLE_THINKING`：默认 `true`，会在支持的 llama.cpp/Qwen 服务上关闭 thinking，避免只返回 `reasoning_content` 而没有最终 JSON
+- `ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS`：可选，`fulltext_direct` 深度模式一次送入模型的全文字符上限，默认 `90000`
 
 说明：
 
@@ -142,6 +144,20 @@ make fulltext-check \
 - 服务不可达
 - PDF 缺失
 - 只能 context_only
+
+### 分析范围
+
+默认分析范围是 `candidate_spans`：先从全文筛出 top-k 候选段落，再让模型判断引用语义，适合批量处理。
+
+需要让模型直接通读单篇引用论文全文时，可以改用 `fulltext_direct`：
+
+```bash
+python3 skills/academic_impact_analyzer/impact_cli.py analyze <session_dir> \
+  --ids P001 \
+  --analysis-scope fulltext_direct
+```
+
+Web 页面同样提供 `analysis scope` 下拉框。`fulltext_direct` 仍然是一篇 citing paper 一次请求，不会把多篇论文一起塞进模型上下文。
 
 ## 当前 MVP 按钮
 

@@ -1462,7 +1462,8 @@ def run_downloads(session_dir: Path, ids: List[str], auto_only: bool):
     }
 
 
-def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
+def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_scope: str = "candidate_spans"):
+    analysis_scope = RUN_PIPELINE.normalize_analysis_scope(analysis_scope)
     session = load_session(session_dir)
     contexts_data = read_json(session_dir / "contexts.json")
     target = session.get("target", {})
@@ -1484,6 +1485,7 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
             item_dir=item_dir,
             top_k_spans=top_k_spans,
             local_pdf_path=item.get("download_probe", {}).get("local_file_path") or "",
+            analysis_scope=analysis_scope,
         )
         paper_result["id"] = item["id"]
         paper_result["paper_id"] = item["id"]
@@ -1500,6 +1502,7 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
         "target": target,
         "output_dir": str(session_dir / "analysis"),
         "processed_papers": len(results),
+        "analysis_scope": analysis_scope,
         "results": results,
     }
     summary_path = session_dir / "analysis" / "summary.json"
@@ -1519,6 +1522,7 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
         "ok": True,
         "session_dir": str(session_dir),
         "processed_papers": len(results),
+        "analysis_scope": analysis_scope,
         "summary_path": str(summary_path),
         "report_json_path": str(report_json_path),
         "report_md_path": str(report_md_path),
@@ -1661,7 +1665,7 @@ def run_quick_analysis(session_dir: Path):
     }
 
 
-def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_spans: int = 8):
+def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_spans: int = 8, analysis_scope: str = "candidate_spans"):
     session = load_session(session_dir)
     refresh_ids = [item.get("id") for item in session.get("papers", [])[: max(0, refresh_top_n)] if item.get("id")]
     refresh_result = {
@@ -1707,6 +1711,7 @@ def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_
             session_dir=session_dir,
             ids=analyze_ids,
             top_k_spans=max(1, top_k_spans),
+            analysis_scope=analysis_scope,
         )
 
     session = load_session(session_dir)
@@ -2151,6 +2156,12 @@ def build_parser():
     analyze.add_argument("session_dir", help="discover 阶段生成的会话目录")
     analyze.add_argument("--ids", required=True, help="要分析的论文 id，逗号分隔，例如 P001,P003")
     analyze.add_argument("--top-k-spans", type=int, default=8, help="送入 analyze_fulltext 的候选段落数，默认 8")
+    analyze.add_argument(
+        "--analysis-scope",
+        choices=sorted(RUN_PIPELINE.VALID_ANALYSIS_SCOPES),
+        default="candidate_spans",
+        help="分析范围：candidate_spans 为默认候选段落模式，fulltext_direct 为单篇全文直读模式",
+    )
 
     attach_pdf = sub.add_parser("attach-pdf", help="把本地 PDF 绑定到某篇候选论文，后续按 local_available 处理")
     attach_pdf.add_argument("session_dir", help="discover 阶段生成的会话目录")
@@ -2222,6 +2233,7 @@ def main():
             session_dir=Path(args.session_dir).expanduser(),
             ids=parse_ids(args.ids),
             top_k_spans=max(1, args.top_k_spans),
+            analysis_scope=args.analysis_scope,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return

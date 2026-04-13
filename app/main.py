@@ -105,10 +105,11 @@ async def analyze_session(
     request: Request,
     session_id: str,
     top_k_spans: int = Form(8),
+    analysis_scope: str = Form("candidate_spans"),
 ):
     form = await request.form()
     ids = form.getlist("paper_ids")
-    impact_core.start_analyze_task(session_id, ids, top_k_spans=top_k_spans)
+    impact_core.start_analyze_task(session_id, ids, top_k_spans=top_k_spans, analysis_scope=analysis_scope)
     return redirect_to_session(session_id)
 
 

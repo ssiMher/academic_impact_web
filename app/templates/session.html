@@ -152,6 +152,13 @@
               analyze top_k_spans
               <input type="number" name="top_k_spans" value="8" min="1" max="20" {% if task_active %}disabled{% endif %} />
             </label>
+            <label>
+              analysis scope
+              <select name="analysis_scope" {% if task_active %}disabled{% endif %}>
+                <option value="candidate_spans" selected>candidate_spans</option>
+                <option value="fulltext_direct">fulltext_direct</option>
+              </select>
+            </label>
           </div>
 
           <table>

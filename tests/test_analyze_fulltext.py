@@ -147,6 +147,65 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertEqual(result['findings'][0]['page'], 5)
         self.assertTrue(result['findings'][0]['keep'])
 
+    def test_analyze_payload_supports_fulltext_direct_scope(self):
+        payload = {
+            'analysis_scope': 'fulltext_direct',
+            'target_title': 'Optimizing generative AI by backpropagating language model feedback',
+            'target_year': 2025,
+            'citing_title': 'Direct Fulltext Test',
+            'candidate_spans': [],
+            'fulltext_pages': [
+                {'page': 1, 'text': 'Introduction without the target paper.'},
+                {'page': 3, 'text': 'We compare against Chen et al. (2025) as a baseline.'},
+            ],
+        }
+        model_result = {
+            'analysis_text': (
+                '{"ok": true, "citing_title": "Direct Fulltext Test", "findings": ['
+                '{"page": 3, "span_index": 1, "citation_text": "Chen et al. (2025)", '
+                '"keep": true, "aspect": "baseline", "stance": "neutral"}]}'
+            ),
+            'output_source': 'content',
+            'finish_reason': 'stop',
+            'content_len': 210,
+            'reasoning_len': 0,
+        }
+
+        captured_messages = []
+
+        def fake_chat(messages, **kwargs):
+            captured_messages.extend(messages)
+            return model_result
+
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='single_model'), \
+                mock.patch.object(self.module, 'call_openai_compatible_chat', side_effect=fake_chat):
+            result = self.module.analyze_payload(payload)
+
+        self.assertTrue(result['ok'])
+        self.assertEqual(result['_debug']['analysis_scope'], 'fulltext_direct')
+        self.assertEqual(result['_debug']['candidate_span_count'], 0)
+        self.assertEqual(result['_debug']['fulltext_page_count'], 2)
+        self.assertEqual(result['findings'][0]['page'], 3)
+        self.assertIn('分析范围：fulltext_direct', captured_messages[1]['content'])
+        self.assertIn('[Page 3]', captured_messages[1]['content'])
+
+    def test_fulltext_direct_requires_fulltext_text(self):
+        payload = {
+            'analysis_scope': 'fulltext_direct',
+            'citing_title': 'Empty Direct Test',
+            'candidate_spans': [],
+            'fulltext_pages': [],
+        }
+
+        with mock.patch.object(self.module, 'normalized_analysis_mode', return_value='single_model'), \
+                mock.patch.object(self.module, 'call_openai_compatible_chat') as mock_chat:
+            result = self.module.analyze_payload(payload)
+
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['error_type'], 'fulltext_direct_empty_text')
+        self.assertEqual(result['_debug']['analysis_scope'], 'fulltext_direct')
+        mock_chat.assert_not_called()
+
     def test_single_model_rejects_non_object_json(self):
         payload = {
             'citing_title': 'Schema Test',

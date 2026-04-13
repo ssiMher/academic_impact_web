@@ -348,6 +348,7 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('刷新探测状态', body)
         self.assertIn('下载所选论文', body)
         self.assertIn('分析所选论文', body)
+        self.assertIn('fulltext_direct', body)
         self.assertIn('上传并绑定 PDF', body)
 
     def test_session_detail_page_renders_running_task_banner_and_disables_actions(self):

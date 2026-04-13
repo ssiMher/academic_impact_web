@@ -254,6 +254,113 @@
             {% endif %}
             {% endif %}
             <p>{{ item.citation_method_summary.evidence_excerpt or '暂无可展示的结构化证据片段。' }}</p>
+            {% set trace = item.citation_trace %}
+            {% if trace and (trace.finding_count or trace.candidate_span_count or trace.fallback_context_count or trace.debug or trace.paths) %}
+            <details class="citation-trace">
+              <summary>
+                查看引用痕迹（{{ trace.finding_count }} 条模型 finding / {{ trace.candidate_span_count }} 个候选段落）
+              </summary>
+              <div class="trace-meta">
+                <span class="chip">分析范围：{{ trace.analysis_scope or '-' }}</span>
+                {% if trace.debug.output_source %}<span class="chip">输出：{{ trace.debug.output_source }}</span>{% endif %}
+                {% if trace.debug.finish_reason %}<span class="chip">结束：{{ trace.debug.finish_reason }}</span>{% endif %}
+                {% if trace.debug.fulltext_page_count is defined %}<span class="chip">全文页数：{{ trace.debug.fulltext_page_count }}</span>{% endif %}
+                {% if trace.debug.fulltext_char_count is defined %}<span class="chip">全文字符数：{{ trace.debug.fulltext_char_count }}</span>{% endif %}
+              </div>
+
+              {% if trace.findings %}
+              <h4>模型判定 findings</h4>
+              <div class="trace-list">
+                {% for finding in trace.findings %}
+                <div class="trace-row">
+                  <div class="trace-row-head">
+                    <strong>Finding {{ loop.index }}</strong>
+                    <span class="muted">第 {{ finding.page or '-' }} 页 / span {{ finding.span_index if finding.span_index is not none else '-' }}</span>
+                  </div>
+                  <div class="trace-meta">
+                    {% if finding.aspect %}<span class="chip">{{ finding.aspect }}</span>{% endif %}
+                    {% if finding.stance %}<span class="chip">{{ finding.stance }}</span>{% endif %}
+                    {% if finding.mention_type %}<span class="chip">{{ finding.mention_type }}</span>{% endif %}
+                    {% if finding.confidence is not none %}<span class="chip">置信度：{{ finding.confidence }}</span>{% endif %}
+                  </div>
+                  {% if finding.citation_text %}<p><strong>引用文本：</strong>{{ finding.citation_text }}</p>{% endif %}
+                  {% if finding.function %}<p><strong>引用作用：</strong>{{ finding.function }}</p>{% endif %}
+                  {% if finding.reason %}<p><strong>判定理由：</strong>{{ finding.reason }}</p>{% endif %}
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <p class="muted">模型未输出 semantic finding。</p>
+              {% endif %}
+
+              {% if trace.candidate_spans %}
+              <h4>候选引用段落</h4>
+              <div class="trace-list">
+                {% for span in trace.candidate_spans %}
+                <div class="trace-row">
+                  <div class="trace-row-head">
+                    <strong>候选段落 {{ loop.index }}</strong>
+                    <span class="muted">第 {{ span.page or '-' }} 页 / span {{ span.span_index if span.span_index is not none else '-' }}</span>
+                  </div>
+                  <div class="trace-meta">
+                    {% if span.match_type %}<span class="chip">{{ span.match_type }}</span>{% endif %}
+                    {% if span.score is not none %}<span class="chip">分数：{{ span.score }}</span>{% endif %}
+                    {% if span.citation_index %}<span class="chip">索引：{{ span.citation_index }}</span>{% endif %}
+                    {% for evidence in span.evidence %}
+                    <span class="chip">{{ evidence }}</span>
+                    {% endfor %}
+                  </div>
+                  {% if span.text %}<p>{{ span.text }}</p>{% endif %}
+                  {% if span.context_window_text %}
+                  <details>
+                    <summary>查看上下文窗口</summary>
+                    <pre class="trace-snippet">{{ span.context_window_text }}</pre>
+                  </details>
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <p class="muted">暂无候选段落。</p>
+              {% endif %}
+
+              {% if trace.fallback_contexts %}
+              <h4>上下文兜底证据</h4>
+              <div class="trace-list">
+                {% for context in trace.fallback_contexts %}
+                <div class="trace-row">
+                  {% if context.source %}<p class="muted">{{ context.source }}</p>{% endif %}
+                  <p>{{ context.text }}</p>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              {% if trace.debug %}
+              <details>
+                <summary>查看模型调试信息</summary>
+                <dl class="trace-debug">
+                  {% for key, value in trace.debug.items() %}
+                  <dt>{{ key }}</dt>
+                  <dd>{{ value }}</dd>
+                  {% endfor %}
+                </dl>
+              </details>
+              {% endif %}
+
+              {% if trace.paths %}
+              <details>
+                <summary>查看分析产物路径</summary>
+                <dl class="trace-debug">
+                  {% for key, value in trace.paths.items() %}
+                  <dt>{{ key }}</dt>
+                  <dd>{{ value }}</dd>
+                  {% endfor %}
+                </dl>
+              </details>
+              {% endif %}
+            </details>
+            {% endif %}
           </article>
           {% endfor %}
         </div>

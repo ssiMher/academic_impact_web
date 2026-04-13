@@ -72,6 +72,8 @@ class Phase1DetailTestCase(unittest.TestCase):
                             'text': 'For the first time we extend Attention is All You Need to robotics.',
                             'match_type': 'citation_index_exact',
                             'score': 8,
+                            'evidence': ['citation_index_exact', 'context_similarity'],
+                            'context_window_text': 'Earlier work introduced Attention is All You Need. For the first time we extend Attention is All You Need to robotics.',
                         }
                     ],
                 },
@@ -84,6 +86,7 @@ class Phase1DetailTestCase(unittest.TestCase):
             json.dumps(
                 {
                     'ok': True,
+                    'analysis_scope': 'fulltext_direct',
                     'findings': [
                         {
                             'page': 4,
@@ -97,6 +100,15 @@ class Phase1DetailTestCase(unittest.TestCase):
                             'mention_type': 'explicit_citation',
                         }
                     ],
+                    '_debug': {
+                        'analysis_mode': 'single_model',
+                        'analysis_scope': 'fulltext_direct',
+                        'fulltext_page_count': 3,
+                        'fulltext_char_count': 9876,
+                        'candidate_span_count': 1,
+                        'output_source': 'content',
+                        'finish_reason': 'stop',
+                    },
                 },
                 ensure_ascii=False,
                 indent=2,
@@ -264,6 +276,10 @@ class Phase1DetailTestCase(unittest.TestCase):
         first_paper = detail_payload['papers'][0]
         self.assertIn('extension', first_paper['citation_method_summary']['labels'])
         self.assertTrue(first_paper['citation_method_summary']['first_claim_hit'])
+        self.assertEqual(first_paper['citation_trace']['analysis_scope'], 'fulltext_direct')
+        self.assertEqual(first_paper['citation_trace']['finding_count'], 1)
+        self.assertEqual(first_paper['citation_trace']['candidate_span_count'], 1)
+        self.assertEqual(first_paper['citation_trace']['debug']['fulltext_page_count'], 3)
         self.assertTrue(detail_payload['exports']['report_md_path'])
         self.assertTrue(detail_payload['exports']['structured_json_path'])
         self.assertIn('单篇论文引用分析报告', report_md)
@@ -350,6 +366,27 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('分析所选论文', body)
         self.assertIn('fulltext_direct', body)
         self.assertIn('上传并绑定 PDF', body)
+
+    def test_session_detail_page_renders_citation_trace_details(self):
+        request = Request({'type': 'http', 'method': 'GET', 'path': f'/sessions/{TEST_SESSION_ID}', 'headers': []})
+        response = asyncio.run(session_detail(request, TEST_SESSION_ID))
+        body = response.body.decode('utf-8')
+
+        self.assertIn('查看引用痕迹', body)
+        self.assertIn('模型判定 findings', body)
+        self.assertIn('For the first time we extend Attention is All You Need to robotics.', body)
+        self.assertIn('将目标论文扩展到机器人控制任务。', body)
+        self.assertIn('明确说明是在原方法基础上扩展。', body)
+        self.assertIn('候选引用段落', body)
+        self.assertIn('citation_index_exact', body)
+        self.assertIn('context_similarity', body)
+        self.assertIn('分数：8', body)
+        self.assertIn('查看上下文窗口', body)
+        self.assertIn('分析范围：fulltext_direct', body)
+        self.assertIn('全文页数：3', body)
+        self.assertIn('全文字符数：9876', body)
+        self.assertIn('查看模型调试信息', body)
+        self.assertIn('fulltext_char_count', body)
 
     def test_session_detail_page_renders_running_task_banner_and_disables_actions(self):
         session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))

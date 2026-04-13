@@ -439,6 +439,125 @@ def build_primary_evidence(candidate_data: dict, analysis_data: dict):
     }
 
 
+def build_citation_trace_payload(analysis_paths: dict):
+    analysis_paths = analysis_paths or {}
+    candidate_data = load_json_if_exists(analysis_paths.get("candidate_spans", ""))
+    analysis_data = load_json_if_exists(analysis_paths.get("analysis", ""))
+    fallback_data = load_json_if_exists(analysis_paths.get("fallback_analysis", ""))
+    analyze_payload = load_json_if_exists(analysis_paths.get("analyze_payload", ""))
+    fulltext_data = load_json_if_exists(analysis_paths.get("fulltext", ""))
+
+    candidate_data = candidate_data if isinstance(candidate_data, dict) else {}
+    analysis_data = analysis_data if isinstance(analysis_data, dict) else {}
+    fallback_data = fallback_data if isinstance(fallback_data, dict) else {}
+    analyze_payload = analyze_payload if isinstance(analyze_payload, dict) else {}
+    fulltext_data = fulltext_data if isinstance(fulltext_data, dict) else {}
+
+    spans = candidate_data.get("spans", []) if isinstance(candidate_data.get("spans"), list) else []
+    findings = analysis_data.get("findings", []) if isinstance(analysis_data.get("findings"), list) else []
+    fallback_contexts = (
+        fallback_data.get("fallback_contexts", [])
+        if isinstance(fallback_data.get("fallback_contexts"), list)
+        else []
+    )
+    debug = analysis_data.get("_debug", {}) if isinstance(analysis_data.get("_debug"), dict) else {}
+    analysis_scope = (
+        analysis_data.get("analysis_scope")
+        or debug.get("analysis_scope")
+        or analyze_payload.get("analysis_scope")
+        or "candidate_spans"
+    )
+
+    normalized_findings = []
+    for finding in findings:
+        if not isinstance(finding, dict):
+            continue
+        normalized_findings.append({
+            "page": finding.get("page"),
+            "span_index": finding.get("span_index"),
+            "citation_text": truncate_text(finding.get("citation_text", ""), limit=700),
+            "keep": finding.get("keep"),
+            "aspect": finding.get("aspect"),
+            "stance": finding.get("stance"),
+            "function": finding.get("function"),
+            "reason": finding.get("reason"),
+            "confidence": finding.get("confidence"),
+            "mention_type": finding.get("mention_type"),
+        })
+
+    normalized_spans = []
+    for span in spans:
+        if not isinstance(span, dict):
+            continue
+        evidence = span.get("evidence", [])
+        if isinstance(evidence, str):
+            evidence = [evidence]
+        elif not isinstance(evidence, list):
+            evidence = []
+        normalized_spans.append({
+            "page": span.get("page"),
+            "span_index": span.get("span_index"),
+            "score": span.get("score"),
+            "match_type": span.get("match_type"),
+            "citation_index": span.get("citation_index") or candidate_data.get("citation_index"),
+            "evidence": evidence,
+            "text": truncate_text(span.get("text", ""), limit=700),
+            "context_window_text": truncate_text(span.get("context_window_text", ""), limit=700),
+        })
+
+    normalized_fallbacks = []
+    for context in fallback_contexts:
+        if not isinstance(context, dict):
+            continue
+        normalized_fallbacks.append({
+            "text": truncate_text(context.get("text", ""), limit=700),
+            "source": context.get("source") or context.get("source_url") or context.get("title"),
+            "confidence": context.get("confidence"),
+        })
+
+    debug_keys = [
+        "analysis_mode",
+        "analysis_scope",
+        "candidate_span_count",
+        "fulltext_page_count",
+        "fulltext_char_count",
+        "prompt_chars",
+        "llm_url",
+        "llm_model",
+        "output_source",
+        "finish_reason",
+        "content_len",
+        "reasoning_len",
+        "candidate_pages",
+        "fulltext_pages",
+    ]
+    debug_payload = {key: debug.get(key) for key in debug_keys if debug.get(key) not in (None, "")}
+    if "fulltext_page_count" not in debug_payload and analyze_payload.get("fulltext_page_count") is not None:
+        debug_payload["fulltext_page_count"] = analyze_payload.get("fulltext_page_count")
+    if "fulltext_char_count" not in debug_payload and analyze_payload.get("fulltext_char_count") is not None:
+        debug_payload["fulltext_char_count"] = analyze_payload.get("fulltext_char_count")
+    if "fulltext_page_count" not in debug_payload and fulltext_data.get("page_count") is not None:
+        debug_payload["fulltext_page_count"] = fulltext_data.get("page_count")
+
+    visible_paths = {
+        key: value
+        for key, value in analysis_paths.items()
+        if key in {"analysis", "candidate_spans", "analyze_payload", "fulltext", "fallback_analysis"} and value
+    }
+
+    return {
+        "analysis_scope": analysis_scope,
+        "finding_count": len(findings),
+        "candidate_span_count": len(spans),
+        "fallback_context_count": len(fallback_contexts),
+        "findings": normalized_findings,
+        "candidate_spans": normalized_spans,
+        "fallback_contexts": normalized_fallbacks,
+        "debug": debug_payload,
+        "paths": visible_paths,
+    }
+
+
 def build_evidence_index(session_dir: Path, session: dict):
     items = []
     for item in session.get("papers", []):
@@ -1833,6 +1952,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             "qa_ready": item.get("qa_ready", False),
             "candidate_count": len(raw_item.get("person_candidate_hits", [])),
             "citation_method_summary": citation_summary,
+            "citation_trace": build_citation_trace_payload(raw_item.get("analysis_result", {}).get("paths", {})),
             "analysis_reason": citation_summary.get("analysis_reason"),
             "person_candidate_hits": raw_item.get("person_candidate_hits", []),
         }

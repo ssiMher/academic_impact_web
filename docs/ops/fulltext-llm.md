@@ -80,6 +80,7 @@ ACADEMIC_IMPACT_ANALYSIS_MODE=single_model
 ACADEMIC_IMPACT_LLM_URL=http://114.212.82.168:8002/v1/chat/completions
 ACADEMIC_IMPACT_LLM_MODEL=Qwen3.5-27B-Q4_K_M.gguf
 ACADEMIC_IMPACT_LLM_API_KEY=
+ACADEMIC_IMPACT_LLM_DISABLE_THINKING=true
 ```
 
 说明：
@@ -88,6 +89,7 @@ ACADEMIC_IMPACT_LLM_API_KEY=
 - `ACADEMIC_IMPACT_LLM_URL` 应指向 **OpenAI-compatible chat completions** 地址
 - `ACADEMIC_IMPACT_LLM_MODEL` 必须与 `/v1/models` 暴露出来的模型名一致
 - `ACADEMIC_IMPACT_LLM_API_KEY` 本地无鉴权服务可留空；DeepSeek、DashScope/Qwen 等 API 服务需填写真实 key
+- `ACADEMIC_IMPACT_LLM_DISABLE_THINKING` 默认开启，会向支持的 llama.cpp/Qwen 服务传入 `chat_template_kwargs.enable_thinking=false`
 - 旧变量 `ACADEMIC_IMPACT_LOCAL_LLM_URL` / `ACADEMIC_IMPACT_LOCAL_MODEL` 仍作为兼容 fallback 保留，不建议新部署继续使用
 
 如果需要临时回退旧双阶段链路：

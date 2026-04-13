@@ -35,6 +35,10 @@ LLM_MODEL = (
     or get_project_env("ACADEMIC_IMPACT_LOCAL_MODEL", DEFAULT_LLM_MODEL, project_root=ROOT)
     or DEFAULT_LLM_MODEL
 )
+LLM_DISABLE_THINKING = (
+    get_project_env("ACADEMIC_IMPACT_LLM_DISABLE_THINKING", "true", project_root=ROOT)
+    or "true"
+).strip().lower() not in {"0", "false", "no", "off"}
 
 # Legacy local semantic-analysis stage defaults.
 LOCAL_VLLM_URL = get_project_env(
@@ -282,6 +286,7 @@ def call_openai_compatible_chat(
     max_tokens=1200,
     response_format_json=True,
     use_reasoning_fallback=True,
+    disable_thinking=False,
 ):
     headers = {"Content-Type": "application/json"}
     if api_key:
@@ -294,17 +299,38 @@ def call_openai_compatible_chat(
     }
     if response_format_json:
         req["response_format"] = {"type": "json_object"}
+    if disable_thinking:
+        req["chat_template_kwargs"] = {"enable_thinking": False}
 
     try:
         r = requests.post(url, headers=headers, json=req, timeout=240)
         r.raise_for_status()
     except requests.HTTPError as exc:
         response = getattr(exc, "response", None)
-        if response_format_json and response is not None and response.status_code == 400:
+        if response is not None and response.status_code == 400 and (
+            "response_format" in req or "chat_template_kwargs" in req
+        ):
             fallback_req = dict(req)
-            fallback_req.pop("response_format", None)
-            r = requests.post(url, headers=headers, json=fallback_req, timeout=240)
-            r.raise_for_status()
+            if "response_format" in fallback_req:
+                fallback_req.pop("response_format", None)
+                try:
+                    r = requests.post(url, headers=headers, json=fallback_req, timeout=240)
+                    r.raise_for_status()
+                except requests.HTTPError as fallback_exc:
+                    fallback_response = getattr(fallback_exc, "response", None)
+                    if (
+                        fallback_response is None
+                        or fallback_response.status_code != 400
+                        or "chat_template_kwargs" not in fallback_req
+                    ):
+                        raise
+                    fallback_req.pop("chat_template_kwargs", None)
+                    r = requests.post(url, headers=headers, json=fallback_req, timeout=240)
+                    r.raise_for_status()
+            else:
+                fallback_req.pop("chat_template_kwargs", None)
+                r = requests.post(url, headers=headers, json=fallback_req, timeout=240)
+                r.raise_for_status()
         else:
             raise
     data = r.json()
@@ -705,6 +731,7 @@ def analyze_payload_single_model(payload):
             max_tokens=4096,
             response_format_json=True,
             use_reasoning_fallback=False,
+            disable_thinking=LLM_DISABLE_THINKING,
         )
     except requests.RequestException as exc:
         error_detail_type, error_message = classify_request_exception(exc)

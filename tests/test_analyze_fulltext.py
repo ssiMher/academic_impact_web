@@ -344,6 +344,83 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertIn('response_format', posts[0])
         self.assertNotIn('response_format', posts[1])
 
+    def test_openai_compatible_chat_sends_disable_thinking_flag(self):
+        payload = {
+            'choices': [
+                {
+                    'message': {'content': '{"ok": true, "findings": []}'},
+                    'finish_reason': 'stop',
+                }
+            ]
+        }
+        posts = []
+
+        def fake_post(url, headers, json, timeout):
+            posts.append(json)
+            return mock.Mock(raise_for_status=lambda: None, json=lambda: payload)
+
+        with mock.patch.object(self.module.requests, 'post', side_effect=fake_post):
+            result = self.module.call_openai_compatible_chat(
+                [{'role': 'user', 'content': 'hi'}],
+                url='http://127.0.0.1:18002/v1/chat/completions',
+                model='test-model',
+                use_reasoning_fallback=False,
+                disable_thinking=True,
+            )
+
+        self.assertEqual(result['analysis_text'], '{"ok": true, "findings": []}')
+        self.assertEqual(posts[0]['chat_template_kwargs'], {'enable_thinking': False})
+
+    def test_openai_compatible_chat_falls_back_if_disable_thinking_is_unsupported(self):
+        http_error = self.module.requests.HTTPError
+
+        class FakeResponse:
+            def __init__(self, status_code, payload):
+                self.status_code = status_code
+                self._payload = payload
+
+            def raise_for_status(self):
+                if self.status_code >= 400:
+                    exc = http_error(f'{self.status_code} Client Error')
+                    exc.response = self
+                    raise exc
+
+            def json(self):
+                return self._payload
+
+        posts = []
+        success_payload = {
+            'choices': [
+                {
+                    'message': {'content': '{"ok": true, "findings": []}'},
+                    'finish_reason': 'stop',
+                }
+            ]
+        }
+
+        def fake_post(url, headers, json, timeout):
+            posts.append(dict(json))
+            if len(posts) < 3:
+                return FakeResponse(400, {})
+            return FakeResponse(200, success_payload)
+
+        with mock.patch.object(self.module.requests, 'post', side_effect=fake_post):
+            result = self.module.call_openai_compatible_chat(
+                [{'role': 'user', 'content': 'hi'}],
+                url='http://127.0.0.1:18002/v1/chat/completions',
+                model='test-model',
+                use_reasoning_fallback=False,
+                disable_thinking=True,
+            )
+
+        self.assertEqual(result['analysis_text'], '{"ok": true, "findings": []}')
+        self.assertIn('response_format', posts[0])
+        self.assertIn('chat_template_kwargs', posts[0])
+        self.assertNotIn('response_format', posts[1])
+        self.assertIn('chat_template_kwargs', posts[1])
+        self.assertNotIn('response_format', posts[2])
+        self.assertNotIn('chat_template_kwargs', posts[2])
+
     def test_openai_compatible_chat_can_ignore_reasoning_fallback(self):
         payload = {
             'choices': [

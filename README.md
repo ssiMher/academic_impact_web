@@ -92,6 +92,7 @@ ACADEMIC_IMPACT_ANALYSIS_MODE=single_model
 ACADEMIC_IMPACT_LLM_URL=http://127.0.0.1:8002/v1/chat/completions
 ACADEMIC_IMPACT_LLM_MODEL=Qwen3.5-27B-Q4_K_M.gguf
 ACADEMIC_IMPACT_LLM_API_KEY=
+ACADEMIC_IMPACT_LLM_DISABLE_THINKING=true
 ```
 
 这 4 个值都需要人工确认/填写：
@@ -100,6 +101,7 @@ ACADEMIC_IMPACT_LLM_API_KEY=
 - `ACADEMIC_IMPACT_LLM_URL`：必须填成实际可访问的 OpenAI-compatible `/chat/completions` 地址
 - `ACADEMIC_IMPACT_LLM_MODEL`：必须填成该服务实际加载/暴露的模型名
 - `ACADEMIC_IMPACT_LLM_API_KEY`：本地无鉴权服务可留空；DeepSeek、DashScope/Qwen 等 API 服务需填真实 key
+- `ACADEMIC_IMPACT_LLM_DISABLE_THINKING`：默认 `true`，会在支持的 llama.cpp/Qwen 服务上关闭 thinking，避免只返回 `reasoning_content` 而没有最终 JSON
 
 说明：
 

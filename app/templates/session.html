@@ -370,6 +370,88 @@
         <div class="panel-header">
           <div>
             <p class="eyebrow">04</p>
+            <h2>统计信息</h2>
+            <p class="muted">基于已发现的引用论文作者、人物标签 registry 和全文引用方式分析生成。</p>
+          </div>
+        </div>
+        {% set stats = detail_payload.impact_statistics %}
+        <h3>引用作者身份统计</h3>
+        <div class="stats stats-dense">
+          {% for group in stats.person.groups %}
+          <div class="stat">
+            <span>{{ group.label }}</span>
+            <strong>{{ group.count }}</strong>
+            <p class="muted">已确认 {{ group.confirmed_count }} · 待确认 {{ group.pending_count }} · 命中论文 {{ group.paper_count }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="cards">
+          {% for group in stats.person.groups %}
+          {% if group.candidates %}
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <strong>{{ group.label }}</strong>
+                <p class="muted">{{ group.count }} 人，来源完备 {{ group.source_ready_count }} 人</p>
+              </div>
+            </div>
+            <ul>
+              {% for candidate in group.candidates %}
+              <li>
+                <strong>{{ candidate.name }}</strong>
+                <span class="muted">· {{ candidate.status }} · 命中论文：{{ candidate.matched_paper_ids | join(', ') or '-' }}</span>
+                {% if candidate.matched_affiliations %}
+                <span class="muted">· 机构：{{ candidate.matched_affiliations | join(', ') }}</span>
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+          </article>
+          {% endif %}
+          {% endfor %}
+        </div>
+
+        <h3>引用方式统计</h3>
+        <div class="stats stats-dense">
+          {% for group in stats.citation_methods.groups %}
+          <div class="stat">
+            <span>{{ group.label }}</span>
+            <strong>{{ group.count }}</strong>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="cards">
+          {% for group in stats.citation_methods.groups %}
+          {% if group['items'] %}
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <strong>{{ group.label }}</strong>
+                <p class="muted">{{ group.count }} 篇</p>
+              </div>
+            </div>
+            <ul>
+              {% for cited_item in group['items'] %}
+              <li>
+                <strong>{{ cited_item.id }}</strong>
+                {{ cited_item.title }}
+                <span class="muted">· 引用次数 {{ cited_item.citation_occurrence_count }} · 连续引用段数 {{ cited_item.continuous_mention_count }}{% if cited_item.first_claim_hit %} · 首次/强表述{% endif %}</span>
+                {% if cited_item.evidence_excerpt %}
+                <p class="muted">{{ cited_item.evidence_excerpt }}</p>
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+          </article>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">05</p>
             <h2>人物标签候选区</h2>
           </div>
           <div class="status-chips">
@@ -430,7 +512,7 @@
       <section class="panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">05</p>
+            <p class="eyebrow">06</p>
             <h2>导出与汇总</h2>
           </div>
           <div class="actions">

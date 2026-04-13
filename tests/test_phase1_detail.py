@@ -33,6 +33,19 @@ class Phase1DetailTestCase(unittest.TestCase):
                         'tag_type': 'ieee_fellow',
                         'source_links': ['https://example.com/grace-hopper'],
                         'note': 'fixture candidate',
+                    },
+                    {
+                        'name': 'Alan Turing',
+                        'tag_type': 'acm_fellow',
+                        'source_links': ['https://example.com/alan-turing-acm'],
+                        'note': 'fixture acm fellow candidate',
+                    },
+                    {
+                        'name': 'Alan Turing',
+                        'tag_type': 'top_school',
+                        'source_links': ['https://example.com/alan-turing-princeton'],
+                        'matched_affiliations': ['Princeton University'],
+                        'note': 'fixture top school candidate',
                     }
                 ],
                 ensure_ascii=False,
@@ -270,8 +283,8 @@ class Phase1DetailTestCase(unittest.TestCase):
     def test_load_status_builds_detail_payload_and_exports(self):
         session, status_payload, detail_payload, report_md = impact_core.load_status(TEST_SESSION_ID)
 
-        self.assertEqual(status_payload['overview_stats']['candidate_people_count'], 1)
-        self.assertEqual(detail_payload['person_summary']['pending_count'], 1)
+        self.assertEqual(status_payload['overview_stats']['candidate_people_count'], 3)
+        self.assertEqual(detail_payload['person_summary']['pending_count'], 3)
         self.assertEqual(len(detail_payload['papers']), 2)
         first_paper = detail_payload['papers'][0]
         self.assertIn('extension', first_paper['citation_method_summary']['labels'])
@@ -280,9 +293,19 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertEqual(first_paper['citation_trace']['finding_count'], 1)
         self.assertEqual(first_paper['citation_trace']['candidate_span_count'], 1)
         self.assertEqual(first_paper['citation_trace']['debug']['fulltext_page_count'], 3)
+        stats = detail_payload['impact_statistics']
+        self.assertEqual(stats['person']['by_type']['ieee_fellow']['count'], 1)
+        self.assertEqual(stats['person']['by_type']['acm_fellow']['count'], 1)
+        self.assertEqual(stats['person']['by_type']['top_school']['count'], 1)
+        self.assertEqual(stats['person']['by_type']['cas_academician']['count'], 0)
+        self.assertEqual(stats['citation_methods']['by_key']['extension']['count'], 1)
+        self.assertEqual(stats['citation_methods']['by_key']['first_claim']['count'], 1)
         self.assertTrue(detail_payload['exports']['report_md_path'])
         self.assertTrue(detail_payload['exports']['structured_json_path'])
         self.assertIn('单篇论文引用分析报告', report_md)
+        self.assertIn('统计信息', report_md)
+        self.assertIn('ACM Fellow：1 人', report_md)
+        self.assertIn('指出首次/强表述：1 篇', report_md)
 
     def test_review_candidate_changes_summary_counts(self):
         _, _, detail_payload, _ = impact_core.load_status(TEST_SESSION_ID)
@@ -291,11 +314,11 @@ class Phase1DetailTestCase(unittest.TestCase):
         impact_core.review_person_candidate(TEST_SESSION_ID, candidate_id, action='confirm', note='verified')
         _, _, after_confirm, _ = impact_core.load_status(TEST_SESSION_ID)
         self.assertEqual(after_confirm['person_summary']['confirmed_count'], 1)
-        self.assertEqual(after_confirm['person_summary']['pending_count'], 0)
+        self.assertEqual(after_confirm['person_summary']['pending_count'], 2)
 
         impact_core.review_person_candidate(TEST_SESSION_ID, candidate_id, action='reset', note='re-opened')
         _, _, after_reset, _ = impact_core.load_status(TEST_SESSION_ID)
-        self.assertEqual(after_reset['person_summary']['pending_count'], 1)
+        self.assertEqual(after_reset['person_summary']['pending_count'], 3)
         self.assertEqual(after_reset['person_summary']['confirmed_count'], 0)
 
     def test_reject_candidate_changes_summary_counts(self):
@@ -304,7 +327,7 @@ class Phase1DetailTestCase(unittest.TestCase):
 
         impact_core.review_person_candidate(TEST_SESSION_ID, candidate_id, action='reject', note='not a match')
         _, _, after_reject, _ = impact_core.load_status(TEST_SESSION_ID)
-        self.assertEqual(after_reject['person_summary']['pending_count'], 0)
+        self.assertEqual(after_reject['person_summary']['pending_count'], 2)
         self.assertEqual(after_reject['person_summary']['confirmed_count'], 0)
         self.assertEqual(after_reject['person_summary']['rejected_count'], 1)
 
@@ -331,9 +354,10 @@ class Phase1DetailTestCase(unittest.TestCase):
         )
 
         self.assertEqual(exported_payload['person_summary']['confirmed_count'], 1)
-        self.assertEqual(exported_payload['person_summary']['pending_count'], 0)
+        self.assertEqual(exported_payload['person_summary']['pending_count'], 2)
         self.assertEqual(exported_payload['person_candidates'][0]['status'], 'confirmed')
         self.assertEqual(exported_payload['person_candidates'][0]['review_note'], 'verified')
+        self.assertEqual(exported_payload['impact_statistics']['person']['by_type']['acm_fellow']['confirmed_count'], 1)
 
     def test_context_only_reason_renders_in_page_and_report(self):
         _, _, detail_payload, report_md = impact_core.load_status(TEST_SESSION_ID)
@@ -355,6 +379,14 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('引用论文列表与状态', body)
         self.assertIn('单篇引用方式分析结果', body)
         self.assertIn('人物标签候选区', body)
+        self.assertIn('统计信息', body)
+        self.assertIn('引用作者身份统计', body)
+        self.assertIn('引用方式统计', body)
+        self.assertIn('ACM Fellow', body)
+        self.assertIn('IEEE Fellow', body)
+        self.assertIn('国外牛校作者', body)
+        self.assertIn('中国科学院院士', body)
+        self.assertIn('指出首次/强表述', body)
         self.assertIn('导出与汇总', body)
         self.assertIn('/exports/report.md', body)
         self.assertIn('Grace Hopper', body)

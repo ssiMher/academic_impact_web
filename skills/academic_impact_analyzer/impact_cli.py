@@ -848,8 +848,163 @@ def summarize_citation_method(item: dict):
     }
 
 
+PERSON_STAT_GROUPS = [
+    ("acm_fellow", "ACM Fellow"),
+    ("ieee_fellow", "IEEE Fellow"),
+    ("cas_academician", "中国科学院院士"),
+    ("cae_academician", "中国工程院院士"),
+    ("top_school", "国外牛校作者"),
+]
+
+
+CITATION_METHOD_GROUPS = [
+    ("reference_only", "简单编号/参考文献式引用"),
+    ("background", "背景引用"),
+    ("baseline", "基线比较"),
+    ("application", "应用目标论文产物"),
+    ("extension", "扩展目标工作"),
+    ("large_scale", "大篇幅/多段引用"),
+    ("first_claim", "指出首次/强表述"),
+    ("mention_only", "弱引用/只提及"),
+]
+
+
+def summarize_person_stat_candidate(candidate: dict):
+    return {
+        "candidate_id": candidate.get("candidate_id"),
+        "name": candidate.get("name"),
+        "tag_type": candidate.get("tag_type"),
+        "tag_label": candidate.get("tag_label"),
+        "status": candidate.get("status") or "pending",
+        "matched_paper_ids": candidate.get("matched_paper_ids", []),
+        "matched_paper_titles": candidate.get("matched_paper_titles", []),
+        "matched_affiliations": candidate.get("matched_affiliations", []),
+        "source_links": candidate.get("source_links", []),
+        "note": candidate.get("note", ""),
+    }
+
+
+def build_person_statistics(person_candidates: List[dict]):
+    groups = []
+    by_type = {}
+    for tag_type, label in PERSON_STAT_GROUPS:
+        candidates = [
+            summarize_person_stat_candidate(candidate)
+            for candidate in person_candidates
+            if candidate.get("tag_type") == tag_type and candidate.get("status") != "rejected"
+        ]
+        confirmed_count = sum(1 for candidate in candidates if candidate.get("status") == "confirmed")
+        pending_count = sum(1 for candidate in candidates if candidate.get("status") == "pending")
+        source_ready_count = sum(1 for candidate in candidates if candidate.get("source_links"))
+        paper_ids = unique_strings(
+            paper_id
+            for candidate in candidates
+            for paper_id in candidate.get("matched_paper_ids", [])
+        )
+        group = {
+            "tag_type": tag_type,
+            "label": label,
+            "count": len(candidates),
+            "confirmed_count": confirmed_count,
+            "pending_count": pending_count,
+            "source_ready_count": source_ready_count,
+            "paper_count": len(paper_ids),
+            "paper_ids": paper_ids,
+            "candidates": candidates,
+        }
+        groups.append(group)
+        by_type[tag_type] = group
+    return {
+        "groups": groups,
+        "by_type": by_type,
+        "total_active_count": sum(group["count"] for group in groups),
+        "total_confirmed_count": sum(group["confirmed_count"] for group in groups),
+    }
+
+
+def classify_citation_method_groups(item: dict):
+    summary = item.get("citation_method_summary", {}) or {}
+    labels = {str(label).strip() for label in summary.get("labels", []) if str(label).strip()}
+    status = item.get("analysis_status") or summary.get("status") or ""
+    occurrence_count = summary.get("citation_occurrence_count") or 0
+    continuous_count = summary.get("continuous_mention_count") or 0
+    primary = summary.get("primary_evidence", {}) or {}
+    char_length = primary.get("char_length") or 0
+    sentence_count = primary.get("sentence_count") or 0
+
+    groups = set()
+    if status == "reference_only" or "reference_only" in labels:
+        groups.add("reference_only")
+    if "background" in labels:
+        groups.add("background")
+    if "baseline" in labels:
+        groups.add("baseline")
+    if "application" in labels:
+        groups.add("application")
+    if "extension" in labels:
+        groups.add("extension")
+    if occurrence_count >= 2 or continuous_count >= 2 or char_length >= 500 or sentence_count >= 4:
+        groups.add("large_scale")
+    if summary.get("first_claim_hit"):
+        groups.add("first_claim")
+    if status == "mention_only" or "mention_only" in labels:
+        groups.add("mention_only")
+    return groups
+
+
+def summarize_citation_method_stat_item(item: dict):
+    summary = item.get("citation_method_summary", {}) or {}
+    return {
+        "id": item.get("id"),
+        "title": item.get("title"),
+        "analysis_status": item.get("analysis_status"),
+        "labels": summary.get("labels", []),
+        "citation_occurrence_count": summary.get("citation_occurrence_count", 0),
+        "continuous_mention_count": summary.get("continuous_mention_count", 0),
+        "first_claim_hit": summary.get("first_claim_hit", False),
+        "page_start": summary.get("page_start"),
+        "page_end": summary.get("page_end"),
+        "evidence_excerpt": summary.get("evidence_excerpt", ""),
+    }
+
+
+def build_citation_method_statistics(detail_papers: List[dict]):
+    analyzed_items = [item for item in detail_papers if item.get("analysis_status")]
+    groups = []
+    by_key = {}
+    for key, label in CITATION_METHOD_GROUPS:
+        items = [
+            summarize_citation_method_stat_item(item)
+            for item in analyzed_items
+            if key in classify_citation_method_groups(item)
+        ]
+        group = {
+            "key": key,
+            "label": label,
+            "count": len(items),
+            "items": items,
+        }
+        groups.append(group)
+        by_key[key] = group
+    return {
+        "groups": groups,
+        "by_key": by_key,
+        "analyzed_paper_count": len(analyzed_items),
+        "fulltext_analyzed_count": sum(1 for item in analyzed_items if item.get("analysis_status") == "fulltext_analyzed"),
+    }
+
+
+def build_impact_statistics(detail_papers: List[dict], person_candidates: List[dict]):
+    person_statistics = build_person_statistics(person_candidates)
+    citation_statistics = build_citation_method_statistics(detail_papers)
+    return {
+        "person": person_statistics,
+        "citation_methods": citation_statistics,
+    }
+
+
 def enrich_papers_with_candidate_hits(session: dict):
-    candidate_map: dict[str, list[dict]] = {}
+    candidate_map: Dict[str, List[dict]] = {}
     for candidate in session.get("person_candidates", []):
         for paper_id in candidate.get("matched_paper_ids", []):
             candidate_map.setdefault(paper_id, []).append(candidate)
@@ -1704,9 +1859,36 @@ def render_phase1_export_markdown(detail_payload: dict):
         f"- Confirmed：{person_summary.get('confirmed_count', 0)}",
         f"- Rejected：{person_summary.get('rejected_count', 0)}",
         "",
-        "## 引用论文分析",
+        "## 统计信息",
+        "",
+        "### 引用作者身份统计",
         "",
     ]
+    impact_statistics = detail_payload.get("impact_statistics", {})
+    for group in (impact_statistics.get("person") or {}).get("groups", []):
+        lines.append(
+            f"- {group.get('label')}：{group.get('count', 0)} 人"
+            f"（已确认 {group.get('confirmed_count', 0)}，待确认 {group.get('pending_count', 0)}）"
+        )
+        for candidate in group.get("candidates", [])[:8]:
+            paper_ids = ", ".join(candidate.get("matched_paper_ids", [])) or "-"
+            lines.append(
+                f"  - {candidate.get('name')} | {candidate.get('status')} | 命中论文：{paper_ids}"
+            )
+    lines.extend([
+        "",
+        "### 引用方式统计",
+        "",
+    ])
+    for group in (impact_statistics.get("citation_methods") or {}).get("groups", []):
+        lines.append(f"- {group.get('label')}：{group.get('count', 0)} 篇")
+        for cited_item in group.get("items", [])[:8]:
+            lines.append(f"  - {cited_item.get('id')} {cited_item.get('title')}")
+    lines.extend([
+        "",
+        "## 引用论文分析",
+        "",
+    ])
     for item in detail_payload.get("papers", []):
         summary = item.get("citation_method_summary", {})
         labels = " / ".join(summary.get("labels", [])) or "-"
@@ -1973,6 +2155,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
     confirmed_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "confirmed"]
     pending_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "pending"]
     rejected_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "rejected"]
+    impact_statistics = build_impact_statistics(detail_papers, status_payload.get("person_candidates", []))
 
     return {
         "target_overview": {
@@ -1999,6 +2182,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             },
         },
         "papers": detail_papers,
+        "impact_statistics": impact_statistics,
         "person_candidates": status_payload.get("person_candidates", []),
         "person_summary": {
             "pending_count": len(pending_candidates),

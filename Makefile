@@ -5,9 +5,12 @@ PHASE1_SMOKE_TOP_K_SPANS ?= 3
 PHASE1_SMOKE_SORT ?= recent
 FULLTEXT_CHECK_SESSION_ID ?=
 FULLTEXT_CHECK_PAPER_ID ?=
+PERSON_REGISTRY_SOURCE_DIR ?= data/reference/source_lists
+PERSON_REGISTRY_PATH ?= data/reference/person_tag_registry.json
+PERSON_REGISTRY_FETCH_ACM ?= 0
 PYTHON_CMD ?= python3
 
-.PHONY: test phase1-smoke fulltext-check
+.PHONY: test phase1-smoke fulltext-check person-registry-refresh
 test:
 	PYTHONPATH=.:$${PYTHONPATH:-} $(PYTHON_CMD) -m unittest discover -s tests -q
 
@@ -23,3 +26,9 @@ fulltext-check:
 	$(PYTHON_CMD) scripts/fulltext_ready_check.py \
 		$(if $(strip $(FULLTEXT_CHECK_SESSION_ID)),--session-id "$(FULLTEXT_CHECK_SESSION_ID)",) \
 		$(if $(strip $(FULLTEXT_CHECK_PAPER_ID)),--paper-id "$(FULLTEXT_CHECK_PAPER_ID)",)
+
+person-registry-refresh:
+	$(PYTHON_CMD) scripts/refresh_person_tag_registry.py \
+		--registry-path "$(PERSON_REGISTRY_PATH)" \
+		--source-dir "$(PERSON_REGISTRY_SOURCE_DIR)" \
+		$(if $(filter 1 true yes on,$(PERSON_REGISTRY_FETCH_ACM)),--fetch-acm,)

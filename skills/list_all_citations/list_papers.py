@@ -349,6 +349,11 @@ def build_openalex_author_details(citing: dict):
             "author_id": (author.get("id") or "").strip(),
             "source_url": source_url,
             "institutions": institutions,
+            "institution_ids": [
+                item.get("id")
+                for item in raw_institutions
+                if isinstance(item, dict) and item.get("id")
+            ],
         })
     return details
 

@@ -1,0 +1,53 @@
+{
+  "_comment": "用于自动生成 top_school 人物候选的机构白名单。只根据引用论文作者 metadata 中的机构命中生成待确认候选。",
+  "items": [
+    {
+      "name": "Massachusetts Institute of Technology",
+      "aliases": ["MIT"],
+      "source_links": ["https://www.mit.edu/"],
+      "note": "国外牛校作者机构命中"
+    },
+    {
+      "name": "Carnegie Mellon University",
+      "aliases": ["CMU"],
+      "source_links": ["https://www.cmu.edu/"],
+      "note": "国外牛校作者机构命中"
+    },
+    {
+      "name": "Stanford University",
+      "aliases": ["Stanford"],
+      "source_links": ["https://www.stanford.edu/"],
+      "note": "国外牛校作者机构命中"
+    },
+    {
+      "name": "University of California, Berkeley",
+      "aliases": ["UC Berkeley", "Berkeley"],
+      "source_links": ["https://www.berkeley.edu/"],
+      "note": "国外牛校作者机构命中"
+    },
+    {
+      "name": "Harvard University",
+      "aliases": ["Harvard"],
+      "source_links": ["https://www.harvard.edu/"],
+      "note": "国外牛校作者机构命中"
+    },
+    {
+      "name": "Princeton University",
+      "aliases": ["Princeton"],
+      "source_links": ["https://www.princeton.edu/"],
+      "note": "国外牛校作者机构命中"
+    },
+    {
+      "name": "University of Oxford",
+      "aliases": ["Oxford University", "Oxford"],
+      "source_links": ["https://www.ox.ac.uk/"],
+      "note": "国外牛校作者机构命中"
+    },
+    {
+      "name": "University of Cambridge",
+      "aliases": ["Cambridge University", "Cambridge"],
+      "source_links": ["https://www.cam.ac.uk/"],
+      "note": "国外牛校作者机构命中"
+    }
+  ]
+}

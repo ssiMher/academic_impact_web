@@ -74,6 +74,49 @@ PYTHONPATH=. python3 -m unittest discover -s tests -q
 - fulltext 相关单元测试只检查本地函数语义，不会用“跳过测试”掩盖服务或配置问题。
 - 需要检查模型服务配置、PDF 可用性时，单独运行 `make fulltext-check`。
 
+## 人物标签数据源
+
+统计区里的 ACM Fellow、IEEE Fellow、院士、国外牛校作者都走可审计数据源，不由模型猜测。
+
+本地维护或导入名单：
+
+```bash
+cd ~/projects/academic_impact_web
+make person-registry-refresh
+```
+
+默认读取：
+
+- `data/reference/source_lists/*.csv`
+- `data/reference/source_lists/*.json`
+
+写入：
+
+- `data/reference/person_tag_registry.json`
+
+CSV 字段示例：
+
+```csv
+name,tag_type,aliases,source_links,matched_affiliations,note
+Grace Hopper,ieee_fellow,G. Hopper,https://example.com/grace,,"IEEE Fellow source"
+```
+
+支持的 `tag_type`：
+
+- `acm_fellow`
+- `ieee_fellow`
+- `cas_academician`
+- `cae_academician`
+- `top_school`
+
+可选尝试抓取 ACM 官方 Fellows 页面：
+
+```bash
+make person-registry-refresh PERSON_REGISTRY_FETCH_ACM=1
+```
+
+注意：ACM 页面可能被 Cloudflare 拦截；失败时脚本只会报告 warning，不会写入伪数据。`top_school` 也会基于 `data/reference/top_institutions.json` 和引用论文作者机构自动生成待确认候选；最终仍需在页面里人工确认。
+
 ## 项目内环境配置
 
 全文分析相关配置统一走**项目内环境变量**，不再默认回退到 `~/.openclaw/.env`。

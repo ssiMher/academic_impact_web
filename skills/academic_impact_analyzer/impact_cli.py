@@ -1503,6 +1503,7 @@ def build_discover_session(
             "year": paper.get("year"),
             "venue": paper.get("venue"),
             "authors": paper.get("authors", []),
+            "author_details": paper.get("author_details", []),
             "externalIds": paper.get("externalIds", {}),
             "download_queries": RUN_PIPELINE.choose_download_queries(paper),
             "download_probe": download_probe,

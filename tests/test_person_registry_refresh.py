@@ -120,6 +120,36 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
             self.assertIn(('acm_fellow', 'Li, Fei-Fei'), items)
             self.assertIn('2025', items[('acm_fellow', 'Adar, Eytan')]['note'])
 
+    def test_refresh_imports_ieee_cs_copied_page_text(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            registry_path = tmp / 'person_tag_registry.json'
+            source_dir = tmp / 'source_lists'
+            source_dir.mkdir()
+            registry_path.write_text('{"items": []}', encoding='utf-8')
+            (source_dir / 'ieee_cs_fellows_2026.txt').write_text(
+                'IEEE Computer Society Announces 2026 Class of Fellows\n'
+                '* Tamim Asfour - for contributions to humanoid robotics and robot learning\n'
+                '* Anupam Chattopadhyay for contributions to embedded systems security\n',
+                encoding='utf-8',
+            )
+
+            output = StringIO()
+            with redirect_stdout(output):
+                exit_code = refresh_person_tag_registry.main([
+                    '--registry-path', str(registry_path),
+                    '--source-dir', str(source_dir),
+                ])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn('"source_entry_count": 2', output.getvalue())
+            payload = json.loads(registry_path.read_text(encoding='utf-8'))
+            items = {(item['tag_type'], item['name']): item for item in payload['items']}
+            self.assertIn(('ieee_fellow', 'Tamim Asfour'), items)
+            self.assertIn(('ieee_fellow', 'Anupam Chattopadhyay'), items)
+            self.assertIn('class 2026', items[('ieee_fellow', 'Tamim Asfour')]['note'])
+            self.assertIn('https://www.computer.org/press-room/2026-class-fellows', items[('ieee_fellow', 'Tamim Asfour')]['source_links'])
+
     def test_top_institution_candidates_use_author_details(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -169,6 +199,20 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
             self.assertEqual(candidate['matched_paper_ids'], ['P001'])
             self.assertEqual(candidate['matched_affiliations'], ['Massachusetts Institute of Technology'])
             self.assertEqual(candidate['evidence'][0]['match_type'], 'top_institution_affiliation')
+
+    def test_short_top_institution_aliases_require_token_boundaries(self):
+        institutions = [
+            {
+                'name': 'Massachusetts Institute of Technology',
+                'aliases': ['MIT'],
+            }
+        ]
+
+        self.assertIsNone(person_candidates.match_top_institution('Smith College', institutions))
+        self.assertEqual(
+            person_candidates.match_top_institution('MIT Computer Science and Artificial Intelligence Laboratory', institutions)['name'],
+            'Massachusetts Institute of Technology',
+        )
 
 
 if __name__ == '__main__':

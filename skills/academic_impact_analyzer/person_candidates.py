@@ -116,7 +116,14 @@ def match_top_institution(institution_name: str, institutions: list[dict[str, An
         names = [institution.get("name", ""), *(institution.get("aliases", []) or [])]
         for candidate_name in names:
             normalized_candidate = normalize_name(candidate_name)
-            if normalized_candidate and normalized_candidate in normalized:
+            if not normalized_candidate:
+                continue
+            if len(normalized_candidate) <= 4:
+                pattern = rf"(?<![A-Za-z0-9]){re.escape(str(candidate_name).strip())}(?![A-Za-z0-9])"
+                if re.search(pattern, institution_name, flags=re.IGNORECASE):
+                    return institution
+                continue
+            if normalized_candidate in normalized:
                 return institution
     return None
 

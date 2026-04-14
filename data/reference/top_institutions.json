@@ -1,53 +1,173 @@
 {
-  "_comment": "用于自动生成 top_school 人物候选的机构白名单。只根据引用论文作者 metadata 中的机构命中生成待确认候选。",
+  "_comment": "用于自动生成 top_school 人物候选的机构种子名单。不是排名声明，可按组内口径增删机构和别名。",
   "items": [
     {
       "name": "Massachusetts Institute of Technology",
-      "aliases": ["MIT"],
-      "source_links": ["https://www.mit.edu/"],
-      "note": "国外牛校作者机构命中"
-    },
-    {
-      "name": "Carnegie Mellon University",
-      "aliases": ["CMU"],
-      "source_links": ["https://www.cmu.edu/"],
-      "note": "国外牛校作者机构命中"
+      "aliases": ["MIT", "MIT CSAIL", "Computer Science and Artificial Intelligence Laboratory"],
+      "source_links": ["https://www.mit.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
     },
     {
       "name": "Stanford University",
       "aliases": ["Stanford"],
-      "source_links": ["https://www.stanford.edu/"],
-      "note": "国外牛校作者机构命中"
+      "source_links": ["https://www.stanford.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "Carnegie Mellon University",
+      "aliases": ["CMU", "Carnegie Mellon"],
+      "source_links": ["https://www.cmu.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
     },
     {
       "name": "University of California, Berkeley",
-      "aliases": ["UC Berkeley", "Berkeley"],
-      "source_links": ["https://www.berkeley.edu/"],
-      "note": "国外牛校作者机构命中"
+      "aliases": ["UC Berkeley", "Berkeley", "UCB"],
+      "source_links": ["https://www.berkeley.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
     },
     {
-      "name": "Harvard University",
-      "aliases": ["Harvard"],
-      "source_links": ["https://www.harvard.edu/"],
-      "note": "国外牛校作者机构命中"
+      "name": "University of Illinois Urbana-Champaign",
+      "aliases": ["UIUC", "University of Illinois at Urbana-Champaign", "University of Illinois, Urbana-Champaign"],
+      "source_links": ["https://illinois.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University of Washington",
+      "aliases": ["UW Allen School", "Paul G. Allen School of Computer Science & Engineering"],
+      "source_links": ["https://www.washington.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "Cornell University",
+      "aliases": ["Cornell"],
+      "source_links": ["https://www.cornell.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
     },
     {
       "name": "Princeton University",
       "aliases": ["Princeton"],
-      "source_links": ["https://www.princeton.edu/"],
-      "note": "国外牛校作者机构命中"
+      "source_links": ["https://www.princeton.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
     },
     {
-      "name": "University of Oxford",
-      "aliases": ["Oxford University", "Oxford"],
-      "source_links": ["https://www.ox.ac.uk/"],
-      "note": "国外牛校作者机构命中"
+      "name": "Harvard University",
+      "aliases": ["Harvard"],
+      "source_links": ["https://www.harvard.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "California Institute of Technology",
+      "aliases": ["Caltech"],
+      "source_links": ["https://www.caltech.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "Georgia Institute of Technology",
+      "aliases": ["Georgia Tech"],
+      "source_links": ["https://www.gatech.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University of Texas at Austin",
+      "aliases": ["UT Austin", "The University of Texas at Austin"],
+      "source_links": ["https://www.utexas.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University of Michigan",
+      "aliases": ["University of Michigan Ann Arbor", "University of Michigan, Ann Arbor"],
+      "source_links": ["https://umich.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University of California, San Diego",
+      "aliases": ["UC San Diego", "UCSD"],
+      "source_links": ["https://ucsd.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University of California, Los Angeles",
+      "aliases": ["UCLA"],
+      "source_links": ["https://www.ucla.edu/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University of Toronto",
+      "aliases": ["U of T", "Toronto"],
+      "source_links": ["https://www.utoronto.ca/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University of British Columbia",
+      "aliases": ["UBC"],
+      "source_links": ["https://www.ubc.ca/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "ETH Zurich",
+      "aliases": ["ETH", "ETH Zurich", "Swiss Federal Institute of Technology Zurich"],
+      "source_links": ["https://ethz.ch/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "EPFL",
+      "aliases": ["Ecole Polytechnique Federale de Lausanne", "Ecole polytechnique federale de Lausanne"],
+      "source_links": ["https://www.epfl.ch/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
     },
     {
       "name": "University of Cambridge",
-      "aliases": ["Cambridge University", "Cambridge"],
-      "source_links": ["https://www.cam.ac.uk/"],
-      "note": "国外牛校作者机构命中"
+      "aliases": ["Cambridge University"],
+      "source_links": ["https://www.cam.ac.uk/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University of Oxford",
+      "aliases": ["Oxford University"],
+      "source_links": ["https://www.ox.ac.uk/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "Imperial College London",
+      "aliases": ["Imperial College"],
+      "source_links": ["https://www.imperial.ac.uk/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University College London",
+      "aliases": ["UCL"],
+      "source_links": ["https://www.ucl.ac.uk/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "National University of Singapore",
+      "aliases": ["NUS"],
+      "source_links": ["https://nus.edu.sg/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "Nanyang Technological University",
+      "aliases": ["NTU Singapore", "Nanyang Technological University Singapore"],
+      "source_links": ["https://www.ntu.edu.sg/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "Hong Kong University of Science and Technology",
+      "aliases": ["HKUST"],
+      "source_links": ["https://hkust.edu.hk/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "Korea Advanced Institute of Science and Technology",
+      "aliases": ["KAIST"],
+      "source_links": ["https://www.kaist.ac.kr/en/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
+    },
+    {
+      "name": "University of Tokyo",
+      "aliases": ["The University of Tokyo"],
+      "source_links": ["https://www.u-tokyo.ac.jp/en/", "https://csrankings.org/"],
+      "note": "国外顶尖计算机机构种子命中"
     }
   ]
 }

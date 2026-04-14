@@ -35,6 +35,28 @@ data/reference/source_lists/acm_fellows_paste.txt
 
 Then run `make person-registry-refresh`.
 
+IEEE Computer Society Fellow class pages can be handled the same way. Save the copied page text as, for example:
+
+```text
+data/reference/source_lists/ieee_cs_fellows_2026.txt
+```
+
+Rows shaped like these are imported as `ieee_fellow`:
+
+```text
+IEEE Computer Society Announces 2026 Class of Fellows
+Tamim Asfour - for contributions to humanoid robotics and robot learning
+Anupam Chattopadhyay for contributions to embedded systems security
+```
+
+You can also try live IEEE CS fetches:
+
+```bash
+make person-registry-refresh PERSON_REGISTRY_FETCH_IEEE_CS=1
+```
+
+If the site returns HTTP 403, paste the page text into a `.txt` file instead.
+
 Supported JSON formats:
 
 ```json

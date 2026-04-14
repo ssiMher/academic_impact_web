@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REGISTRY_PATH = ROOT / "data" / "reference" / "person_tag_registry.json"
 DEFAULT_SOURCE_DIR = ROOT / "data" / "reference" / "source_lists"
 ACM_FELLOWS_URL = "https://awards.acm.org/fellows/award-recipients"
+IEEE_CS_WIKIPEDIA_URL = "https://en.wikipedia.org/wiki/List_of_fellows_of_IEEE_Computer_Society"
 IEEE_CS_FELLOW_URLS = {
     "2026": "https://www.computer.org/press-room/2026-class-fellows",
     "2025": "https://www.computer.org/press-room/2025-class-fellows",
@@ -151,6 +152,8 @@ def build_ieee_cs_entry(
     citation = re.sub(r"\s+", " ", (citation or "").strip(" .;"))
     if citation:
         note += f"; citation: {citation}"
+    if "wikipedia.org" in source_url:
+        note += "; source: Wikipedia secondary source"
     return {
         "name": name,
         "tag_type": "ieee_fellow",
@@ -213,8 +216,114 @@ def infer_ieee_cs_source_url(year: str = "", fallback: str = "") -> str:
     return fallback or IEEE_CS_FELLOW_URLS.get(str(year or ""), "")
 
 
+def clean_wikipedia_fellow_name(name: str) -> str:
+    name = re.sub(r"\[[^\]]+\]", "", name or "")
+    name = re.sub(r"\s+", " ", name).strip()
+    return name
+
+
+def parse_ieee_cs_wikipedia_rows(rows: list[list[str]], source_url: str = IEEE_CS_WIKIPEDIA_URL) -> list[dict[str, Any]]:
+    entries = []
+    seen = set()
+    for row in rows:
+        cells = [re.sub(r"\s+", " ", str(cell or "")).strip() for cell in row]
+        cells = [cell for cell in cells if cell]
+        if len(cells) < 2 or not re.fullmatch(r"\d{4}", cells[0]):
+            continue
+        year = cells[0]
+        citation_index = next((index for index, cell in enumerate(cells[1:], start=1) if cell.lower().startswith("for ")), 0)
+        if citation_index:
+            name_parts = cells[1:citation_index]
+            citation = " ".join(cells[citation_index:])
+        else:
+            name_parts = cells[1:2]
+            citation = " ".join(cells[2:])
+        name = clean_wikipedia_fellow_name(" ".join(name_parts))
+        entry = build_ieee_cs_entry(name, year, citation=citation, source_url=source_url)
+        if not entry:
+            continue
+        key = normalize_name(entry["name"])
+        if key in seen:
+            continue
+        seen.add(key)
+        entries.append(entry)
+    return entries
+
+
+class TableCollector(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.in_wikitable = False
+        self.table_depth = 0
+        self.in_row = False
+        self.in_cell = False
+        self.cell_parts: list[str] = []
+        self.current_row: list[str] = []
+        self.rows: list[list[str]] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]):
+        attrs_dict = dict(attrs)
+        if tag == "table" and "wikitable" in (attrs_dict.get("class") or "") and not self.in_wikitable:
+            self.in_wikitable = True
+            self.table_depth = 1
+            return
+        if self.in_wikitable and tag == "table":
+            self.table_depth += 1
+        if not self.in_wikitable:
+            return
+        if tag == "tr":
+            self.in_row = True
+            self.current_row = []
+        elif tag in {"td", "th"} and self.in_row:
+            self.in_cell = True
+            self.cell_parts = []
+
+    def handle_endtag(self, tag: str):
+        if not self.in_wikitable:
+            return
+        if tag in {"td", "th"} and self.in_cell:
+            self.current_row.append(re.sub(r"\s+", " ", " ".join(self.cell_parts)).strip())
+            self.in_cell = False
+            self.cell_parts = []
+        elif tag == "tr" and self.in_row:
+            if self.current_row:
+                self.rows.append(self.current_row)
+            self.in_row = False
+            self.current_row = []
+        elif tag == "table":
+            self.table_depth -= 1
+            if self.table_depth <= 0:
+                self.in_wikitable = False
+
+    def handle_data(self, data: str):
+        if self.in_cell:
+            text = html.unescape(data or "").strip()
+            if text:
+                self.cell_parts.append(text)
+
+
+def parse_ieee_cs_wikipedia_table(content: str, source_url: str = IEEE_CS_WIKIPEDIA_URL) -> list[dict[str, Any]]:
+    content = str(content or "")
+    if "<" in content and "wikitable" in content:
+        parser = TableCollector()
+        parser.feed(content)
+        return parse_ieee_cs_wikipedia_rows(parser.rows, source_url=source_url)
+
+    rows = []
+    for raw_line in content.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if "\t" in line:
+            rows.append([cell.strip() for cell in line.split("\t")])
+    return parse_ieee_cs_wikipedia_rows(rows, source_url=source_url)
+
+
 def parse_ieee_cs_fellows_text(content: str, source_url: str = "") -> list[dict[str, Any]]:
     text = collect_visible_text(content)
+    wikipedia_entries = parse_ieee_cs_wikipedia_table(text, source_url=source_url or IEEE_CS_WIKIPEDIA_URL)
+    if wikipedia_entries:
+        return wikipedia_entries
     year = infer_ieee_cs_year(text, source_url=source_url)
     source_url = infer_ieee_cs_source_url(year, source_url)
     entries = []
@@ -257,6 +366,8 @@ def load_entries_from_text(path: Path) -> list[dict[str, Any]]:
     content = path.read_text(encoding="utf-8-sig")
     if "ACM Fellows" in content:
         return parse_acm_copied_table_text(content)
+    if "Year" in content and "Fellow" in content and "Citation" in content:
+        return parse_ieee_cs_wikipedia_table(content)
     if "IEEE Computer Society" in content and "Fellow" in content:
         source_url = infer_ieee_cs_source_url(infer_ieee_cs_year(path.name))
         return parse_ieee_cs_fellows_text(content, source_url=source_url)
@@ -350,6 +461,20 @@ def fetch_ieee_cs_fellows(urls: list[str] | None = None) -> tuple[list[dict[str,
     return entries, warnings
 
 
+def fetch_ieee_cs_wikipedia(url: str = IEEE_CS_WIKIPEDIA_URL) -> tuple[list[dict[str, Any]], str]:
+    response = requests.get(
+        url,
+        timeout=30,
+        headers={"User-Agent": "academic-impact-web/1.0 (+https://github.com/ssiMher/academic_impact_web)"},
+    )
+    if response.status_code != 200:
+        return [], f"IEEE CS Wikipedia fallback fetch failed: HTTP {response.status_code}"
+    entries = parse_ieee_cs_wikipedia_table(response.text, source_url=url)
+    if not entries:
+        return [], "IEEE CS Wikipedia fallback fetch returned no parseable entries"
+    return entries, ""
+
+
 def merge_entries(existing_items: list[dict[str, Any]], new_entries: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, int]]:
     merged: dict[tuple[str, str], dict[str, Any]] = {}
     added = 0
@@ -402,6 +527,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="尝试从 IEEE Computer Society 官方 Fellow class 页面抓取 ieee_fellow 名单。",
     )
     parser.add_argument("--ieee-cs-url", action="append", default=[])
+    parser.add_argument(
+        "--fetch-ieee-cs-wikipedia",
+        action="store_true",
+        help="从 Wikipedia 的 IEEE Computer Society Fellows 列表抓取 ieee_fellow 二级来源候选。",
+    )
+    parser.add_argument("--ieee-cs-wikipedia-url", default=IEEE_CS_WIKIPEDIA_URL)
     parser.add_argument("--dry-run", action="store_true")
     return parser
 
@@ -423,6 +554,11 @@ def main(argv: list[str] | None = None) -> int:
         ieee_entries, warnings = fetch_ieee_cs_fellows(args.ieee_cs_url or None)
         source_entries.extend(ieee_entries)
         fetch_warnings.extend(warnings)
+    if args.fetch_ieee_cs_wikipedia:
+        ieee_wiki_entries, warning = fetch_ieee_cs_wikipedia(args.ieee_cs_wikipedia_url)
+        source_entries.extend(ieee_wiki_entries)
+        if warning:
+            fetch_warnings.append(warning)
 
     merged_items, stats = merge_entries(registry.get("items", []), source_entries)
     registry["items"] = merged_items

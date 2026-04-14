@@ -57,6 +57,28 @@ make person-registry-refresh PERSON_REGISTRY_FETCH_IEEE_CS=1
 
 If the site returns HTTP 403, paste the page text into a `.txt` file instead.
 
+When `computer.org` is blocked, the Wikipedia page for `List of fellows of IEEE Computer Society` can be used as a secondary-source fallback. Copied tables shaped like this are also imported as `ieee_fellow`:
+
+```text
+Year	Fellow	Citation
+2020	Hussein Abbass	For contributions to evolutionary learning and optimization
+2023	Gail-Joon Ahn	For development of applications of information and systems security
+```
+
+The live fallback fetch is:
+
+```bash
+make person-registry-refresh PERSON_REGISTRY_FETCH_IEEE_CS_WIKIPEDIA=1
+```
+
+This repository also includes a generated secondary-source snapshot:
+
+```text
+data/reference/source_lists/ieee_computer_society_fellows_wikipedia.json
+```
+
+Regenerate it only when the source page changes, and prefer official IEEE / Computer Society source files when they are reachable.
+
 Supported JSON formats:
 
 ```json

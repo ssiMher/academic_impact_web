@@ -121,7 +121,15 @@ make person-registry-refresh PERSON_REGISTRY_FETCH_ACM=1
 make person-registry-refresh PERSON_REGISTRY_FETCH_IEEE_CS=1
 ```
 
-注意：ACM / IEEE 页面可能被 Cloudflare 或站点策略拦截；失败时脚本只会报告 warning，不会写入伪数据。此时可把浏览器复制出来的 ACM Fellows 表格或 IEEE CS Fellow 页面文本放入 `data/reference/source_lists/*.txt` 后再刷新。`top_school` 也会基于 `data/reference/top_institutions.json` 和引用论文作者机构自动生成待确认候选；最终仍需在页面里人工确认。
+如果 `computer.org` 被 CloudFront 拦截，可用 Wikipedia 的 IEEE Computer Society Fellows 页面作为二级来源 fallback：
+
+```bash
+make person-registry-refresh PERSON_REGISTRY_FETCH_IEEE_CS_WIKIPEDIA=1
+```
+
+仓库已带一个 Wikipedia 二级来源快照：`data/reference/source_lists/ieee_computer_society_fellows_wikipedia.json`。服务器 `git pull` 后直接跑 `make person-registry-refresh` 就会把这些 IEEE Computer Society Fellow 候选并入本地 registry。
+
+注意：ACM / IEEE 页面可能被 Cloudflare 或站点策略拦截；失败时脚本只会报告 warning，不会写入伪数据。此时可把浏览器复制出来的 ACM Fellows 表格、IEEE CS Fellow 页面文本，或 Wikipedia 的 `Year / Fellow / Citation` 表格放入 `data/reference/source_lists/*.txt` 后再刷新。`top_school` 也会基于 `data/reference/top_institutions.json` 和引用论文作者机构自动生成待确认候选；最终仍需在页面里人工确认。
 
 ## 项目内环境配置
 

@@ -150,6 +150,54 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
             self.assertIn('class 2026', items[('ieee_fellow', 'Tamim Asfour')]['note'])
             self.assertIn('https://www.computer.org/press-room/2026-class-fellows', items[('ieee_fellow', 'Tamim Asfour')]['source_links'])
 
+    def test_refresh_imports_ieee_cs_wikipedia_table_text(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            registry_path = tmp / 'person_tag_registry.json'
+            source_dir = tmp / 'source_lists'
+            source_dir.mkdir()
+            registry_path.write_text('{"items": []}', encoding='utf-8')
+            (source_dir / 'ieee_cs_wikipedia.txt').write_text(
+                'Year\tFellow\tCitation\n'
+                '2020\tHussein Abbass\tFor contributions to evolutionary learning and optimization\n'
+                '2026\t\tWei Zhang\tFor contributions to agile design flow for FPGA and software-hardware co-design for embedded system security\n'
+                '2014\tKrste Asanović\tFor contributions to computer architecture\n',
+                encoding='utf-8',
+            )
+
+            output = StringIO()
+            with redirect_stdout(output):
+                exit_code = refresh_person_tag_registry.main([
+                    '--registry-path', str(registry_path),
+                    '--source-dir', str(source_dir),
+                ])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn('"source_entry_count": 3', output.getvalue())
+            payload = json.loads(registry_path.read_text(encoding='utf-8'))
+            items = {(item['tag_type'], item['name']): item for item in payload['items']}
+            self.assertIn(('ieee_fellow', 'Hussein Abbass'), items)
+            self.assertIn(('ieee_fellow', 'Wei Zhang'), items)
+            self.assertIn(('ieee_fellow', 'Krste Asanović'), items)
+            self.assertIn('class 2026', items[('ieee_fellow', 'Wei Zhang')]['note'])
+            self.assertIn('Wikipedia secondary source', items[('ieee_fellow', 'Wei Zhang')]['note'])
+            self.assertIn('agile design flow', items[('ieee_fellow', 'Wei Zhang')]['note'])
+
+    def test_parse_ieee_cs_wikipedia_html_extracts_table_rows(self):
+        html = """
+        <table class="wikitable">
+          <tr><th>Year</th><th>Fellow</th><th>Citation</th></tr>
+          <tr><td>2023</td><td>Gail-Joon Ahn</td><td>For development of applications of information and systems security</td></tr>
+          <tr><td>2017</td><td>Todd Austin [de]</td><td>For contributions to simulation techniques</td></tr>
+        </table>
+        """
+
+        entries = refresh_person_tag_registry.parse_ieee_cs_wikipedia_table(html)
+
+        self.assertEqual([entry['name'] for entry in entries], ['Gail-Joon Ahn', 'Todd Austin'])
+        self.assertIn('class 2023', entries[0]['note'])
+        self.assertEqual(entries[0]['source_links'], ['https://en.wikipedia.org/wiki/List_of_fellows_of_IEEE_Computer_Society'])
+
     def test_top_institution_candidates_use_author_details(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)

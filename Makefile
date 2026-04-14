@@ -9,6 +9,7 @@ PERSON_REGISTRY_SOURCE_DIR ?= data/reference/source_lists
 PERSON_REGISTRY_PATH ?= data/reference/person_tag_registry.json
 PERSON_REGISTRY_FETCH_ACM ?= 0
 PERSON_REGISTRY_FETCH_IEEE_CS ?= 0
+PERSON_REGISTRY_FETCH_IEEE_CS_WIKIPEDIA ?= 0
 PYTHON_CMD ?= python3
 
 .PHONY: test phase1-smoke fulltext-check person-registry-refresh
@@ -33,4 +34,5 @@ person-registry-refresh:
 		--registry-path "$(PERSON_REGISTRY_PATH)" \
 		--source-dir "$(PERSON_REGISTRY_SOURCE_DIR)" \
 		$(if $(filter 1 true yes on,$(PERSON_REGISTRY_FETCH_ACM)),--fetch-acm,) \
-		$(if $(filter 1 true yes on,$(PERSON_REGISTRY_FETCH_IEEE_CS)),--fetch-ieee-cs,)
+		$(if $(filter 1 true yes on,$(PERSON_REGISTRY_FETCH_IEEE_CS)),--fetch-ieee-cs,) \
+		$(if $(filter 1 true yes on,$(PERSON_REGISTRY_FETCH_IEEE_CS_WIKIPEDIA)),--fetch-ieee-cs-wikipedia,)

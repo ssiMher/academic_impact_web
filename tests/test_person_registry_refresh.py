@@ -198,6 +198,21 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
         self.assertIn('class 2023', entries[0]['note'])
         self.assertEqual(entries[0]['source_links'], ['https://en.wikipedia.org/wiki/List_of_fellows_of_IEEE_Computer_Society'])
 
+    def test_ieee_wikipedia_parser_uses_society_from_source_url(self):
+        html = """
+        <table class="wikitable">
+          <tr><th>Year</th><th>Fellow</th><th>Citation</th></tr>
+          <tr><td>2022</td><td>Ada Example</td><td>For contributions to wireless networks</td></tr>
+        </table>
+        """
+
+        entries = refresh_person_tag_registry.parse_ieee_cs_wikipedia_table(
+            html,
+            source_url='https://en.wikipedia.org/wiki/List_of_fellows_of_IEEE_Communications_Society',
+        )
+
+        self.assertIn('IEEE Communications Society Fellow', entries[0]['note'])
+
     def test_top_institution_candidates_use_author_details(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)

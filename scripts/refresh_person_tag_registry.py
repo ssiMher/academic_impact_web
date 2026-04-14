@@ -18,6 +18,7 @@ DEFAULT_REGISTRY_PATH = ROOT / "data" / "reference" / "person_tag_registry.json"
 DEFAULT_SOURCE_DIR = ROOT / "data" / "reference" / "source_lists"
 ACM_FELLOWS_URL = "https://awards.acm.org/fellows/award-recipients"
 IEEE_CS_WIKIPEDIA_URL = "https://en.wikipedia.org/wiki/List_of_fellows_of_IEEE_Computer_Society"
+IEEE_WIKIPEDIA_INDEX_URL = "https://en.wikipedia.org/wiki/Lists_of_fellows_of_the_IEEE"
 IEEE_CS_FELLOW_URLS = {
     "2026": "https://www.computer.org/press-room/2026-class-fellows",
     "2025": "https://www.computer.org/press-room/2025-class-fellows",
@@ -140,13 +141,15 @@ def build_ieee_cs_entry(
     year: str = "",
     citation: str = "",
     source_url: str = "",
+    society: str = "Computer Society",
 ) -> dict[str, Any] | None:
     name = (name or "").strip()
     if not name or normalize_name(name) in {"name", "award", "year", "region", "dl"}:
         return None
     if normalize_name(name).startswith("ieeecomputersociety"):
         return None
-    note = "IEEE Computer Society Fellow"
+    society = re.sub(r"\s+", " ", (society or "Computer Society").strip())
+    note = f"IEEE {society} Fellow"
     if year:
         note += f" class {year}"
     citation = re.sub(r"\s+", " ", (citation or "").strip(" .;"))
@@ -222,9 +225,20 @@ def clean_wikipedia_fellow_name(name: str) -> str:
     return name
 
 
+def infer_ieee_wikipedia_society(source_url: str) -> str:
+    match = re.search(r"List_of_fellows_of_IEEE_([^#?]+)", source_url or "")
+    if not match:
+        return "Computer Society"
+    value = html.unescape(match.group(1)).replace("_", " ")
+    value = re.sub(r"%26", "&", value)
+    value = re.sub(r"\s+", " ", value).strip()
+    return value or "Computer Society"
+
+
 def parse_ieee_cs_wikipedia_rows(rows: list[list[str]], source_url: str = IEEE_CS_WIKIPEDIA_URL) -> list[dict[str, Any]]:
     entries = []
     seen = set()
+    society = infer_ieee_wikipedia_society(source_url)
     for row in rows:
         cells = [re.sub(r"\s+", " ", str(cell or "")).strip() for cell in row]
         cells = [cell for cell in cells if cell]
@@ -239,7 +253,7 @@ def parse_ieee_cs_wikipedia_rows(rows: list[list[str]], source_url: str = IEEE_C
             name_parts = cells[1:2]
             citation = " ".join(cells[2:])
         name = clean_wikipedia_fellow_name(" ".join(name_parts))
-        entry = build_ieee_cs_entry(name, year, citation=citation, source_url=source_url)
+        entry = build_ieee_cs_entry(name, year, citation=citation, source_url=source_url, society=society)
         if not entry:
             continue
         key = normalize_name(entry["name"])

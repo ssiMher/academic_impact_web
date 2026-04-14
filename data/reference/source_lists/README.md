@@ -75,9 +75,19 @@ This repository also includes a generated secondary-source snapshot:
 
 ```text
 data/reference/source_lists/ieee_computer_society_fellows_wikipedia.json
+data/reference/source_lists/ieee_cross_field_fellows_wikipedia.json
 ```
 
 Regenerate it only when the source page changes, and prefer official IEEE / Computer Society source files when they are reachable.
+
+The cross-field IEEE snapshot currently covers the Wikipedia lists that were reachable for Communications, Circuits and Systems, Computational Intelligence, and Control Systems. Wikipedia redlinks or list pages with non-table structures are skipped until an official or parseable source is available.
+
+CAS / CAE information-field academicians are also maintained as generated official-source snapshots:
+
+```text
+data/reference/source_lists/cas_information_technology_academicians_official.json
+data/reference/source_lists/cae_information_electronics_academicians_official.json
+```
 
 Supported JSON formats:
 

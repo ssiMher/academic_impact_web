@@ -20,6 +20,21 @@ Grace Hopper,ieee_fellow,G. Hopper,https://example.com/grace,,"IEEE Fellow sourc
 Alan Turing,acm_fellow,A. Turing,https://example.com/turing,Princeton University,"ACM Fellow source"
 ```
 
+You can also paste the copied ACM Fellows award table into a `.txt` or `.tsv` file. The importer recognizes rows shaped like:
+
+```text
+Adar, Eytan	ACM Fellows	2025	North America	Digital Library
+Bengio, Yoshua	ACM Fellows	2023	North America	Digital Library
+```
+
+Save browser-copied ACM rows as, for example:
+
+```text
+data/reference/source_lists/acm_fellows_paste.txt
+```
+
+Then run `make person-registry-refresh`.
+
 Supported JSON formats:
 
 ```json

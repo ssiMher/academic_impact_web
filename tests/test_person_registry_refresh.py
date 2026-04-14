@@ -89,6 +89,37 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
         self.assertEqual(entries[0]['source_links'], ['https://example.com/acm'])
         self.assertIn('2017', entries[0]['note'])
 
+    def test_refresh_imports_acm_copied_table_text(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            registry_path = tmp / 'person_tag_registry.json'
+            source_dir = tmp / 'source_lists'
+            source_dir.mkdir()
+            registry_path.write_text('{"items": []}', encoding='utf-8')
+            (source_dir / 'acm_fellows_paste.txt').write_text(
+                'Name\nAward\nYear\nRegion\nDL\n'
+                'Adar, Eytan\tACM Fellows\t2025\tNorth America\tDigital Library\n'
+                'Bengio, Yoshua\tACM Fellows\t2023\tNorth America\tDigital Library\n'
+                'Li, Fei-Fei ACM Fellows 2018 North America Digital Library\n',
+                encoding='utf-8',
+            )
+
+            output = StringIO()
+            with redirect_stdout(output):
+                exit_code = refresh_person_tag_registry.main([
+                    '--registry-path', str(registry_path),
+                    '--source-dir', str(source_dir),
+                ])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn('"source_entry_count": 3', output.getvalue())
+            payload = json.loads(registry_path.read_text(encoding='utf-8'))
+            items = {(item['tag_type'], item['name']): item for item in payload['items']}
+            self.assertIn(('acm_fellow', 'Adar, Eytan'), items)
+            self.assertIn(('acm_fellow', 'Bengio, Yoshua'), items)
+            self.assertIn(('acm_fellow', 'Li, Fei-Fei'), items)
+            self.assertIn('2025', items[('acm_fellow', 'Adar, Eytan')]['note'])
+
     def test_top_institution_candidates_use_author_details(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)

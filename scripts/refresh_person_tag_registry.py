@@ -111,6 +111,61 @@ def load_entries_from_csv(path: Path) -> list[dict[str, Any]]:
     return entries
 
 
+def build_acm_entry(name: str, year: str = "", source_url: str = ACM_FELLOWS_URL) -> dict[str, Any] | None:
+    name = (name or "").strip()
+    if not name or normalize_name(name) in {"name", "award", "year", "region", "dl"}:
+        return None
+    note = "ACM Fellow"
+    if year:
+        note += f", elected {year}"
+    return {
+        "name": name,
+        "tag_type": "acm_fellow",
+        "aliases": [],
+        "source_links": [source_url],
+        "matched_affiliations": [],
+        "note": note,
+    }
+
+
+def parse_acm_copied_table_text(content: str, source_url: str = ACM_FELLOWS_URL) -> list[dict[str, Any]]:
+    entries = []
+    seen = set()
+    for raw_line in str(content or "").splitlines():
+        line = raw_line.strip()
+        if not line or line in {"Name", "Award", "Year", "Region", "DL"}:
+            continue
+
+        name = ""
+        year = ""
+        if "\t" in line:
+            cells = [cell.strip() for cell in line.split("\t")]
+            if len(cells) >= 3 and cells[1] == "ACM Fellows" and re.fullmatch(r"\d{4}", cells[2] or ""):
+                name = cells[0]
+                year = cells[2]
+        else:
+            match = re.match(r"^(?P<name>.+?)\s+ACM Fellows\s+(?P<year>\d{4})(?:\s+.*)?$", line)
+            if match:
+                name = match.group("name")
+                year = match.group("year")
+        entry = build_acm_entry(name, year, source_url=source_url)
+        if not entry:
+            continue
+        key = normalize_name(entry["name"])
+        if key in seen:
+            continue
+        seen.add(key)
+        entries.append(entry)
+    return entries
+
+
+def load_entries_from_text(path: Path) -> list[dict[str, Any]]:
+    content = path.read_text(encoding="utf-8-sig")
+    if "ACM Fellows" in content:
+        return parse_acm_copied_table_text(content)
+    return []
+
+
 def load_source_entries(source_dir: Path) -> list[dict[str, Any]]:
     if not source_dir.exists():
         return []
@@ -122,6 +177,8 @@ def load_source_entries(source_dir: Path) -> list[dict[str, Any]]:
             entries.extend(load_entries_from_json(path))
         elif path.suffix.lower() == ".csv":
             entries.extend(load_entries_from_csv(path))
+        elif path.suffix.lower() in {".txt", ".tsv"}:
+            entries.extend(load_entries_from_text(path))
     return entries
 
 
@@ -155,14 +212,9 @@ def parse_acm_fellows_html(content: str, source_url: str = ACM_FELLOWS_URL) -> l
         if not key or key in seen:
             continue
         seen.add(key)
-        entries.append({
-            "name": previous,
-            "tag_type": "acm_fellow",
-            "aliases": [],
-            "source_links": [source_url],
-            "matched_affiliations": [],
-            "note": f"ACM Fellow, elected {next_value}",
-        })
+        entry = build_acm_entry(previous, next_value, source_url=source_url)
+        if entry:
+            entries.append(entry)
     return entries
 
 

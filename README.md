@@ -137,6 +137,19 @@ make person-registry-refresh PERSON_REGISTRY_FETCH_IEEE_CS_WIKIPEDIA=1
 
 注意：ACM / IEEE 页面可能被 Cloudflare 或站点策略拦截；失败时脚本只会报告 warning，不会写入伪数据。此时可把浏览器复制出来的 ACM Fellows 表格、IEEE CS Fellow 页面文本，或 Wikipedia 的 `Year / Fellow / Citation` 表格放入 `data/reference/source_lists/*.txt` 后再刷新。`top_school` 也会基于 `data/reference/top_institutions.json` 和引用论文作者机构自动生成待确认候选；最终仍需在页面里人工确认。
 
+discover 默认仍以 Semantic Scholar 作为引用列表主源，OpenAlex 只在 Semantic Scholar 失败时作为 fallback；同时，Semantic Scholar 成功后会保守地用 OpenAlex 补充最终展示论文的作者机构信息，以提升 `top_school` 候选命中率。补强失败不会让 discover 失败，可用以下变量调整：
+
+```bash
+ACADEMIC_IMPACT_OPENALEX_ENRICH=1
+ACADEMIC_IMPACT_OPENALEX_ENRICH_LIMIT=20
+```
+
+如需临时关闭机构补强：
+
+```bash
+ACADEMIC_IMPACT_OPENALEX_ENRICH=0
+```
+
 ## 项目内环境配置
 
 全文分析相关配置统一走**项目内环境变量**，不再默认回退到 `~/.openclaw/.env`。

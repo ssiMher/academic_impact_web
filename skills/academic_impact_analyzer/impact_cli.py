@@ -1468,7 +1468,7 @@ def build_discover_session(
     if not list_result.get("ok"):
         return list_result
 
-    warnings = []
+    warnings = list(list_result.get("warnings") or [])
     try:
         contexts_result = FETCH_CONTEXTS.get_citation_contexts(query)
     except Exception as exc:

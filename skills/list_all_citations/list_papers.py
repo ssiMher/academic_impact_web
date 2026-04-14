@@ -2,6 +2,8 @@ import sys
 import json
 import time
 import requests
+import os
+import re
 import urllib.parse
 import hashlib
 from pathlib import Path
@@ -91,16 +93,18 @@ def safe_get(url, retries=5, sleep_sec=3):
 # ==========================================
 OPENALEX_HEADERS = {"User-Agent": "mailto:youdeng78@gmail.com"} 
 
-def safe_get_openalex(url):
+def safe_get_openalex(url, retries=3, sleep_sec=3):
     """专门为 OpenAlex 准备的请求函数，同样套用重试逻辑"""
-    for attempt in range(1, 4):
+    for attempt in range(1, retries + 1):
         try:
             r = requests.get(url, headers=OPENALEX_HEADERS, timeout=20)
             if r.status_code == 200:
                 return r
-            time.sleep(3)
+            if attempt < retries and sleep_sec:
+                time.sleep(sleep_sec)
         except Exception:
-            time.sleep(3)
+            if attempt < retries and sleep_sec:
+                time.sleep(sleep_sec)
     return None
 
 
@@ -357,7 +361,162 @@ def build_openalex_author_details(citing: dict):
         })
     return details
 
-def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "recent", fetch_limit: Optional[int] = None):
+def env_flag(name: str, default: bool = True) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() not in {"0", "false", "no", "off"}
+
+
+def env_int(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if value is None or not str(value).strip():
+        return default
+    try:
+        return max(0, int(value))
+    except ValueError:
+        return default
+
+
+def normalize_title_for_match(title: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", (title or "").lower())
+
+
+def normalize_doi(value: str) -> str:
+    doi = (value or "").strip().lower()
+    for prefix in ("https://doi.org/", "http://doi.org/", "doi:"):
+        if doi.startswith(prefix):
+            doi = doi[len(prefix):]
+            break
+    return doi
+
+
+def work_matches_paper(work: dict, paper: dict) -> bool:
+    external_ids = paper.get("externalIds") or {}
+    doi = normalize_doi(external_ids.get("DOI") or external_ids.get("doi") or "")
+    work_doi = normalize_doi(work.get("doi") or "")
+    if doi and work_doi and doi == work_doi:
+        return True
+
+    expected = normalize_title_for_match(paper.get("title") or "")
+    actual = normalize_title_for_match(work.get("title") or work.get("display_name") or "")
+    if not expected or not actual:
+        return False
+    if expected == actual:
+        return True
+    return min(len(expected), len(actual)) >= 24 and (expected in actual or actual in expected)
+
+
+def resolve_openalex_work_for_paper(paper: dict):
+    external_ids = paper.get("externalIds") or {}
+    doi = normalize_doi(external_ids.get("DOI") or external_ids.get("doi") or "")
+    if doi:
+        url = f"https://api.openalex.org/works/https://doi.org/{urllib.parse.quote(doi, safe='/:')}"
+        response = safe_get_openalex(url, retries=1, sleep_sec=0)
+        if response:
+            work = response.json()
+            return work if work_matches_paper(work, paper) else None
+
+    title = (paper.get("title") or "").strip()
+    if not title:
+        return None
+    search_url = f"https://api.openalex.org/works?search={urllib.parse.quote(title)}&per-page=1"
+    response = safe_get_openalex(search_url, retries=1, sleep_sec=0)
+    if not response:
+        return None
+    results = response.json().get("results") or []
+    if not results:
+        return None
+    work = results[0]
+    return work if work_matches_paper(work, paper) else None
+
+
+def merge_unique(existing: list, additions: list) -> list:
+    result = list(existing or [])
+    seen = {str(item).strip().lower() for item in result if str(item).strip()}
+    for item in additions or []:
+        value = str(item or "").strip()
+        if not value:
+            continue
+        key = value.lower()
+        if key not in seen:
+            result.append(value)
+            seen.add(key)
+    return result
+
+
+def enrich_paper_author_details_with_openalex(paper: dict, work: dict) -> bool:
+    openalex_details = build_openalex_author_details({
+        "authors": [
+            {
+                "name": authorship.get("author", {}).get("display_name"),
+                "id": authorship.get("author", {}).get("id"),
+                "institutions": authorship.get("institutions") or [],
+            }
+            for authorship in (work.get("authorships") or [])
+        ]
+    })
+    if not openalex_details:
+        return False
+
+    existing_details = paper.get("author_details") or []
+    by_name = {
+        (detail.get("name") or "").strip().lower(): detail
+        for detail in existing_details
+        if (detail.get("name") or "").strip()
+    }
+    changed = False
+    for openalex_author in openalex_details:
+        name_key = (openalex_author.get("name") or "").strip().lower()
+        if not name_key:
+            continue
+        existing = by_name.get(name_key)
+        if existing is None:
+            existing_details.append(openalex_author)
+            by_name[name_key] = openalex_author
+            changed = True
+            continue
+
+        before_institutions = list(existing.get("institutions") or [])
+        before_ids = list(existing.get("institution_ids") or [])
+        existing["institutions"] = merge_unique(before_institutions, openalex_author.get("institutions") or [])
+        existing["institution_ids"] = merge_unique(before_ids, openalex_author.get("institution_ids") or [])
+        if openalex_author.get("author_id") and not existing.get("openalex_author_id"):
+            existing["openalex_author_id"] = openalex_author.get("author_id")
+        if openalex_author.get("source_url") and not existing.get("openalex_source_url"):
+            existing["openalex_source_url"] = openalex_author.get("source_url")
+        changed = changed or existing["institutions"] != before_institutions or existing["institution_ids"] != before_ids
+
+    paper["author_details"] = existing_details
+    if changed:
+        paper["author_details_enriched_by"] = "OpenAlex"
+    return changed
+
+
+def enrich_papers_with_openalex(papers: list, limit: int) -> dict:
+    stats = {"attempted": 0, "enriched": 0, "warnings": []}
+    if limit <= 0:
+        return stats
+    for paper in papers[:limit]:
+        stats["attempted"] += 1
+        try:
+            work = resolve_openalex_work_for_paper(paper)
+            if work and enrich_paper_author_details_with_openalex(paper, work):
+                stats["enriched"] += 1
+        except Exception as exc:
+            title = (paper.get("title") or "Unknown Title")[:80]
+            stats["warnings"].append(f"OpenAlex affiliation enrichment skipped for {title}: {exc}")
+    return stats
+
+
+def list_all_citations(
+    query: str,
+    limit: Optional[int] = None,
+    sort_by: str = "recent",
+    fetch_limit: Optional[int] = None,
+    enrich_openalex: Optional[bool] = None,
+    openalex_enrichment_limit: Optional[int] = None,
+):
     #target = resolve_paper(query)
     #paper_id = target["paperId"]
     desired_limit = max(1, int(limit or 100))
@@ -366,6 +525,9 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
     # ==========================================
     # 1. 优先尝试 Semantic Scholar (主数据源)
     # ==========================================
+    enrichment_warnings = []
+    enrichment_stats = {"enabled": False, "attempted": 0, "enriched": 0}
+
     try:
         target = resolve_paper(query)
         paper_id = target["paperId"]
@@ -414,6 +576,26 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
     papers = sort_papers(papers, sort_by=sort_by)
     papers = papers[:desired_limit]
 
+    should_enrich = (
+        env_flag("ACADEMIC_IMPACT_OPENALEX_ENRICH", default=True)
+        if enrich_openalex is None
+        else bool(enrich_openalex)
+    )
+    if used_source == "Semantic Scholar" and should_enrich:
+        configured_limit = (
+            env_int("ACADEMIC_IMPACT_OPENALEX_ENRICH_LIMIT", min(desired_limit, 20))
+            if openalex_enrichment_limit is None
+            else max(0, int(openalex_enrichment_limit))
+        )
+        enrichment_result = enrich_papers_with_openalex(papers, limit=min(configured_limit, len(papers)))
+        enrichment_warnings.extend(enrichment_result.get("warnings") or [])
+        enrichment_stats = {
+            "enabled": True,
+            "attempted": enrichment_result.get("attempted", 0),
+            "enriched": enrichment_result.get("enriched", 0),
+            "limit": configured_limit,
+        }
+
     return {
         "ok": True,
         "target": target,
@@ -425,7 +607,9 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
         "sort_by": sort_by,
         "fetch_limit": desired_fetch,
         "source_url": url,
-        "data_provider": used_source # 记录并返回实际生效的数据源
+        "data_provider": used_source, # 记录并返回实际生效的数据源
+        "openalex_enrichment": enrichment_stats,
+        "warnings": enrichment_warnings,
     }
 
 '''def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "recent", fetch_limit: Optional[int] = None):

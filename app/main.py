@@ -14,6 +14,9 @@ app = FastAPI(title="Academic Impact Web")
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+WEB_DISCOVER_MAX_CANDIDATES = 500
+WEB_DISCOVER_MAX_AUTO_REFRESH = 100
+
 
 def redirect_to_session(session_id: str) -> RedirectResponse:
     return RedirectResponse(url=f"/sessions/{session_id}", status_code=303)
@@ -39,6 +42,8 @@ async def discover(
     auto_refresh_top: int = Form(0),
     sort_preference: str = Form("context"),
 ):
+    limit = max(1, min(int(limit), WEB_DISCOVER_MAX_CANDIDATES))
+    auto_refresh_top = max(0, min(int(auto_refresh_top), WEB_DISCOVER_MAX_AUTO_REFRESH))
     session_id = impact_core.start_discover_task(
         query=query,
         limit=limit,

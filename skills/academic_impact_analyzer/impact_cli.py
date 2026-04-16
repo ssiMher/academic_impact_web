@@ -14,6 +14,9 @@ ROOT = Path(__file__).resolve().parents[2]
 SKILLS_ROOT = ROOT / "skills"
 DEFAULT_SESSIONS_DIR = ROOT / "data" / "sessions"
 PERSON_TAG_REGISTRY_PATH = ROOT / "data" / "reference" / "person_tag_registry.json"
+DISCOVER_MIN_FETCH_LIMIT = 100
+DISCOVER_FETCH_MULTIPLIER = 5
+DISCOVER_FETCH_LIMIT_CAP = 1000
 SESSION_SCHEMA_VERSION = "1.0"
 QUICK_ANALYSIS_VERSION = "1.0"
 EVIDENCE_INDEX_VERSION = "1.0"
@@ -1460,9 +1463,12 @@ def build_discover_session(
     fetch_limit = max(limit, auto_refresh_count or 0, 20)
     list_result = LIST_PAPERS.list_all_citations(
         query,
-        limit=max(100, fetch_limit),
+        limit=max(DISCOVER_MIN_FETCH_LIMIT, fetch_limit),
         sort_by="recent",
-        fetch_limit=max(100, min(max(fetch_limit * 5, 100), 500)),
+        fetch_limit=max(
+            DISCOVER_MIN_FETCH_LIMIT,
+            min(max(fetch_limit * DISCOVER_FETCH_MULTIPLIER, DISCOVER_MIN_FETCH_LIMIT), DISCOVER_FETCH_LIMIT_CAP),
+        ),
     )
     write_json(session_dir / "list_papers.json", list_result)
     if not list_result.get("ok"):

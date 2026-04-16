@@ -277,6 +277,47 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
             'Massachusetts Institute of Technology',
         )
 
+    def test_registry_name_variants_match_first_last_author_names(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            registry_path = tmp / 'registry.json'
+            registry_path.write_text(
+                json.dumps(
+                    {
+                        'items': [
+                            {'name': 'Dean, Jeffrey A', 'tag_type': 'acm_fellow'},
+                            {'name': 'Ghemawat, Sanjay', 'tag_type': 'acm_fellow'},
+                            {'name': 'Katz, Randy H.', 'tag_type': 'acm_fellow'},
+                        ]
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding='utf-8',
+            )
+            papers = [
+                {
+                    'id': 'P001',
+                    'title': 'MapReduce: Simplified Data Processing on Large Clusters',
+                    'authors': ['Jeffrey Dean', 'Sanjay Ghemawat'],
+                },
+                {
+                    'id': 'P002',
+                    'title': 'Improving MapReduce Performance in Heterogeneous Environments',
+                    'authors': ['Randy H. Katz'],
+                },
+            ]
+
+            candidates = person_candidates.build_candidates(papers, registry_path=str(registry_path))
+
+            by_name = {candidate['name']: candidate for candidate in candidates}
+            self.assertIn('Dean, Jeffrey A', by_name)
+            self.assertIn('Ghemawat, Sanjay', by_name)
+            self.assertIn('Katz, Randy H.', by_name)
+            self.assertEqual(by_name['Dean, Jeffrey A']['evidence'][0]['matched_author'], 'Jeffrey Dean')
+            self.assertEqual(by_name['Dean, Jeffrey A']['evidence'][0]['match_type'], 'name_variant')
+            self.assertEqual(by_name['Ghemawat, Sanjay']['evidence'][0]['matched_author'], 'Sanjay Ghemawat')
+            self.assertEqual(by_name['Katz, Randy H.']['evidence'][0]['matched_author'], 'Randy H. Katz')
+
 
 if __name__ == '__main__':
     unittest.main()

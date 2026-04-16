@@ -24,6 +24,37 @@ def normalize_name(text: str) -> str:
     return text
 
 
+def name_tokens(text: str) -> list[str]:
+    return re.findall(r"[A-Za-z0-9]+", text or "")
+
+
+def normalized_name_variants(text: str) -> set[str]:
+    raw = (text or "").strip()
+    variants = {normalize_name(raw)}
+    if not raw or re.search(r"[\u4e00-\u9fff]", raw):
+        variants.discard("")
+        return variants
+
+    if "," in raw:
+        family, given = raw.split(",", 1)
+        family_tokens = name_tokens(family)
+        given_tokens = name_tokens(given)
+        if family_tokens and given_tokens:
+            ordered = [*given_tokens, *family_tokens]
+            variants.add(normalize_name(" ".join(ordered)))
+            without_initials = [token for token in given_tokens if len(token) > 1]
+            if without_initials:
+                variants.add(normalize_name(" ".join([*without_initials, *family_tokens])))
+            variants.add(normalize_name(" ".join([given_tokens[0], *family_tokens])))
+    else:
+        tokens = name_tokens(raw)
+        if len(tokens) >= 3:
+            variants.add(normalize_name(" ".join([tokens[0], tokens[-1]])))
+
+    variants.discard("")
+    return variants
+
+
 def slugify_text(text: str) -> str:
     text = (text or "").strip().lower()
     text = re.sub(r"[^a-z0-9\u4e00-\u9fff]+", "-", text)
@@ -180,10 +211,12 @@ def build_candidates(
     }
     candidates: dict[str, dict[str, Any]] = {}
     for entry in load_registry(registry_path):
-        normalized_names = {
-            normalize_name(entry.get("name", "")),
-            *(normalize_name(alias) for alias in entry.get("aliases", [])),
-        }
+        raw_names = [entry.get("name", ""), *(entry.get("aliases", []) or [])]
+        exact_names = {normalize_name(raw_name) for raw_name in raw_names}
+        normalized_names = set()
+        for raw_name in raw_names:
+            normalized_names.update(normalized_name_variants(raw_name))
+        exact_names.discard("")
         normalized_names.discard("")
         if not normalized_names:
             continue
@@ -197,9 +230,11 @@ def build_candidates(
             title = paper.get("title", "")
             for author_name in paper.get("authors", []) or []:
                 normalized_author = normalize_name(author_name)
-                if not normalized_author or normalized_author not in normalized_names:
+                author_variants = normalized_name_variants(str(author_name))
+                matched_variant = next((variant for variant in author_variants if variant in normalized_names), None)
+                if not normalized_author or not matched_variant:
                     continue
-                key = (paper_id or "", normalized_author)
+                key = (paper_id or "", normalized_author, matched_variant)
                 if key in seen_match_keys:
                     continue
                 seen_match_keys.add(key)
@@ -212,7 +247,7 @@ def build_candidates(
                         "paper_id": paper_id,
                         "paper_title": title,
                         "matched_author": author_name,
-                        "match_type": "exact_name",
+                        "match_type": "exact_name" if normalized_author in exact_names else "name_variant",
                     }
                 )
         if not match_evidence:

@@ -16,7 +16,7 @@ DEFAULT_SESSIONS_DIR = ROOT / "data" / "sessions"
 PERSON_TAG_REGISTRY_PATH = ROOT / "data" / "reference" / "person_tag_registry.json"
 DISCOVER_MIN_FETCH_LIMIT = 100
 DISCOVER_FETCH_MULTIPLIER = 5
-DISCOVER_FETCH_LIMIT_CAP = 1000
+DISCOVER_FETCH_LIMIT_CAP = 10000
 SESSION_SCHEMA_VERSION = "1.0"
 QUICK_ANALYSIS_VERSION = "1.0"
 EVIDENCE_INDEX_VERSION = "1.0"
@@ -203,6 +203,26 @@ def sort_papers_by_recent(papers: List[dict]) -> List[dict]:
             (item.get("title") or "").lower(),
         ),
     )
+
+
+def paper_identity_key(paper: dict):
+    source = paper.get("paper") if isinstance(paper.get("paper"), dict) else paper
+    external_ids = source.get("externalIds") or {}
+    doi = str(external_ids.get("DOI") or external_ids.get("doi") or "").strip().lower()
+    if doi:
+        doi = doi.replace("https://doi.org/", "").replace("http://doi.org/", "")
+        return f"doi:{doi}"
+    title = normalize_reference_text(source.get("title") or paper.get("title") or "")
+    return f"title:{title}" if title else ""
+
+
+def existing_paper_state_by_key(session: dict):
+    state_by_key = {}
+    for item in session.get("papers", []) or []:
+        key = paper_identity_key(item)
+        if key and key not in state_by_key:
+            state_by_key[key] = item
+    return state_by_key
 
 
 def normalize_reference_text(text: str):
@@ -1498,11 +1518,17 @@ def build_discover_session(
             contexts_result if isinstance(contexts_result, dict) else {},
         )
 
+    previous_state_by_key = existing_paper_state_by_key(existing_session)
     entries = []
     for index, paper in enumerate(reordered_papers[:limit], start=1):
         paper_id = f"P{index:03d}"
         context_item = find_context_for_title(contexts_result, paper.get("title", "")) if isinstance(contexts_result, dict) else None
-        download_probe = probe_paper_downloadability(paper) if probe_downloads else default_download_probe(paper)
+        previous_item = previous_state_by_key.get(paper_identity_key(paper)) or {}
+        download_probe = (
+            previous_item.get("download_probe")
+            if previous_item.get("download_probe")
+            else probe_paper_downloadability(paper) if probe_downloads else default_download_probe(paper)
+        )
         entries.append({
             "id": paper_id,
             "title": paper.get("title", ""),
@@ -1516,14 +1542,15 @@ def build_discover_session(
             "best_context": context_item.get("best_context") if context_item else None,
             "context_confidence": context_item.get("confidence") if context_item else None,
             "context_count": len(context_item.get("contexts", [])) if context_item else 0,
-            "analysis_result": {
+            "analysis_result": previous_item.get("analysis_result") or {
                 "status": None,
                 "paths": {},
             },
-            "selection": {
+            "selection": previous_item.get("selection") or {
                 "selected_for_download": False,
                 "selected_for_analysis": False,
             },
+            "qa_ready": previous_item.get("qa_ready", False),
             "paper": paper,
         })
 
@@ -1532,7 +1559,7 @@ def build_discover_session(
         "schema_version": SESSION_SCHEMA_VERSION,
         "session_kind": "academic_impact_analysis",
         "query": query,
-        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "created_at": existing_session.get("created_at") or datetime.now().isoformat(timespec="seconds"),
         "target": target,
         "paths": {
             "list_papers": str(session_dir / "list_papers.json"),

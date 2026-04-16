@@ -16,6 +16,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 WEB_DISCOVER_MAX_CANDIDATES = 500
 WEB_DISCOVER_MAX_AUTO_REFRESH = 100
+WEB_DISCOVER_MAX_EXTEND_CANDIDATES = 10000
 
 
 def redirect_to_session(session_id: str) -> RedirectResponse:
@@ -93,6 +94,16 @@ async def refresh_session(request: Request, session_id: str):
     ids = form.getlist("paper_ids")
     force = bool(form.get("force"))
     impact_core.start_refresh_task(session_id, ids, force=force)
+    return redirect_to_session(session_id)
+
+
+@app.post("/sessions/{session_id}/extend-discover")
+async def extend_discover_session(
+    session_id: str,
+    target_limit: int = Form(...),
+):
+    target_limit = max(1, min(int(target_limit), WEB_DISCOVER_MAX_EXTEND_CANDIDATES))
+    impact_core.start_extend_discover_task(session_id, target_limit)
     return redirect_to_session(session_id)
 
 

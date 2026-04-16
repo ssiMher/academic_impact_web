@@ -139,6 +139,25 @@
             </div>
           </div>
         </form>
+        {% if detail_payload.target_overview.paper_count < 10000 and (not detail_payload.target_overview.total_citation_count or detail_payload.target_overview.paper_count < detail_payload.target_overview.total_citation_count) %}
+          {% set extend_target_limit = detail_payload.target_overview.paper_count + 500 %}
+          {% if detail_payload.target_overview.total_citation_count and extend_target_limit > detail_payload.target_overview.total_citation_count %}
+            {% set extend_target_limit = detail_payload.target_overview.total_citation_count %}
+          {% endif %}
+          {% if extend_target_limit > 10000 %}
+            {% set extend_target_limit = 10000 %}
+          {% endif %}
+          <form action="/sessions/{{ session_id }}/extend-discover" method="post" class="inline-controls">
+            <label>
+              继续发现到
+              <input type="number" name="target_limit" value="{{ extend_target_limit }}" min="{{ detail_payload.target_overview.paper_count + 1 }}" max="10000" {% if task_active %}disabled{% endif %} />
+            </label>
+            <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>继续发现引用论文</button>
+            <span class="muted">会保留已下载、已分析和人物候选状态；大批量可能触发 API 限流。</span>
+          </form>
+        {% else %}
+          <p class="muted">当前会话已经达到继续发现上限或已覆盖已知引用数。</p>
+        {% endif %}
         <form method="post" class="stack">
           <div class="actions">
             <button formaction="/sessions/{{ session_id }}/refresh" type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>刷新探测状态</button>

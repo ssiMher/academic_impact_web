@@ -371,6 +371,36 @@ def start_discover_task(
     return session_id
 
 
+def start_extend_discover_task(session_id: str, target_limit: int):
+    session = load_session(session_id)
+    current_limit = len(session.get("papers", []) or [])
+    target_limit = max(current_limit, int(target_limit or current_limit))
+    query = session.get("query") or (session.get("target") or {}).get("title") or ""
+    sort_preference = (session.get("list_preferences") or {}).get("sort_preference") or "context"
+    session_dir = resolve_session_dir(session_id)
+
+    def worker():
+        result = impact_cli().build_discover_session(
+            query=query,
+            session_dir=session_dir,
+            limit=target_limit,
+            probe_downloads=False,
+            auto_refresh_count=0,
+            sort_preference=sort_preference,
+        )
+        if not result.get("ok", True):
+            raise RuntimeError(result.get("error", "继续 discover 失败"))
+
+    return _start_background_task(
+        session_id,
+        "discover",
+        worker,
+        requested_ids=[],
+        message=f"正在继续发现引用论文到 {target_limit} 篇…",
+        success_message="继续 Discover 完成",
+    )
+
+
 def load_session(session_id: str):
     session_dir = resolve_session_dir(session_id)
     last_error = None

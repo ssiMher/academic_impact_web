@@ -146,6 +146,58 @@ class CompareAnalysisScopesTestCase(unittest.TestCase):
         self.assertEqual(payload["comparisons"][0]["finding_count_delta"], 1)
         self.assertNotIn("analysis_result", original_session["papers"][0])
 
+    def test_gold_evaluator_uses_raw_findings_not_summary_excerpt(self):
+        detail = {
+            "analysis_status": "reference_only",
+            "citation_method_summary": {
+                "labels": ["reference_only"],
+                "evidence_excerpt": "Vaswani et al. appears only in References.",
+            },
+            "citation_trace": {"finding_count": 0},
+        }
+        expected = {
+            "final_status": "fulltext_no_finding",
+            "has_findings": False,
+            "min_labels": [],
+        }
+
+        result = self.benchmark.evaluate_against_gold(detail, expected, {"findings": []})
+
+        self.assertTrue(result["passed"])
+        self.assertEqual(result["actual"]["final_status"], "reference_only")
+        self.assertEqual(result["actual"]["normalized_status"], "fulltext_no_finding")
+        self.assertFalse(result["actual"]["has_findings"])
+
+    def test_gold_evaluator_ignores_keep_false_aspect_labels(self):
+        detail = {
+            "analysis_status": "mention_only",
+            "citation_method_summary": {
+                "labels": ["method", "grouped_literature_mention"],
+                "evidence_excerpt": "Grouped literature mention.",
+            },
+            "citation_trace": {"finding_count": 1},
+        }
+        analysis = {
+            "findings": [
+                {
+                    "keep": False,
+                    "aspect": "method",
+                    "mention_type": "grouped_literature_mention",
+                }
+            ]
+        }
+        expected = {
+            "final_status": "mention_only",
+            "has_findings": True,
+            "min_labels": ["method"],
+        }
+
+        result = self.benchmark.evaluate_against_gold(detail, expected, analysis)
+
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["missing_labels"], ["method"])
+        self.assertEqual(result["actual"]["labels"], ["grouped_literature_mention"])
+
 
 if __name__ == "__main__":
     unittest.main()

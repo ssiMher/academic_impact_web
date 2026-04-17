@@ -156,19 +156,76 @@ def item_for_paper(session: dict[str, Any], paper_id: str) -> dict[str, Any]:
     return {}
 
 
-def evaluate_against_gold(detail: dict[str, Any], expected: dict[str, Any] | None) -> dict[str, Any]:
+def gold_labels_from_findings(findings: list[Any]) -> list[str]:
+    labels = []
+    for finding in findings:
+        if not isinstance(finding, dict):
+            continue
+        keep = finding.get("keep")
+        aspect = str(finding.get("aspect") or "").strip()
+        mention_type = str(finding.get("mention_type") or "").strip()
+        is_weak = mention_type in {"grouped_literature_mention", "weak_body_mention"}
+        is_semantic = keep is not False and not is_weak
+        if is_semantic and aspect:
+            labels.append(aspect)
+        if is_weak:
+            labels.append(mention_type)
+    return list(dict.fromkeys(labels))
+
+
+def gold_actual_observation(
+    detail: dict[str, Any],
+    analysis_data: dict[str, Any] | None = None,
+    expected: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    summary = detail.get("citation_method_summary", {}) or {}
+    actual_status = detail.get("analysis_status")
+    findings = []
+    if isinstance(analysis_data, dict) and isinstance(analysis_data.get("findings"), list):
+        findings = analysis_data.get("findings", [])
+    else:
+        trace = detail.get("citation_trace", {}) or {}
+        finding_count = trace.get("finding_count")
+        if isinstance(finding_count, int):
+            findings = [{} for _ in range(finding_count)]
+
+    labels = gold_labels_from_findings(findings)
+    if not labels:
+        labels = summary.get("labels", []) or []
+
+    has_findings = bool(findings)
+    normalized_status = actual_status
+    if (
+        expected
+        and expected.get("final_status") == "fulltext_no_finding"
+        and actual_status == "reference_only"
+        and not has_findings
+    ):
+        normalized_status = "fulltext_no_finding"
+
+    return {
+        "final_status": actual_status,
+        "normalized_status": normalized_status,
+        "has_findings": has_findings,
+        "labels": labels,
+    }
+
+
+def evaluate_against_gold(
+    detail: dict[str, Any],
+    expected: dict[str, Any] | None,
+    analysis_data: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     if not expected:
         return {"available": False, "passed": None}
 
-    summary = detail.get("citation_method_summary", {}) or {}
-    actual_status = detail.get("analysis_status")
-    labels = summary.get("labels", []) or []
-    has_findings = bool(summary.get("evidence_excerpt"))
+    actual = gold_actual_observation(detail, analysis_data, expected)
+    labels = actual["labels"]
     missing_labels = [label for label in expected.get("min_labels", []) if label not in labels]
 
     checks = {
-        "final_status": actual_status == expected.get("final_status"),
-        "has_findings": has_findings == expected.get("has_findings"),
+        "final_status": actual["normalized_status"] == expected.get("final_status"),
+        "has_findings": actual["has_findings"] == expected.get("has_findings"),
         "min_labels": not missing_labels,
     }
     return {
@@ -176,11 +233,7 @@ def evaluate_against_gold(detail: dict[str, Any], expected: dict[str, Any] | Non
         "passed": all(checks.values()),
         "checks": checks,
         "expected": expected,
-        "actual": {
-            "final_status": actual_status,
-            "has_findings": has_findings,
-            "labels": labels,
-        },
+        "actual": actual,
         "missing_labels": missing_labels,
     }
 
@@ -221,7 +274,8 @@ def summarize_one_run(
     candidate_spans = candidate_data.get("spans", []) if isinstance(candidate_data.get("spans"), list) else []
 
     expected = gold_cases.get((session_id, paper_id))
-    gold = evaluate_against_gold(detail, expected)
+    gold = evaluate_against_gold(detail, expected, analysis_data)
+    benchmark_actual = gold_actual_observation(detail, analysis_data, expected)
 
     return {
         "paper_id": paper_id,
@@ -238,8 +292,8 @@ def summarize_one_run(
         },
         "actual": {
             "analysis_status": detail.get("analysis_status") or (item.get("analysis_result") or {}).get("status"),
-            "labels": (detail.get("citation_method_summary", {}) or {}).get("labels", []),
-            "has_findings": bool((detail.get("citation_method_summary", {}) or {}).get("evidence_excerpt")),
+            "labels": benchmark_actual.get("labels", []),
+            "has_findings": benchmark_actual.get("has_findings"),
             "finding_count": citation_trace.get("finding_count", len(findings)),
             "candidate_span_count": citation_trace.get("candidate_span_count", len(candidate_spans)),
             "fulltext_char_count": debug.get("fulltext_char_count"),

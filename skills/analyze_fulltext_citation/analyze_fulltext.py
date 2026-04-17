@@ -126,6 +126,8 @@ JSON 格式必须严格为：
 
 判断规则：
 1. 只有候选段落明确把目标论文作为方法、基线、比较对象、扩展对象、应用对象或核心背景时，才允许 keep=true。
+   对 "Attention Is All You Need" 这类架构论文，如果正文明确把 Transformer、Transformer encoder、self-attention、multi-head attention、feed-forward network、positional encoding 等组件归因于目标论文，并在引用论文自己的方法/模型中采用这些组件，应判为 keep=true 且 aspect=method。
+   如果只是介绍 Transformer/self-attention 的来源或领域背景，而不是引用论文自己的方法组件，应判为 keep=true 且 aspect=background。
 2. 若只是组引用（如 [9,13,2]）或“相关工作之一”的并列背景综述，通常 keep=false，mention_type=grouped_literature_mention。
 3. 若只是弱关键词命中、泛泛提到 low-rank / attention / adaptation 等术语，但没有明确把目标论文当作方法、基线、比较对象或扩展对象，keep=false，mention_type=weak_body_mention。
 4. 表格/列表中的基线行只有在 citation_text 内明确出现目标方法名或对应编号时，才允许 keep=true；否则优先 keep=false。
@@ -582,6 +584,8 @@ def build_fulltext_direct_prompt(payload, target_aliases=None):
 判断时请特别注意：
 1. References / Bibliography / Works Cited / 参考文献 区域中的目标论文条目只说明该论文在文末列表中出现，不构成语义引用 finding。
 2. 只有正文、图表说明、实验设置、方法介绍或数据集说明中明确使用目标论文时，才输出 keep=true 的 finding。
+   如果引用论文自己的模型采用目标论文提出/普及的 Transformer encoder、self-attention、multi-head attention、feed-forward network、positional encoding 等组件，并且正文或引用编号能对应到目标论文，这属于 method finding，不要降级为 mention_only。
+   如果只是说 Transformer/self-attention 起源于目标论文、或把目标论文作为该领域基础文献，这属于 background finding。
 3. 对每个 finding，page 使用原始页码，span_index 使用该页内第几个命中片段，从 1 开始。
 4. 如果唯一命中来自参考文献列表，findings 必须是空数组。
 如果你支持 thinking 模式，请使用 /no_think，并且不要输出任何推理过程。
@@ -743,6 +747,8 @@ def normalize_model_finding(finding: dict, index: int):
     valid_mentions = {"explicit_citation", "grouped_literature_mention", "weak_body_mention"}
     if mention_type not in valid_mentions:
         mention_type = "explicit_citation" if keep else "weak_body_mention"
+    if keep:
+        mention_type = "explicit_citation"
 
     return {
         "page": page,

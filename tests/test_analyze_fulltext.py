@@ -188,6 +188,8 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertEqual(result['findings'][0]['page'], 3)
         self.assertIn('分析范围：fulltext_direct', captured_messages[1]['content'])
         self.assertIn('[Page 3]', captured_messages[1]['content'])
+        self.assertIn('Transformer encoder', self.module.SINGLE_MODEL_SYSTEM_PROMPT)
+        self.assertIn('属于 method finding', captured_messages[1]['content'])
 
     def test_fulltext_direct_requires_fulltext_text(self):
         payload = {
@@ -545,6 +547,21 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
 
         self.assertEqual(result['findings'][0]['mention_type'], 'grouped_literature_mention')
         self.assertEqual(result['findings'][1]['mention_type'], 'weak_body_mention')
+
+    def test_keep_true_findings_are_normalized_to_explicit_citation(self):
+        finding = self.module.normalize_model_finding(
+            {
+                'page': 2,
+                'span_index': 1,
+                'citation_text': 'We use the Transformer encoder [42].',
+                'keep': True,
+                'aspect': 'method',
+                'mention_type': 'weak_body_mention',
+            },
+            0,
+        )
+
+        self.assertEqual(finding['mention_type'], 'explicit_citation')
 
 
 if __name__ == '__main__':

@@ -188,8 +188,9 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertEqual(result['findings'][0]['page'], 3)
         self.assertIn('分析范围：fulltext_direct', captured_messages[1]['content'])
         self.assertIn('[Page 3]', captured_messages[1]['content'])
+        self.assertIn('主要贡献类型', self.module.SINGLE_MODEL_SYSTEM_PROMPT)
         self.assertIn('Transformer encoder', self.module.SINGLE_MODEL_SYSTEM_PROMPT)
-        self.assertIn('属于 method finding', captured_messages[1]['content'])
+        self.assertIn('不要降级为 mention_only', captured_messages[1]['content'])
 
     def test_fulltext_direct_requires_fulltext_text(self):
         payload = {

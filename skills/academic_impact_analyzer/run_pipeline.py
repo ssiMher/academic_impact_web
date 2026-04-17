@@ -52,6 +52,8 @@ AGGREGATE_REPORT = load_module(
     SKILLS_ROOT / "academic_impact_analyzer" / "aggregate_report.py"
 )
 
+VALID_ANALYSIS_SCOPES = {"candidate_spans", "fulltext_direct"}
+
 
 def slugify(text: str, limit: int = 80) -> str:
     text = (text or "").strip().lower()
@@ -83,8 +85,11 @@ def make_failure_note(error_type: str, error: str = "") -> Dict:
         "empty_text_pdf": "PDF 已获得，但提取到的文本几乎为空，无法进入全文分析。",
         "likely_scanned_pdf": "PDF 已获得，但更像扫描版/图片版，当前无法直接进入全文分析。",
         "candidate_span_failed": "全文已提取，但候选段落定位失败，无法进入全文分析。",
+        "single_model_request_failed": "候选段落已生成，但分析模型请求失败，无法完成全文分析。",
+        "single_model_json_parse_failed": "分析模型已返回结果，但 JSON 解析失败。",
+        "single_model_schema_invalid": "分析模型已返回 JSON，但结构不符合全文分析 schema。",
         "local_model_request_failed": "候选段落已生成，但本地模型请求失败，无法完成全文分析。",
-        "blank_model_output": "候选段落已生成，但本地模型返回空输出，无法完成全文分析。",
+        "blank_model_output": "候选段落已生成，但分析模型返回空输出，无法完成全文分析。",
         "deepseek_request_failed": "本地模型已返回分析结果，但 DeepSeek 整理阶段请求失败。",
         "deepseek_json_parse_failed": "本地模型与 DeepSeek 已返回结果，但 JSON 解析失败。",
         "write_output_failed": "分析过程完成了一部分，但写出结果文件失败。",
@@ -134,6 +139,36 @@ def choose_download_queries(paper: dict) -> List[str]:
 def should_prioritize_result(result: dict) -> bool:
     status = result.get("status")
     return status not in {"context_only", "fulltext_extract_failed", "analysis_failed"}
+
+
+def normalize_analysis_scope(value: str = "") -> str:
+    scope = (value or "candidate_spans").strip().lower().replace("-", "_")
+    if scope in {"candidate", "candidate_span", "spans"}:
+        return "candidate_spans"
+    if scope in {"fulltext", "full_text", "direct", "fulltext_direct"}:
+        return "fulltext_direct"
+    return "candidate_spans"
+
+
+def build_fulltext_direct_pages(fulltext_result: dict) -> List[dict]:
+    pages = fulltext_result.get("pages", []) if isinstance(fulltext_result, dict) else []
+    if not isinstance(pages, list):
+        return []
+
+    normalized = []
+    for index, page in enumerate(pages, start=1):
+        if not isinstance(page, dict):
+            continue
+        text = str(page.get("text") or "").strip()
+        if not text:
+            continue
+        page_number = page.get("page")
+        try:
+            page_number = int(page_number)
+        except (TypeError, ValueError):
+            page_number = index
+        normalized.append({"page": page_number, "text": text})
+    return normalized
 
 
 def classify_fulltext_status(candidate_result: dict, analysis_result: dict) -> Tuple[str, Dict]:
@@ -270,9 +305,12 @@ def process_citing_paper(
     item_dir: Path,
     top_k_spans: int,
     local_pdf_path: str = "",
+    analysis_scope: str = "candidate_spans",
 ):
+    analysis_scope = normalize_analysis_scope(analysis_scope)
     result = {
         "citing_paper": citing_paper,
+        "analysis_scope": analysis_scope,
         "paths": {},
     }
 
@@ -443,7 +481,7 @@ def process_citing_paper(
     }
     result["paths"]["candidate_spans"] = str(candidate_path)
 
-    if not candidate_result.get("ok"):
+    if not candidate_result.get("ok") and analysis_scope != "fulltext_direct":
         failure_analysis = {
             "ok": False,
             "citing_title": citing_paper.get("title", ""),
@@ -475,12 +513,19 @@ def process_citing_paper(
         }
         return result
 
+    candidate_spans = candidate_result.get("spans", [])[:top_k_spans] if candidate_result.get("ok") else []
     payload = {
         "target_title": target.get("title", ""),
         "target_year": target.get("year"),
         "citing_title": citing_paper.get("title", ""),
-        "candidate_spans": candidate_result.get("spans", [])[:top_k_spans],
+        "analysis_scope": analysis_scope,
+        "candidate_spans": candidate_spans,
     }
+    if analysis_scope == "fulltext_direct":
+        fulltext_pages = build_fulltext_direct_pages(fulltext_result)
+        payload["fulltext_pages"] = fulltext_pages
+        payload["fulltext_page_count"] = len(fulltext_pages)
+        payload["fulltext_char_count"] = sum(len(page.get("text", "")) for page in fulltext_pages)
     payload_path = item_dir / "analyze_payload.json"
     ok, write_error = safe_write_json(payload_path, payload)
     if not ok:
@@ -506,6 +551,7 @@ def process_citing_paper(
         result["analysis"] = {
             "ok": False,
             "candidate_span_count": len(payload.get("candidate_spans", [])),
+            "analysis_scope": analysis_scope,
             "findings_count": len(analysis_result.get("findings", [])) if isinstance(analysis_result.get("findings"), list) else 0,
             "duration_seconds": analysis_duration_seconds,
             "error_type": "write_output_failed",
@@ -517,6 +563,9 @@ def process_citing_paper(
     result["analysis"] = {
         "ok": analysis_result.get("ok"),
         "candidate_span_count": len(payload.get("candidate_spans", [])),
+        "analysis_scope": analysis_scope,
+        "fulltext_page_count": len(payload.get("fulltext_pages", [])),
+        "fulltext_char_count": payload.get("fulltext_char_count", 0),
         "findings_count": len(analysis_result.get("findings", [])) if isinstance(analysis_result.get("findings"), list) else 0,
         "duration_seconds": analysis_duration_seconds,
         "final_status": final_status,
@@ -541,7 +590,9 @@ def run_pipeline(
     max_papers: int,
     top_k_spans: int,
     scan_limit: int,
+    analysis_scope: str = "candidate_spans",
 ):
+    analysis_scope = normalize_analysis_scope(analysis_scope)
     started_at = datetime.now().isoformat(timespec="seconds")
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -572,6 +623,7 @@ def run_pipeline(
             contexts_data=contexts_result if isinstance(contexts_result, dict) else {},
             item_dir=item_dir,
             top_k_spans=top_k_spans,
+            analysis_scope=analysis_scope,
         )
         if should_prioritize_result(paper_result):
             prioritized_results.append(paper_result)
@@ -597,6 +649,7 @@ def run_pipeline(
         "scan_limit": effective_scan_limit,
         "scanned_papers": scanned_papers,
         "processed_papers": len(per_paper_results),
+        "analysis_scope": analysis_scope,
         "prioritized_results": len(prioritized_results),
         "deferred_results": len(deferred_results),
         "contexts_ok": contexts_result.get("ok") if isinstance(contexts_result, dict) else False,
@@ -624,6 +677,12 @@ def parse_args():
     parser.add_argument("--max-papers", type=int, default=5, help="最多处理多少篇 citing paper，默认 5")
     parser.add_argument("--scan-limit", type=int, help="最多向前扫描多少篇 citing paper，默认 max-papers 的 3 倍")
     parser.add_argument("--top-k-spans", type=int, default=8, help="送入 analyze_fulltext 的候选段落数，默认 8")
+    parser.add_argument(
+        "--analysis-scope",
+        choices=sorted(VALID_ANALYSIS_SCOPES),
+        default="candidate_spans",
+        help="分析范围：candidate_spans 为默认候选段落模式，fulltext_direct 为单篇全文直读模式",
+    )
     return parser.parse_args()
 
 
@@ -645,6 +704,7 @@ def main():
             max_papers=max_papers,
             top_k_spans=max(1, args.top_k_spans),
             scan_limit=scan_limit,
+            analysis_scope=args.analysis_scope,
         )
     except Exception as e:
         print(json.dumps({"ok": False, "error": str(e)}, ensure_ascii=False, indent=2))

@@ -1,0 +1,267 @@
+{
+  "schema_version": "1.0",
+  "source_note": "Manual seed registry for auditable venue tier matching. Treat as a project-local top-venue seed, not as an authoritative CCF/CORE/JCR ranking. Extend this file with official source-backed entries before using rankings for formal evaluation.",
+  "entries": [
+    {
+      "name": "Conference on Neural Information Processing Systems",
+      "aliases": ["NeurIPS", "NIPS", "Neural Information Processing Systems"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Conference on Machine Learning",
+      "aliases": ["ICML"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Conference on Learning Representations",
+      "aliases": ["ICLR"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE/CVF Conference on Computer Vision and Pattern Recognition",
+      "aliases": ["CVPR", "Computer Vision and Pattern Recognition"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Conference on Computer Vision",
+      "aliases": ["ICCV"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "European Conference on Computer Vision",
+      "aliases": ["ECCV"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM SIGGRAPH",
+      "aliases": ["SIGGRAPH"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM CHI Conference on Human Factors in Computing Systems",
+      "aliases": ["CHI", "CHI Conference on Human Factors in Computing Systems"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM Symposium on User Interface Software and Technology",
+      "aliases": ["UIST"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "Annual Meeting of the Association for Computational Linguistics",
+      "aliases": ["ACL"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "Empirical Methods in Natural Language Processing",
+      "aliases": ["EMNLP"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM SIGMOD International Conference on Management of Data",
+      "aliases": ["SIGMOD", "ACM SIGMOD"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Conference on Very Large Data Bases",
+      "aliases": ["VLDB", "PVLDB", "Proceedings of the VLDB Endowment"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM Symposium on Operating Systems Principles",
+      "aliases": ["SOSP"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "USENIX Symposium on Operating Systems Design and Implementation",
+      "aliases": ["OSDI"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "USENIX Symposium on Networked Systems Design and Implementation",
+      "aliases": ["NSDI"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM SIGPLAN Conference on Programming Language Design and Implementation",
+      "aliases": ["PLDI"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages",
+      "aliases": ["POPL"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Conference on Software Engineering",
+      "aliases": ["ICSE"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering",
+      "aliases": ["ESEC/FSE", "FSE", "ESEC-SIGSOFT FSE", "ESEC/SIGSOFT FSE"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Conference on Automated Software Engineering",
+      "aliases": ["ASE"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Symposium on Software Testing and Analysis",
+      "aliases": ["ISSTA"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE International Conference on Robotics and Automation",
+      "aliases": ["ICRA", "International Conference on Robotics and Automation"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE/RSJ International Conference on Intelligent Robots and Systems",
+      "aliases": ["IROS", "International Conference on Intelligent Robots and Systems"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "Robotics: Science and Systems",
+      "aliases": ["RSS"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+      "aliases": ["TPAMI", "IEEE TPAMI"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Transactions on Software Engineering",
+      "aliases": ["TSE", "IEEE TSE"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM Transactions on Software Engineering and Methodology",
+      "aliases": ["TOSEM", "ACM TOSEM"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM Transactions on Database Systems",
+      "aliases": ["TODS", "ACM TODS"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    }
+  ]
+}

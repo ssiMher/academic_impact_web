@@ -36,16 +36,25 @@ class ProjectEnvTestCase(unittest.TestCase):
         for path in [ENV_PATH, ENV_LOCAL_PATH]:
             if path.exists():
                 path.unlink()
-        for key in ['DEEPSEEK_API_KEY', 'ACADEMIC_IMPACT_LOCAL_LLM_URL', 'ACADEMIC_IMPACT_LOCAL_MODEL']:
+        for key in [
+            'DEEPSEEK_API_KEY',
+            'ACADEMIC_IMPACT_LLM_URL',
+            'ACADEMIC_IMPACT_LLM_MODEL',
+            'ACADEMIC_IMPACT_LLM_API_KEY',
+            'ACADEMIC_IMPACT_ANALYSIS_MODE',
+            'ACADEMIC_IMPACT_LOCAL_LLM_URL',
+            'ACADEMIC_IMPACT_LOCAL_MODEL',
+        ]:
             os.environ.pop(key, None)
 
-    def test_analyze_fulltext_reads_project_env(self):
+    def test_analyze_fulltext_reads_project_env_with_new_single_model_keys(self):
         ENV_PATH.write_text(
             '\n'.join(
                 [
-                    'DEEPSEEK_API_KEY=project-key',
-                    'ACADEMIC_IMPACT_LOCAL_LLM_URL=http://127.0.0.1:9999/v1/chat/completions',
-                    'ACADEMIC_IMPACT_LOCAL_MODEL=test-local-model',
+                    'ACADEMIC_IMPACT_LLM_URL=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+                    'ACADEMIC_IMPACT_LLM_MODEL=qwen-plus',
+                    'ACADEMIC_IMPACT_LLM_API_KEY=project-api-key',
+                    'ACADEMIC_IMPACT_ANALYSIS_MODE=single_model',
                 ]
             ),
             encoding='utf-8',
@@ -56,9 +65,35 @@ class ProjectEnvTestCase(unittest.TestCase):
         assert spec is not None and spec.loader is not None
         spec.loader.exec_module(module)
 
+        self.assertEqual(module.LLM_URL, 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions')
+        self.assertEqual(module.LLM_MODEL, 'qwen-plus')
+        self.assertEqual(module.normalized_analysis_mode(), 'single_model')
+        self.assertEqual(module.load_analysis_api_key(module.LLM_URL), 'project-api-key')
+
+    def test_analyze_fulltext_falls_back_to_legacy_local_keys_and_deepseek_key(self):
+        ENV_PATH.write_text(
+            '\n'.join(
+                [
+                    'DEEPSEEK_API_KEY=project-deepseek-key',
+                    'ACADEMIC_IMPACT_LOCAL_LLM_URL=http://127.0.0.1:9999/v1/chat/completions',
+                    'ACADEMIC_IMPACT_LOCAL_MODEL=test-local-model',
+                    'ACADEMIC_IMPACT_ANALYSIS_MODE=legacy_two_stage',
+                ]
+            ),
+            encoding='utf-8',
+        )
+
+        spec = importlib.util.spec_from_file_location('test_analyze_fulltext_env_legacy', ANALYZE_FULLTEXT_PATH)
+        module = importlib.util.module_from_spec(spec)
+        assert spec is not None and spec.loader is not None
+        spec.loader.exec_module(module)
+
+        self.assertEqual(module.LLM_URL, 'http://127.0.0.1:9999/v1/chat/completions')
+        self.assertEqual(module.LLM_MODEL, 'test-local-model')
         self.assertEqual(module.LOCAL_VLLM_URL, 'http://127.0.0.1:9999/v1/chat/completions')
         self.assertEqual(module.LOCAL_MODEL, 'test-local-model')
-        self.assertEqual(module.load_deepseek_key(), 'project-key')
+        self.assertEqual(module.normalized_analysis_mode(), 'legacy_two_stage')
+        self.assertEqual(module.load_deepseek_key(), 'project-deepseek-key')
 
 
 if __name__ == '__main__':

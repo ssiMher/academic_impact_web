@@ -69,6 +69,7 @@ def default_task_state() -> dict[str, Any]:
         "error": "",
         "requested_ids": [],
         "top_k_spans": None,
+        "analysis_scope": "candidate_spans",
     }
 
 
@@ -132,7 +133,7 @@ def update_task_state(session_id: str, **updates):
         return dict(task_state)
 
 
-def mark_task_running(session_id: str, task_type: str, *, requested_ids: list[str] | None = None, top_k_spans: int | None = None, message: str = ""):
+def mark_task_running(session_id: str, task_type: str, *, requested_ids: list[str] | None = None, top_k_spans: int | None = None, analysis_scope: str | None = None, message: str = ""):
     with _task_lock(session_id):
         session = load_session_record(session_id)
         task_state = ensure_task_state(session)
@@ -151,6 +152,7 @@ def mark_task_running(session_id: str, task_type: str, *, requested_ids: list[st
                 "error": "",
                 "requested_ids": list(requested_ids or []),
                 "top_k_spans": top_k_spans,
+                "analysis_scope": analysis_scope or "candidate_spans",
             }
         )
         session["task_state"] = task_state
@@ -219,12 +221,13 @@ def _run_background_task(session_id: str, task_type: str, worker, *, success_mes
     )
 
 
-def _start_background_task(session_id: str, task_type: str, worker, *, requested_ids: list[str] | None = None, top_k_spans: int | None = None, message: str = "", success_message: str = ""):
+def _start_background_task(session_id: str, task_type: str, worker, *, requested_ids: list[str] | None = None, top_k_spans: int | None = None, analysis_scope: str | None = None, message: str = "", success_message: str = ""):
     started, task_state = mark_task_running(
         session_id,
         task_type,
         requested_ids=requested_ids,
         top_k_spans=top_k_spans,
+        analysis_scope=analysis_scope,
         message=message,
     )
     if not started:
@@ -420,8 +423,8 @@ def download_papers(session_id: str, ids: list[str] | None = None, *, auto_only:
     return impact_cli().run_downloads(resolve_session_dir(session_id), ids or [], auto_only)
 
 
-def analyze_papers(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8):
-    return impact_cli().run_analysis(resolve_session_dir(session_id), ids or [], top_k_spans)
+def analyze_papers(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8, analysis_scope: str = "candidate_spans"):
+    return impact_cli().run_analysis(resolve_session_dir(session_id), ids or [], top_k_spans, analysis_scope)
 
 
 def start_refresh_task(session_id: str, ids: list[str] | None = None, *, force: bool = False):
@@ -454,10 +457,10 @@ def start_download_task(session_id: str, ids: list[str] | None = None, *, auto_o
     )
 
 
-def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8):
+def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8, analysis_scope: str = "candidate_spans"):
     ids = ids or []
     def worker():
-        impact_cli().run_analysis(resolve_session_dir(session_id), ids, top_k_spans)
+        impact_cli().run_analysis(resolve_session_dir(session_id), ids, top_k_spans, analysis_scope)
         session = load_session(session_id)
         papers = {item.get("id"): item for item in session.get("papers", [])}
         for paper_id in ids:
@@ -481,8 +484,12 @@ def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_s
                 "empty_text_pdf": "PDF 文本几乎为空",
                 "likely_scanned_pdf": "疑似扫描版 PDF",
                 "candidate_span_failed": "候选段落定位失败",
+                "single_model_request_failed": "分析模型请求失败",
+                "single_model_json_parse_failed": "分析模型 JSON 解析失败",
+                "single_model_schema_invalid": "分析模型 JSON 结构不合法",
+                "fulltext_direct_empty_text": "全文直读缺少文本",
                 "local_model_request_failed": "本地模型请求失败",
-                "blank_model_output": "本地模型返回空输出",
+                "blank_model_output": "分析模型返回空输出",
                 "deepseek_request_failed": "DeepSeek 请求失败",
                 "deepseek_json_parse_failed": "DeepSeek JSON 解析失败",
                 "write_output_failed": "结果写出失败",
@@ -499,6 +506,7 @@ def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_s
         worker,
         requested_ids=ids,
         top_k_spans=top_k_spans,
+        analysis_scope=analysis_scope,
         message="正在进行全文分析…",
         success_message="Analyze 完成",
     )

@@ -4,7 +4,8 @@ import requests
 import os
 import re
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -14,16 +15,40 @@ from project_env import get_project_env, load_project_env
 
 load_project_env(ROOT)
 
-# Local analysis model defaults to the llama.cpp OpenAI-compatible endpoint.
-# These can be overridden via env vars when switching runtimes/models.
+DEFAULT_LLM_URL = "http://127.0.0.1:8002/v1/chat/completions"
+DEFAULT_LLM_MODEL = "Qwen3.5-27B-Q4_K_M.gguf"
+
+# Default path: a single configurable OpenAI-compatible chat completions model
+# directly returns the existing structured JSON schema. Legacy two-stage mode is
+# kept as a rollback path via ACADEMIC_IMPACT_ANALYSIS_MODE.
+ANALYSIS_MODE = (
+    get_project_env("ACADEMIC_IMPACT_ANALYSIS_MODE", "single_model", project_root=ROOT)
+    or "single_model"
+).strip()
+LLM_URL = (
+    get_project_env("ACADEMIC_IMPACT_LLM_URL", "", project_root=ROOT)
+    or get_project_env("ACADEMIC_IMPACT_LOCAL_LLM_URL", DEFAULT_LLM_URL, project_root=ROOT)
+    or DEFAULT_LLM_URL
+)
+LLM_MODEL = (
+    get_project_env("ACADEMIC_IMPACT_LLM_MODEL", "", project_root=ROOT)
+    or get_project_env("ACADEMIC_IMPACT_LOCAL_MODEL", DEFAULT_LLM_MODEL, project_root=ROOT)
+    or DEFAULT_LLM_MODEL
+)
+LLM_DISABLE_THINKING = (
+    get_project_env("ACADEMIC_IMPACT_LLM_DISABLE_THINKING", "true", project_root=ROOT)
+    or "true"
+).strip().lower() not in {"0", "false", "no", "off"}
+
+# Legacy local semantic-analysis stage defaults.
 LOCAL_VLLM_URL = get_project_env(
     "ACADEMIC_IMPACT_LOCAL_LLM_URL",
-    "http://127.0.0.1:8002/v1/chat/completions",
+    DEFAULT_LLM_URL,
     project_root=ROOT,
 )
 LOCAL_MODEL = get_project_env(
     "ACADEMIC_IMPACT_LOCAL_MODEL",
-    "Qwen3.5-27B-Q4_K_M.gguf",
+    DEFAULT_LLM_MODEL,
     project_root=ROOT,
 )
 
@@ -34,6 +59,14 @@ MAX_LOCAL_SPANS = 4
 MAX_CONTEXT_WINDOW_CHARS_PER_SPAN = 1800
 MAX_RAW_TEXT_CHARS_PER_SPAN = 1200
 MAX_TOTAL_PROMPT_CHARS = 9000
+try:
+    MAX_FULLTEXT_DIRECT_CHARS = int(
+        get_project_env("ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS", "90000", project_root=ROOT)
+        or "90000"
+    )
+except (TypeError, ValueError):
+    MAX_FULLTEXT_DIRECT_CHARS = 90000
+VALID_ANALYSIS_SCOPES = {"candidate_spans", "fulltext_direct"}
 
 LOCAL_SYSTEM_PROMPT = """你是一个论文引用语义分析助手。
 你的任务是根据候选段落，判断其中哪些段落真正引用了目标论文，并给出自然语言分析。
@@ -62,6 +95,44 @@ LOCAL_SYSTEM_PROMPT = """你是一个论文引用语义分析助手。
 1. 若只是组引用（如 [9,13,2]）或“相关工作之一”的并列背景综述，通常应判为 keep=否，且更接近 grouped_literature_mention，而不是 explicit_citation。
 2. 若只是弱关键词命中、泛泛提到 low-rank / attention / adaptation 等术语，但没有明确把目标论文当作方法、基线、比较对象或扩展对象，也应判为 keep=否。
 3. 表格/列表中的基线行只有在该行明确点名目标方法或编号（例如 “LoRA [9]”）时，才能视为 comparison/baseline 证据；若片段本身未明确出现目标方法/编号，不要因为附近上下文或表题而误判为 keep=是。
+"""
+
+SINGLE_MODEL_SYSTEM_PROMPT = """你是一个严格的论文引用语义分析器。
+你的任务是根据候选段落或全文内容判断其中哪些位置真正引用了目标论文，并直接输出严格合法的 JSON。
+
+只输出 JSON，不要输出解释、推理过程、Markdown、代码块或任何额外文本。
+如果模型支持 thinking / reasoner 模式，必须关闭 thinking。不要输出 <think> 标签或任何思考通道内容。
+最终答案的第一个字符必须是 {，最后一个字符必须是 }。
+
+JSON 格式必须严格为：
+{
+  "ok": true,
+  "citing_title": "引用论文标题",
+  "findings": [
+    {
+      "page": 1,
+      "span_index": 1,
+      "citation_text": "原文摘录",
+      "keep": true,
+      "aspect": "background|method|baseline|comparison|extension|application|other",
+      "stance": "positive|neutral|negative",
+      "function": "中文一句话总结",
+      "reason": "中文解释",
+      "confidence": 0.0,
+      "mention_type": "explicit_citation|grouped_literature_mention|weak_body_mention"
+    }
+  ]
+}
+
+判断规则：
+1. 只有候选段落明确把目标论文作为方法、基线、比较对象、扩展对象、应用对象或核心背景时，才允许 keep=true。
+2. 若只是组引用（如 [9,13,2]）或“相关工作之一”的并列背景综述，通常 keep=false，mention_type=grouped_literature_mention。
+3. 若只是弱关键词命中、泛泛提到 low-rank / attention / adaptation 等术语，但没有明确把目标论文当作方法、基线、比较对象或扩展对象，keep=false，mention_type=weak_body_mention。
+4. 表格/列表中的基线行只有在 citation_text 内明确出现目标方法名或对应编号时，才允许 keep=true；否则优先 keep=false。
+5. 参考文献列表 / References / Bibliography / Works Cited 中的目标论文条目不算语义引用；如果唯一证据来自参考文献列表，findings 必须是空数组。
+6. 如果没有找到明确引用，findings 必须是空数组。
+7. confidence 必须是 0 到 1 之间的小数。
+8. 所有 findings 都必须包含 page 和 span_index。fulltext_direct 模式下 span_index 可表示该页内第几个命中片段，从 1 开始。
 """
 
 DEEPSEEK_SYSTEM_PROMPT = """你是一个严格的JSON整理器。
@@ -104,6 +175,34 @@ def load_deepseek_key():
     key = get_project_env("DEEPSEEK_API_KEY", "", project_root=ROOT)
     if key:
         return key
+    return None
+
+
+def normalized_analysis_mode() -> str:
+    mode = (get_project_env("ACADEMIC_IMPACT_ANALYSIS_MODE", ANALYSIS_MODE, project_root=ROOT) or "").strip()
+    return mode or "single_model"
+
+
+def normalize_analysis_scope(value: Optional[str]) -> str:
+    scope = (value or "candidate_spans").strip().lower().replace("-", "_")
+    if scope in {"candidate", "candidate_span", "spans"}:
+        return "candidate_spans"
+    if scope in {"fulltext", "full_text", "direct", "fulltext_direct"}:
+        return "fulltext_direct"
+    return "candidate_spans"
+
+
+def is_deepseek_url(url: str) -> bool:
+    parsed = urlparse(url or "")
+    return "deepseek.com" in (parsed.netloc or "").lower()
+
+
+def load_analysis_api_key(url: Optional[str] = None):
+    key = get_project_env("ACADEMIC_IMPACT_LLM_API_KEY", "", project_root=ROOT)
+    if key:
+        return key
+    if is_deepseek_url(url or LLM_URL):
+        return load_deepseek_key()
     return None
 
 
@@ -152,6 +251,10 @@ def generate_target_aliases(title: str):
     return aliases
 
 def extract_local_analysis_output(response_json):
+    return extract_chat_analysis_output(response_json, use_reasoning_fallback=True)
+
+
+def extract_chat_analysis_output(response_json, *, use_reasoning_fallback: bool):
     choices = response_json.get("choices") or []
     first_choice = choices[0] if choices else {}
     message = first_choice.get("message") or {}
@@ -160,14 +263,18 @@ def extract_local_analysis_output(response_json):
 
     analysis_text = content
     output_source = "content"
-    if not analysis_text and reasoning_content:
+    if not analysis_text and reasoning_content and use_reasoning_fallback:
         analysis_text = reasoning_content
         output_source = "reasoning_content"
+    elif not analysis_text and reasoning_content:
+        output_source = "reasoning_content_ignored"
     elif not analysis_text:
         output_source = "blank"
 
     return {
         "analysis_text": analysis_text,
+        "content": content,
+        "reasoning_content": reasoning_content,
         "output_source": output_source,
         "finish_reason": first_choice.get("finish_reason"),
         "content_len": len(content),
@@ -186,6 +293,67 @@ def call_local_27b(messages, max_tokens=900):
     r.raise_for_status()
     data = r.json()
     return extract_local_analysis_output(data)
+
+
+def call_openai_compatible_chat(
+    messages,
+    *,
+    url: str,
+    model: str,
+    api_key: Optional[str] = None,
+    max_tokens=1200,
+    response_format_json=True,
+    use_reasoning_fallback=True,
+    disable_thinking=False,
+):
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    req = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0,
+        "max_tokens": max_tokens,
+    }
+    if response_format_json:
+        req["response_format"] = {"type": "json_object"}
+    if disable_thinking:
+        req["chat_template_kwargs"] = {"enable_thinking": False}
+
+    try:
+        r = requests.post(url, headers=headers, json=req, timeout=240)
+        r.raise_for_status()
+    except requests.HTTPError as exc:
+        response = getattr(exc, "response", None)
+        if response is not None and response.status_code == 400 and (
+            "response_format" in req or "chat_template_kwargs" in req
+        ):
+            fallback_req = dict(req)
+            if "response_format" in fallback_req:
+                fallback_req.pop("response_format", None)
+                try:
+                    r = requests.post(url, headers=headers, json=fallback_req, timeout=240)
+                    r.raise_for_status()
+                except requests.HTTPError as fallback_exc:
+                    fallback_response = getattr(fallback_exc, "response", None)
+                    if (
+                        fallback_response is None
+                        or fallback_response.status_code != 400
+                        or "chat_template_kwargs" not in fallback_req
+                    ):
+                        raise
+                    fallback_req.pop("chat_template_kwargs", None)
+                    r = requests.post(url, headers=headers, json=fallback_req, timeout=240)
+                    r.raise_for_status()
+            else:
+                fallback_req.pop("chat_template_kwargs", None)
+                r = requests.post(url, headers=headers, json=fallback_req, timeout=240)
+                r.raise_for_status()
+        else:
+            raise
+    data = r.json()
+    return extract_chat_analysis_output(data, use_reasoning_fallback=use_reasoning_fallback)
+
 
 def call_deepseek(messages, api_key, max_tokens=800):
     headers = {
@@ -216,7 +384,7 @@ def classify_request_exception(exc: Exception) -> Tuple[str, str]:
     ):
         return (
             "context_length_exceeded",
-            f"本地 27B 分析请求超过上下文上限（约 {LOCAL_CONTEXT_WINDOW_TOKENS} tokens），已命中长度限制，不是模型没启动。",
+            f"分析模型请求超过上下文上限（约 {LOCAL_CONTEXT_WINDOW_TOKENS} tokens），已命中长度限制，不是模型没启动。",
         )
     if (
         "connection refused" in lowered
@@ -227,33 +395,77 @@ def classify_request_exception(exc: Exception) -> Tuple[str, str]:
     ):
         return (
             "service_unreachable",
-            "无法连接本地 27B 分析服务，请确认服务进程和地址配置是否正常。",
+            "无法连接分析模型服务，请确认服务进程、地址、端口和 API key 配置是否正常。",
         )
     if "400 client error" in lowered or "status code 400" in lowered:
         return (
             "bad_request",
-            "本地 27B 分析服务返回了 400，请检查请求长度或请求格式。",
+            "分析模型服务返回了 400，请检查请求长度、请求格式或模型配置。",
         )
     return (
         "request_failed",
-        f"本地 27B 分析服务请求失败：{text}",
+        f"分析模型服务请求失败：{text}",
     )
 
+def strip_thinking_blocks(text: str) -> str:
+    text = re.sub(r"(?is)<think>.*?</think>", "", text or "")
+    text = re.sub(r"(?is)<think>.*$", "", text)
+    return text.strip()
+
+
+def choose_json_candidate(values):
+    if not values:
+        return None
+    for value in reversed(values):
+        if isinstance(value, dict) and isinstance(value.get("findings"), list):
+            return value
+    for value in reversed(values):
+        if isinstance(value, dict):
+            return value
+    return values[-1]
+
+
+def parse_json_candidates(candidates):
+    values = []
+    for candidate in candidates:
+        candidate = (candidate or "").strip()
+        if not candidate:
+            continue
+        try:
+            values.append(json.loads(candidate))
+        except Exception:
+            continue
+    return choose_json_candidate(values)
+
+
+def parse_embedded_json_values(text: str):
+    decoder = json.JSONDecoder()
+    values = []
+    for match in re.finditer(r"[\{\[]", text):
+        try:
+            value, _end = decoder.raw_decode(text[match.start():])
+        except ValueError:
+            continue
+        values.append(value)
+    return values
+
+
 def try_parse_json(text):
-    text = text.strip()
+    text = (text or "").strip()
+    if not text:
+        return None
     try:
         return json.loads(text)
-    except:
+    except Exception:
         pass
 
-    start = text.find("{")
-    end = text.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        try:
-            return json.loads(text[start:end+1])
-        except:
-            pass
-    return None
+    cleaned = strip_thinking_blocks(text)
+    fenced_blocks = re.findall(r"(?is)```(?:json)?\s*(.*?)```", cleaned)
+    parsed = parse_json_candidates(fenced_blocks)
+    if parsed is not None:
+        return parsed
+
+    return choose_json_candidate(parse_embedded_json_values(cleaned))
 
 def build_local_prompt(payload):
     spans = payload.get("candidate_spans", [])[:MAX_LOCAL_SPANS]
@@ -295,6 +507,88 @@ def build_local_prompt(payload):
 
 请根据这些段落判断是否真正引用了目标论文，并按指定格式输出自然语言分析。
 """
+
+
+def build_single_model_prompt(payload):
+    target_aliases = payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
+    if normalize_analysis_scope(payload.get("analysis_scope")) == "fulltext_direct":
+        return build_fulltext_direct_prompt(payload, target_aliases)
+
+    local_prompt = build_local_prompt(payload)
+    return f"""{local_prompt}
+
+请不要输出自然语言报告。请直接输出符合 system 指定 schema 的严格 JSON。
+如果你支持 thinking 模式，请使用 /no_think，并且不要输出任何推理过程。
+最终答案必须只包含一个 JSON object。
+目标论文别名/缩写再次确认：{", ".join(target_aliases) if target_aliases else "无"}
+/no_think
+"""
+
+
+def normalize_fulltext_pages(payload):
+    pages = payload.get("fulltext_pages")
+    if not isinstance(pages, list):
+        pages = []
+
+    normalized = []
+    for index, page in enumerate(pages, start=1):
+        if not isinstance(page, dict):
+            continue
+        text = str(page.get("text") or "").strip()
+        if not text:
+            continue
+        page_number = coerce_int(page.get("page")) or index
+        normalized.append({"page": page_number, "text": text})
+
+    if normalized:
+        return normalized
+
+    fulltext_text = str(payload.get("fulltext_text") or "").strip()
+    if fulltext_text:
+        return [{"page": 1, "text": fulltext_text}]
+    return []
+
+
+def build_fulltext_direct_prompt(payload, target_aliases=None):
+    target_aliases = target_aliases or payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
+    pages = normalize_fulltext_pages(payload)
+    chunks = []
+    total_chars = 0
+
+    for page in pages:
+        block = f"[Page {page['page']}]\n{page['text']}\n"
+        if total_chars + len(block) > MAX_FULLTEXT_DIRECT_CHARS:
+            remaining = MAX_FULLTEXT_DIRECT_CHARS - total_chars
+            if remaining <= 0:
+                break
+            chunks.append(block[:remaining])
+            total_chars += remaining
+            break
+        chunks.append(block)
+        total_chars += len(block)
+
+    joined = "\n\n".join(chunks)
+
+    return f"""目标论文标题：{payload.get('target_title', '')}
+目标论文年份：{payload.get('target_year', '')}
+目标论文别名/缩写：{", ".join(target_aliases) if target_aliases else "无"}
+引用论文标题：{payload.get('citing_title', '')}
+分析范围：fulltext_direct
+
+下面是引用论文全文文本，请直接通读全文判断目标论文是否被真正引用：
+{joined}
+
+请输出严格 JSON，不要输出自然语言报告。
+判断时请特别注意：
+1. References / Bibliography / Works Cited / 参考文献 区域中的目标论文条目只说明该论文在文末列表中出现，不构成语义引用 finding。
+2. 只有正文、图表说明、实验设置、方法介绍或数据集说明中明确使用目标论文时，才输出 keep=true 的 finding。
+3. 对每个 finding，page 使用原始页码，span_index 使用该页内第几个命中片段，从 1 开始。
+4. 如果唯一命中来自参考文献列表，findings 必须是空数组。
+如果你支持 thinking 模式，请使用 /no_think，并且不要输出任何推理过程。
+最终答案必须只包含一个 JSON object。
+/no_think
+"""
+
 
 def build_deepseek_prompt(payload, raw_analysis):
     target_aliases = payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
@@ -391,7 +685,236 @@ def load_payload(payload_arg: str):
     return json.loads(payload_arg)
 
 
-def analyze_payload(payload):
+def coerce_bool(value, default: bool = False) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "yes", "y", "1", "是"}:
+            return True
+        if normalized in {"false", "no", "n", "0", "否"}:
+            return False
+    return default
+
+
+def coerce_float(value, default: float) -> float:
+    try:
+        result = float(value)
+    except (TypeError, ValueError):
+        return default
+    return max(0.0, min(1.0, result))
+
+
+def coerce_int(value):
+    if isinstance(value, bool):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def normalize_model_finding(finding: dict, index: int):
+    if not isinstance(finding, dict):
+        raise ValueError(f"findings[{index}] 必须是对象。")
+
+    page = coerce_int(finding.get("page"))
+    span_index = coerce_int(finding.get("span_index"))
+    if page is None or span_index is None:
+        raise ValueError(f"findings[{index}] 缺少合法的 page 或 span_index。")
+
+    keep = coerce_bool(finding.get("keep"), default=False)
+    citation_text = str(finding.get("citation_text") or "").strip()
+    aspect = str(finding.get("aspect") or ("other" if keep else "background")).strip()
+    stance = str(finding.get("stance") or "neutral").strip()
+    function = str(finding.get("function") or "").strip()
+    reason = str(finding.get("reason") or "").strip()
+    confidence = coerce_float(finding.get("confidence"), default=0.6 if keep else 0.35)
+
+    valid_aspects = {"background", "method", "baseline", "comparison", "extension", "application", "other"}
+    if aspect not in valid_aspects:
+        aspect = "other" if keep else "background"
+
+    valid_stances = {"positive", "neutral", "negative"}
+    if stance not in valid_stances:
+        stance = "neutral"
+
+    mention_type = str(finding.get("mention_type") or "").strip()
+    valid_mentions = {"explicit_citation", "grouped_literature_mention", "weak_body_mention"}
+    if mention_type not in valid_mentions:
+        mention_type = "explicit_citation" if keep else "weak_body_mention"
+
+    return {
+        "page": page,
+        "span_index": span_index,
+        "citation_text": citation_text,
+        "keep": keep,
+        "aspect": aspect,
+        "stance": stance,
+        "function": function,
+        "reason": reason,
+        "confidence": confidence,
+        "mention_type": mention_type,
+    }
+
+
+def finalize_parsed_result(payload, parsed):
+    if not isinstance(parsed, dict):
+        raise ValueError("模型输出 JSON 顶层必须是对象。")
+
+    parsed.setdefault("ok", True)
+    parsed.setdefault("citing_title", payload.get("citing_title", ""))
+    findings = parsed.get("findings", [])
+    if findings is None:
+        parsed["findings"] = []
+    elif not isinstance(findings, list):
+        raise ValueError("模型输出 JSON 中的 findings 必须是数组。")
+    else:
+        parsed["findings"] = [
+            normalize_model_finding(finding, index)
+            for index, finding in enumerate(findings)
+        ]
+
+    parsed = maybe_add_weak_mention_findings(payload, parsed)
+    parsed = normalize_finding_consistency(parsed)
+    return parsed
+
+
+def analyze_payload_single_model(payload):
+    analysis_scope = normalize_analysis_scope(payload.get("analysis_scope"))
+    fulltext_pages = normalize_fulltext_pages(payload) if analysis_scope == "fulltext_direct" else []
+    fulltext_chars = sum(len(page.get("text", "")) for page in fulltext_pages)
+
+    if analysis_scope == "candidate_spans" and not payload.get("candidate_spans"):
+        return {
+            "ok": True,
+            "citing_title": payload.get("citing_title", ""),
+            "findings": [],
+            "_debug": {
+                "analysis_mode": "single_model",
+                "analysis_scope": analysis_scope,
+                "candidate_span_count": 0,
+            },
+        }
+
+    if analysis_scope == "fulltext_direct" and not fulltext_pages:
+        return {
+            "ok": False,
+            "citing_title": payload.get("citing_title", ""),
+            "findings": [],
+            "error": "fulltext_direct 模式缺少可分析的全文文本。",
+            "error_type": "fulltext_direct_empty_text",
+            "error_stage": "fulltext_direct_empty_text",
+            "_debug": {
+                "analysis_mode": "single_model",
+                "analysis_scope": analysis_scope,
+                "candidate_span_count": len(payload.get("candidate_spans", [])),
+                "fulltext_page_count": 0,
+                "fulltext_chars": 0,
+            },
+        }
+
+    user_prompt = build_single_model_prompt(payload)
+    debug = {
+        "analysis_mode": "single_model",
+        "analysis_scope": analysis_scope,
+        "candidate_span_count": len(payload.get("candidate_spans", [])),
+        "fulltext_page_count": len(fulltext_pages),
+        "fulltext_chars": fulltext_chars,
+        "prompt_chars": len(user_prompt),
+        "llm_url": LLM_URL,
+        "llm_model": LLM_MODEL,
+        "output_source": None,
+        "finish_reason": None,
+        "content_len": 0,
+        "reasoning_len": 0,
+    }
+
+    try:
+        model_result = call_openai_compatible_chat(
+            [
+                {"role": "system", "content": SINGLE_MODEL_SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            url=LLM_URL,
+            model=LLM_MODEL,
+            api_key=load_analysis_api_key(LLM_URL),
+            max_tokens=4096,
+            response_format_json=True,
+            use_reasoning_fallback=False,
+            disable_thinking=LLM_DISABLE_THINKING,
+        )
+    except requests.RequestException as exc:
+        error_detail_type, error_message = classify_request_exception(exc)
+        return {
+            "ok": False,
+            "error": error_message,
+            "error_type": "single_model_request_failed",
+            "error_stage": "single_model_request_failed",
+            "error_detail_type": error_detail_type,
+            "_debug": debug,
+        }
+
+    debug.update({
+        "output_source": model_result.get("output_source"),
+        "finish_reason": model_result.get("finish_reason"),
+        "content_len": model_result.get("content_len", 0),
+        "reasoning_len": model_result.get("reasoning_len", 0),
+    })
+    raw_json = model_result.get("analysis_text", "")
+    raw_json_source = model_result.get("output_source")
+    reasoning_content = model_result.get("reasoning_content", "")
+    if not raw_json:
+        debug["model_raw_preview"] = ""
+        debug["reasoning_preview"] = reasoning_content[:800]
+        error = "分析模型没有返回最终 JSON content，无法解析结构化 JSON。"
+        if reasoning_content:
+            error = (
+                "分析模型只返回了 reasoning_content，没有返回最终 JSON content。"
+                "请确认 thinking 已关闭，或模型输出预算足够生成最终答案。"
+            )
+        return {
+            "ok": False,
+            "error": error,
+            "error_type": "blank_model_output",
+            "error_stage": "blank_model_output",
+            "_debug": debug,
+        }
+
+    parsed = try_parse_json(raw_json)
+    if parsed is None:
+        return {
+            "ok": False,
+            "error": "分析模型输出无法解析为 JSON",
+            "error_type": "single_model_json_parse_failed",
+            "error_stage": "single_model_json_parse_failed",
+            "model_raw_preview": raw_json[:800],
+            "model_raw_source": raw_json_source,
+            "_debug": debug,
+        }
+
+    try:
+        parsed = finalize_parsed_result(payload, parsed)
+    except ValueError as exc:
+        return {
+            "ok": False,
+            "error": f"分析模型输出 JSON schema 不合法：{exc}",
+            "error_type": "single_model_schema_invalid",
+            "error_stage": "single_model_schema_invalid",
+            "model_raw_preview": raw_json[:800],
+            "_debug": debug,
+        }
+
+    parsed["_debug"] = {
+        **debug,
+        "candidate_pages": sorted(list({s.get("page") for s in payload.get("candidate_spans", []) if isinstance(s, dict) and s.get("page") is not None})),
+        "fulltext_pages": sorted(list({page.get("page") for page in fulltext_pages if page.get("page") is not None})),
+        "model_raw_preview": raw_json[:500],
+    }
+    return parsed
+
+
+def analyze_payload_legacy_two_stage(payload):
     api_key = load_deepseek_key()
     if not api_key:
         return {
@@ -407,6 +930,7 @@ def analyze_payload(payload):
             "citing_title": payload.get("citing_title", ""),
             "findings": [],
             "_debug": {
+                "analysis_mode": "legacy_two_stage",
                 "candidate_span_count": 0
             }
         }
@@ -483,15 +1007,39 @@ def analyze_payload(payload):
             "deepseek_raw_preview": raw_json[:800]
         }
 
-    parsed = maybe_add_weak_mention_findings(payload, parsed)
-    parsed = normalize_finding_consistency(parsed)
+    try:
+        parsed = finalize_parsed_result(payload, parsed)
+    except ValueError as exc:
+        return {
+            "ok": False,
+            "error": f"DeepSeek 输出 JSON schema 不合法：{exc}",
+            "error_type": "deepseek_json_parse_failed",
+            "error_stage": "deepseek_json_parse_failed",
+            "local_raw_analysis_preview": raw_analysis[:800],
+            "deepseek_raw_preview": raw_json[:800],
+        }
 
     parsed["_debug"] = {
+        "analysis_mode": "legacy_two_stage",
         **local_debug,
         "candidate_pages": sorted(list({s["page"] for s in payload.get("candidate_spans", [])})),
         "local_analysis_preview": raw_analysis[:500],
     }
     return parsed
+
+
+def analyze_payload(payload):
+    mode = normalized_analysis_mode()
+    if mode == "legacy_two_stage":
+        return analyze_payload_legacy_two_stage(payload)
+    if mode != "single_model":
+        return {
+            "ok": False,
+            "error": f"未知 ACADEMIC_IMPACT_ANALYSIS_MODE: {mode}",
+            "error_type": "invalid_analysis_mode",
+            "error_stage": "config",
+        }
+    return analyze_payload_single_model(payload)
 
 def main():
     if len(sys.argv) < 2:

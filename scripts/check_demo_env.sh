@@ -23,22 +23,66 @@ set -a
 source "$ENV_FILE"
 set +a
 
-required_vars=(
-  DEEPSEEK_API_KEY
-  ACADEMIC_IMPACT_LOCAL_LLM_URL
-  ACADEMIC_IMPACT_LOCAL_MODEL
-  ACADEMIC_IMPACT_DOWNLOAD_DIR
-)
-
 missing=0
-for var in "${required_vars[@]}"; do
+
+check_required_var() {
+  local var="$1"
   if [[ -z "${!var:-}" ]]; then
     echo "[error] missing env var: $var"
     missing=1
   else
     echo "[ok] $var is set"
   fi
-done
+}
+
+analysis_mode="${ACADEMIC_IMPACT_ANALYSIS_MODE:-single_model}"
+if [[ -z "$analysis_mode" ]]; then
+  analysis_mode="single_model"
+fi
+echo "[check] analysis mode: $analysis_mode"
+
+check_required_var ACADEMIC_IMPACT_DOWNLOAD_DIR
+
+if [[ "$analysis_mode" == "legacy_two_stage" ]]; then
+  check_required_var ACADEMIC_IMPACT_LOCAL_LLM_URL
+  check_required_var ACADEMIC_IMPACT_LOCAL_MODEL
+  check_required_var DEEPSEEK_API_KEY
+elif [[ "$analysis_mode" == "single_model" ]]; then
+  effective_llm_url="${ACADEMIC_IMPACT_LLM_URL:-${ACADEMIC_IMPACT_LOCAL_LLM_URL:-}}"
+  effective_llm_model="${ACADEMIC_IMPACT_LLM_MODEL:-${ACADEMIC_IMPACT_LOCAL_MODEL:-}}"
+  if [[ -z "$effective_llm_url" ]]; then
+    echo "[error] missing env var: ACADEMIC_IMPACT_LLM_URL or ACADEMIC_IMPACT_LOCAL_LLM_URL"
+    missing=1
+  else
+    echo "[ok] effective LLM URL is set"
+  fi
+  if [[ -z "$effective_llm_model" ]]; then
+    echo "[error] missing env var: ACADEMIC_IMPACT_LLM_MODEL or ACADEMIC_IMPACT_LOCAL_MODEL"
+    missing=1
+  else
+    echo "[ok] effective LLM model is set"
+  fi
+
+  if [[ "$effective_llm_url" == *"deepseek.com"* ]]; then
+    if [[ -z "${ACADEMIC_IMPACT_LLM_API_KEY:-}" && -z "${DEEPSEEK_API_KEY:-}" ]]; then
+      echo "[error] missing API key for DeepSeek: ACADEMIC_IMPACT_LLM_API_KEY or DEEPSEEK_API_KEY"
+      missing=1
+    else
+      echo "[ok] LLM API key is set"
+    fi
+  elif [[ "$effective_llm_url" == *"dashscope.aliyuncs.com"* ]]; then
+    if [[ -z "${ACADEMIC_IMPACT_LLM_API_KEY:-}" ]]; then
+      echo "[error] missing API key for DashScope: ACADEMIC_IMPACT_LLM_API_KEY"
+      missing=1
+    else
+      echo "[ok] LLM API key is set"
+    fi
+  fi
+else
+  echo "[error] invalid ACADEMIC_IMPACT_ANALYSIS_MODE: $analysis_mode"
+  echo "        expected single_model or legacy_two_stage"
+  missing=1
+fi
 
 if [[ "$missing" -ne 0 ]]; then
   exit 1

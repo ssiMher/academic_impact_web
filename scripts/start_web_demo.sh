@@ -19,7 +19,7 @@ CONDA_ENV_NAME="${CONDA_ENV_NAME:-}"
 # Replace this with your actual model startup command,
 # or pass it in at runtime via the MODEL_START_CMD environment variable.
 # It should launch an OpenAI-compatible endpoint that matches
-# ACADEMIC_IMPACT_LOCAL_LLM_URL in your .env.
+# ACADEMIC_IMPACT_LLM_URL in your .env.
 MODEL_START_CMD="${MODEL_START_CMD:-echo 'MODEL_START_CMD is not set. Edit scripts/start_web_demo.sh or pass MODEL_START_CMD=\"<your command>\" when launching this script.'; sleep infinity}"
 
 mkdir -p "$LOG_DIR"

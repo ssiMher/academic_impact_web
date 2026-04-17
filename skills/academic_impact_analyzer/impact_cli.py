@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SKILLS_ROOT = ROOT / "skills"
 DEFAULT_SESSIONS_DIR = ROOT / "data" / "sessions"
 PERSON_TAG_REGISTRY_PATH = ROOT / "data" / "reference" / "person_tag_registry.json"
+VENUE_TIER_REGISTRY_PATH = ROOT / "data" / "reference" / "venue_tiers.json"
 SESSION_SCHEMA_VERSION = "1.0"
 QUICK_ANALYSIS_VERSION = "1.0"
 EVIDENCE_INDEX_VERSION = "1.0"
@@ -45,13 +46,14 @@ STOPWORD_TOKENS = {
 }
 
 ANALYSIS_STATUS_LABELS = {
-    "fulltext_analyzed": "已完成全文分析",
+    "fulltext_analyzed": "全文分析完成",
     "mention_only": "弱提及",
     "reference_only": "仅参考文献命中",
     "fulltext_no_finding": "全文未发现可靠证据",
-    "context_only": "仅 citation context",
+    "context_only": "仅上下文分析",
     "fulltext_extract_failed": "全文提取失败",
     "analysis_failed": "语义分析失败",
+    "write_output_failed": "结果写出失败",
 }
 
 NUMBER_WORDS = {
@@ -495,6 +497,181 @@ def build_overview_stats(session: dict):
     }
 
 
+def normalize_venue_key(value: str) -> str:
+    text = str(value or "").strip().lower()
+    text = text.replace("&", " and ")
+    text = re.sub(r"\([^)]*\)", " ", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    text = re.sub(r"\b(proceedings|proceeding|proc|of|the)\b", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def is_unknown_venue(value: str) -> bool:
+    normalized = normalize_venue_key(value)
+    return not normalized or normalized in {"unknown", "unknown venue", "none", "null", "arxiv org"}
+
+
+def load_venue_tier_registry(path: Path = VENUE_TIER_REGISTRY_PATH) -> dict:
+    if not path.exists():
+        return {
+            "schema_version": "1.0",
+            "source_note": "missing venue tier registry",
+            "entries": [],
+        }
+    try:
+        payload = read_json(path)
+    except Exception:
+        return {
+            "schema_version": "1.0",
+            "source_note": "failed to read venue tier registry",
+            "entries": [],
+        }
+    if isinstance(payload, list):
+        return {"schema_version": "1.0", "entries": payload}
+    if not isinstance(payload, dict):
+        return {"schema_version": "1.0", "entries": []}
+    payload.setdefault("entries", [])
+    return payload
+
+
+def build_venue_tier_index(registry: Optional[dict] = None) -> dict:
+    registry = registry if isinstance(registry, dict) else load_venue_tier_registry()
+    index = {}
+    for entry in registry.get("entries", []) or []:
+        if not isinstance(entry, dict):
+            continue
+        names = [entry.get("name", "")]
+        names.extend(entry.get("aliases", []) or [])
+        for name in names:
+            key = normalize_venue_key(name)
+            if key and key not in index:
+                index[key] = entry
+    return {
+        "registry": registry,
+        "by_key": index,
+    }
+
+
+def classify_venue_tier(venue: str, tier_index: Optional[dict] = None) -> dict:
+    tier_index = tier_index if isinstance(tier_index, dict) else build_venue_tier_index()
+    raw_venue = str(venue or "").strip()
+    normalized = normalize_venue_key(raw_venue)
+    if is_unknown_venue(raw_venue):
+        return {
+            "venue": raw_venue,
+            "normalized_venue": normalized,
+            "matched": False,
+            "tier": "unknown",
+            "tier_label": "未识别 venue",
+            "tier_system": "",
+            "venue_type": "",
+            "matched_name": "",
+            "source": "",
+        }
+
+    entry = (tier_index.get("by_key") or {}).get(normalized)
+    if not entry:
+        return {
+            "venue": raw_venue,
+            "normalized_venue": normalized,
+            "matched": False,
+            "tier": "unmatched",
+            "tier_label": "未匹配等级",
+            "tier_system": "",
+            "venue_type": "",
+            "matched_name": "",
+            "source": "",
+        }
+
+    tier = str(entry.get("tier") or "unrated").strip()
+    tier_system = str(entry.get("tier_system") or entry.get("system") or "").strip()
+    tier_label = str(entry.get("tier_label") or entry.get("label") or "").strip()
+    if not tier_label:
+        tier_label = f"{tier_system} {tier}".strip() or tier
+    return {
+        "venue": raw_venue,
+        "normalized_venue": normalized,
+        "matched": True,
+        "tier": tier,
+        "tier_label": tier_label,
+        "tier_system": tier_system,
+        "venue_type": entry.get("venue_type") or "",
+        "matched_name": entry.get("name") or raw_venue,
+        "source": entry.get("source") or "",
+    }
+
+
+def build_venue_statistics(papers: List[dict], tier_index: Optional[dict] = None) -> dict:
+    tier_index = tier_index if isinstance(tier_index, dict) else build_venue_tier_index()
+    venue_groups = {}
+    tier_groups = {}
+    paper_items = []
+
+    for item in papers or []:
+        paper_id = item.get("id")
+        venue = item.get("venue") or (item.get("paper") or {}).get("venue") or ""
+        classification = item.get("venue_tier") if isinstance(item.get("venue_tier"), dict) else classify_venue_tier(venue, tier_index)
+        venue_key = classification.get("normalized_venue") or normalize_venue_key(venue) or "unknown"
+        venue_label = venue if not is_unknown_venue(venue) else "Unknown Venue"
+        venue_group = venue_groups.setdefault(venue_key, {
+            "venue": venue_label,
+            "normalized_venue": venue_key,
+            "count": 0,
+            "paper_ids": [],
+            "tier": classification,
+        })
+        venue_group["count"] += 1
+        if paper_id:
+            venue_group["paper_ids"].append(paper_id)
+
+        tier_key = classification.get("tier") or "unknown"
+        tier_label = classification.get("tier_label") or tier_key
+        tier_group = tier_groups.setdefault(tier_key, {
+            "tier": tier_key,
+            "tier_label": tier_label,
+            "tier_system": classification.get("tier_system") or "",
+            "count": 0,
+            "paper_ids": [],
+        })
+        tier_group["count"] += 1
+        if paper_id:
+            tier_group["paper_ids"].append(paper_id)
+
+        paper_items.append({
+            "id": paper_id,
+            "title": item.get("title"),
+            "venue": venue,
+            "year": item.get("year"),
+            "venue_tier": classification,
+        })
+
+    top_venues = sorted(
+        venue_groups.values(),
+        key=lambda group: (-group["count"], group["venue"].lower()),
+    )
+    tier_distribution = sorted(
+        tier_groups.values(),
+        key=lambda group: (-group["count"], group["tier_label"].lower()),
+    )
+    matched_tier_count = sum(1 for item in paper_items if item["venue_tier"].get("matched"))
+    known_venue_count = sum(1 for item in paper_items if not is_unknown_venue(item.get("venue", "")))
+
+    return {
+        "schema_version": "1.0",
+        "registry_path": str(VENUE_TIER_REGISTRY_PATH),
+        "registry_source_note": (tier_index.get("registry") or {}).get("source_note", ""),
+        "paper_count": len(paper_items),
+        "known_venue_count": known_venue_count,
+        "unknown_venue_count": len(paper_items) - known_venue_count,
+        "unique_venue_count": len([key for key in venue_groups if key != "unknown"]),
+        "matched_tier_count": matched_tier_count,
+        "unmatched_tier_count": len(paper_items) - matched_tier_count,
+        "top_venues": top_venues[:12],
+        "tier_distribution": tier_distribution,
+        "papers": paper_items,
+    }
+
+
 def rebuild_person_candidates(session: dict):
     session["person_candidates"] = PERSON_CANDIDATES.build_candidates(
         session.get("papers", []),
@@ -540,6 +717,25 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
             download_probe.get("error", ""),
             download_result.get("error", ""),
             *[attempt.get("error", "") for attempt in attempts],
+            *[
+                entry.get("error", "")
+                for payload in [download_probe, download_result]
+                for entry in (payload.get("download_errors", []) or [])
+                if isinstance(entry, dict)
+            ],
+        ]
+    )
+    download_error_types = unique_strings(
+        [
+            download_probe.get("error_type", ""),
+            download_result.get("error_type", ""),
+            *[attempt.get("error_type", "") for attempt in attempts],
+            *[
+                entry.get("error_type", "")
+                for payload in [download_probe, download_result]
+                for entry in (payload.get("download_errors", []) or [])
+                if isinstance(entry, dict)
+            ],
         ]
     )
     analysis_paths = item.get("analysis_result", {}).get("paths", {})
@@ -553,6 +749,17 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
     if status == "context_only":
         tags.extend(["未获得 PDF", "仅 citation context", "未经全文验证"])
         details.append("未获得全文 PDF，当前结果仅基于 citation contexts，未经全文验证。")
+        download_failure_map = {
+            "fake_pdf_html_interstitial": (["fake_pdf_html_interstitial", "假 PDF / HTML 拦截页"], "这不是模型问题，而是下载到的文件实际上是 HTML/反爬页面，不是真正 PDF。"),
+            "downloaded_non_pdf": (["downloaded_non_pdf", "无效 PDF / 假 PDF"], "这不是模型问题，而是下载到的文件并非真实 PDF。"),
+        }
+        for error_type in download_error_types:
+            mapped = download_failure_map.get(error_type)
+            if not mapped:
+                continue
+            tag_list, detail = mapped
+            tags.extend(tag_list)
+            details.append(detail)
         if any(is_rate_limited_error(error) for error in raw_errors):
             tags.append("外部源限流")
             details.append("下载阶段命中过外部源限流（HTTP 429）。")
@@ -578,6 +785,9 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
         tags.append("全文语义分析失败")
         stage_tag_map = {
             "candidate_span_failed": "candidate_span_failed",
+            "single_model_request_failed": "single_model_request_failed",
+            "single_model_json_parse_failed": "single_model_json_parse_failed",
+            "single_model_schema_invalid": "single_model_schema_invalid",
             "local_model_request_failed": "local_model_request_failed",
             "blank_model_output": "blank_model_output",
             "deepseek_request_failed": "deepseek_request_failed",
@@ -586,8 +796,11 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
         }
         stage_detail_map = {
             "candidate_span_failed": "候选段落定位阶段失败，未能生成可分析的正文候选。",
+            "single_model_request_failed": "分析模型请求阶段失败，全文语义分析未能完成。",
+            "single_model_json_parse_failed": "分析模型返回结果无法解析为 JSON，未能产出结构化分析结果。",
+            "single_model_schema_invalid": "分析模型返回 JSON 结构不符合全文分析 schema，未能产出可靠结构化结果。",
             "local_model_request_failed": "本地模型请求阶段失败，全文语义分析未能完成。",
-            "blank_model_output": "本地模型返回空输出，未能进入整理阶段。",
+            "blank_model_output": "分析模型返回空输出，未能进入结构化结果处理阶段。",
             "deepseek_request_failed": "DeepSeek 整理阶段请求失败，未能产出结构化分析结果。",
             "deepseek_json_parse_failed": "DeepSeek 返回结果无法解析为 JSON，未能产出结构化分析结果。",
             "write_output_failed": "分析过程中的结果写出失败，请检查服务器目录权限或磁盘空间。",
@@ -1267,6 +1480,10 @@ def attach_local_pdf(session_dir: Path, paper_id: str, file_path: str):
         raise FileNotFoundError(f"未找到 PDF 文件: {source_path}")
     if source_path.suffix.lower() != ".pdf":
         raise ValueError("当前只支持绑定 .pdf 文件。")
+    authenticity = DOWNLOAD_PDF.inspect_pdf_file(str(source_path))
+    if not authenticity.get("ok"):
+        error_type = authenticity.get("error_type", "downloaded_non_pdf")
+        raise ValueError(f"绑定失败：{error_type}。{authenticity.get('error', '该文件不是真实 PDF。')}")
 
     item = next((paper for paper in session.get("papers", []) if paper.get("id") == paper_id), None)
     if item is None:
@@ -1421,7 +1638,8 @@ def run_downloads(session_dir: Path, ids: List[str], auto_only: bool):
     }
 
 
-def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
+def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_scope: str = "candidate_spans"):
+    analysis_scope = RUN_PIPELINE.normalize_analysis_scope(analysis_scope)
     session = load_session(session_dir)
     contexts_data = read_json(session_dir / "contexts.json")
     target = session.get("target", {})
@@ -1443,7 +1661,11 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
             item_dir=item_dir,
             top_k_spans=top_k_spans,
             local_pdf_path=item.get("download_probe", {}).get("local_file_path") or "",
+            analysis_scope=analysis_scope,
         )
+        paper_result["id"] = item["id"]
+        paper_result["paper_id"] = item["id"]
+        paper_result["analysis_status"] = paper_result.get("status")
         item["analysis_result"] = {
             "status": paper_result.get("status"),
             "paths": paper_result.get("paths", {}),
@@ -1456,6 +1678,7 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
         "target": target,
         "output_dir": str(session_dir / "analysis"),
         "processed_papers": len(results),
+        "analysis_scope": analysis_scope,
         "results": results,
     }
     summary_path = session_dir / "analysis" / "summary.json"
@@ -1467,6 +1690,7 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int):
         "report_json_path": str(report_json_path),
         "report_md_path": str(report_md_path),
         "processed_papers": len(results),
+        "analysis_scope": analysis_scope,
     }
     session["analysis_mode_last"] = "full"
     sync_session_derivatives(session_dir, session, update_evidence=True)
@@ -1617,7 +1841,7 @@ def run_quick_analysis(session_dir: Path):
     }
 
 
-def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_spans: int = 8):
+def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_spans: int = 8, analysis_scope: str = "candidate_spans"):
     session = load_session(session_dir)
     refresh_ids = [item.get("id") for item in session.get("papers", [])[: max(0, refresh_top_n)] if item.get("id")]
     refresh_result = {
@@ -1663,6 +1887,7 @@ def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_
             session_dir=session_dir,
             ids=analyze_ids,
             top_k_spans=max(1, top_k_spans),
+            analysis_scope=analysis_scope,
         )
 
     session = load_session(session_dir)
@@ -1767,17 +1992,22 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
     status_payload = build_status_payload(session)
     target = status_payload.get("target", {})
     paper_lookup = {item.get("id"): item for item in session.get("papers", [])}
+    venue_tier_index = build_venue_tier_index()
     detail_papers = []
     for item in status_payload.get("papers", []):
         raw_item = paper_lookup.get(item.get("id"), {})
         citation_summary = summarize_citation_method(raw_item)
+        venue_tier = classify_venue_tier(raw_item.get("venue"), venue_tier_index)
         paper_payload = {
             "id": item.get("id"),
             "title": item.get("title"),
             "year": raw_item.get("year"),
             "venue": raw_item.get("venue"),
+            "venue_tier": venue_tier,
             "download_status": item.get("download_status"),
+            "download_status_label": _status_label(item.get("download_status")),
             "analysis_status": item.get("analysis_status"),
+            "analysis_status_label": ANALYSIS_STATUS_LABELS.get(item.get("analysis_status"), item.get("analysis_status") or "-"),
             "context_confidence": item.get("context_confidence"),
             "qa_ready": item.get("qa_ready", False),
             "candidate_count": len(raw_item.get("person_candidate_hits", [])),
@@ -1802,6 +2032,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
     confirmed_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "confirmed"]
     pending_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "pending"]
     rejected_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "rejected"]
+    venue_statistics = build_venue_statistics(session.get("papers", []), venue_tier_index)
 
     return {
         "target_overview": {
@@ -1828,6 +2059,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             },
         },
         "papers": detail_papers,
+        "venue_statistics": venue_statistics,
         "person_candidates": status_payload.get("person_candidates", []),
         "person_summary": {
             "pending_count": len(pending_candidates),
@@ -1961,10 +2193,13 @@ def _status_label(status: str):
         "manual_required": "需手动下载",
         "not_probed": "待探测",
         "probe_failed": "探测失败",
-        "fulltext_analyzed": "已完成全文分析",
+        "fulltext_analyzed": "全文分析完成",
         "mention_only": "弱提及",
         "reference_only": "仅参考文献",
-        "context_only": "仅上下文",
+        "context_only": "仅上下文分析",
+        "fulltext_extract_failed": "全文提取失败",
+        "analysis_failed": "语义分析失败",
+        "write_output_failed": "结果写出失败",
     }
     return mapping.get(status or "", status or "-")
 
@@ -2102,6 +2337,12 @@ def build_parser():
     analyze.add_argument("session_dir", help="discover 阶段生成的会话目录")
     analyze.add_argument("--ids", required=True, help="要分析的论文 id，逗号分隔，例如 P001,P003")
     analyze.add_argument("--top-k-spans", type=int, default=8, help="送入 analyze_fulltext 的候选段落数，默认 8")
+    analyze.add_argument(
+        "--analysis-scope",
+        choices=sorted(RUN_PIPELINE.VALID_ANALYSIS_SCOPES),
+        default="candidate_spans",
+        help="分析范围：candidate_spans 为默认候选段落模式，fulltext_direct 为单篇全文直读模式",
+    )
 
     attach_pdf = sub.add_parser("attach-pdf", help="把本地 PDF 绑定到某篇候选论文，后续按 local_available 处理")
     attach_pdf.add_argument("session_dir", help="discover 阶段生成的会话目录")
@@ -2173,6 +2414,7 @@ def main():
             session_dir=Path(args.session_dir).expanduser(),
             ids=parse_ids(args.ids),
             top_k_spans=max(1, args.top_k_spans),
+            analysis_scope=args.analysis_scope,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return

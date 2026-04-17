@@ -5,8 +5,8 @@
 主 README 只保留以下要求：
 
 - 项目内 `.env` 已配置
-- `ACADEMIC_IMPACT_LOCAL_LLM_URL` 可访问
-- `ACADEMIC_IMPACT_LOCAL_MODEL` 与服务实际暴露模型名一致
+- `ACADEMIC_IMPACT_LLM_URL` 可访问
+- `ACADEMIC_IMPACT_LLM_MODEL` 与服务实际暴露模型名一致
 
 具体服务器部署、启动、重启与端口管理命令，统一维护在这一层运维附录里，而不放进主 Quick Start。
 
@@ -76,15 +76,64 @@ curl http://114.212.82.168:8002/v1/models
 项目根目录 `.env` 中至少应包含：
 
 ```bash
-DEEPSEEK_API_KEY=...
-ACADEMIC_IMPACT_LOCAL_LLM_URL=http://114.212.82.168:8002/v1/chat/completions
-ACADEMIC_IMPACT_LOCAL_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+ACADEMIC_IMPACT_ANALYSIS_MODE=single_model
+ACADEMIC_IMPACT_LLM_URL=http://114.212.82.168:8002/v1/chat/completions
+ACADEMIC_IMPACT_LLM_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+ACADEMIC_IMPACT_LLM_API_KEY=
+ACADEMIC_IMPACT_LLM_DISABLE_THINKING=true
+ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS=90000
 ```
 
 说明：
 
-- `ACADEMIC_IMPACT_LOCAL_LLM_URL` 应指向 **OpenAI-compatible chat completions** 地址
-- `ACADEMIC_IMPACT_LOCAL_MODEL` 必须与 `/v1/models` 暴露出来的模型名一致
+- `ACADEMIC_IMPACT_ANALYSIS_MODE` 默认是 `single_model`，由一个 OpenAI-compatible 模型直接完成引用语义判断并输出结构化 JSON
+- `ACADEMIC_IMPACT_LLM_URL` 应指向 **OpenAI-compatible chat completions** 地址
+- `ACADEMIC_IMPACT_LLM_MODEL` 必须与 `/v1/models` 暴露出来的模型名一致
+- `ACADEMIC_IMPACT_LLM_API_KEY` 本地无鉴权服务可留空；DeepSeek、DashScope/Qwen 等 API 服务需填写真实 key
+- `ACADEMIC_IMPACT_LLM_DISABLE_THINKING` 默认开启，会向支持的 llama.cpp/Qwen 服务传入 `chat_template_kwargs.enable_thinking=false`
+- `ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS` 只影响 `fulltext_direct` 深度模式，控制单篇全文直读时送入模型的字符上限，默认 `90000`
+- 旧变量 `ACADEMIC_IMPACT_LOCAL_LLM_URL` / `ACADEMIC_IMPACT_LOCAL_MODEL` 仍作为兼容 fallback 保留，不建议新部署继续使用
+
+## 分析范围
+
+默认 `candidate_spans` 模式会先筛选 top-k 候选段落，再送入模型，适合批量分析。
+
+如果需要让模型直接通读单篇引用论文全文，可使用 `fulltext_direct`：
+
+```bash
+python3 skills/academic_impact_analyzer/impact_cli.py analyze <session_dir> \
+  --ids P001 \
+  --analysis-scope fulltext_direct
+```
+
+Web 页面也提供 `analysis scope` 下拉框。`fulltext_direct` 仍按 citing paper 逐篇请求模型，不会把多篇论文合并进同一个上下文。
+
+## 比较两种分析范围
+
+需要判断 `candidate_spans` 和 `fulltext_direct` 哪个更适合当前模型时，使用隔离 benchmark：
+
+```bash
+python3 scripts/compare_analysis_scopes.py <session_id_or_session_dir> \
+  --ids P001,P002 \
+  --concurrency 2
+```
+
+脚本会为每个 `paper_id + analysis_scope` 复制独立 session 后运行，所以不会覆盖线上 session。报告包含：
+
+- 每种 scope 的成功数、失败数、平均耗时、中位耗时、状态分布
+- 每篇论文两种 scope 的状态差异、finding 数差异、耗时差异
+- 如果 `data/reference/fulltext_regression_set.json` 中有对应样本，会计算状态和标签是否命中预期
+
+并发能力可以通过提高 `--concurrency` 观察吞吐和失败率。模型服务若是单实例，建议先从 `--concurrency 1`、`2`、`4` 分档测试。
+
+如果需要临时回退旧双阶段链路：
+
+```bash
+ACADEMIC_IMPACT_ANALYSIS_MODE=legacy_two_stage
+ACADEMIC_IMPACT_LOCAL_LLM_URL=http://114.212.82.168:8002/v1/chat/completions
+ACADEMIC_IMPACT_LOCAL_MODEL=Qwen3.5-27B-Q4_K_M.gguf
+DEEPSEEK_API_KEY=...
+```
 
 ## 项目侧最小自检
 
@@ -120,7 +169,7 @@ make fulltext-check \
 
 表现：
 
-- `.env` 中的 `ACADEMIC_IMPACT_LOCAL_MODEL` 与 `/v1/models` 返回值不同
+- `.env` 中的 `ACADEMIC_IMPACT_LLM_MODEL` 与 `/v1/models` 返回值不同
 - 请求虽然发到服务，但模型选择失败或返回异常
 
 优先检查：

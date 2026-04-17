@@ -348,6 +348,7 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('刷新探测状态', body)
         self.assertIn('下载所选论文', body)
         self.assertIn('分析所选论文', body)
+        self.assertIn('fulltext_direct', body)
         self.assertIn('上传并绑定 PDF', body)
 
     def test_session_detail_page_renders_running_task_banner_and_disables_actions(self):
@@ -375,7 +376,8 @@ class Phase1DetailTestCase(unittest.TestCase):
 
         self.assertIn('当前正在后台执行', body)
         self.assertIn('全文分析', body)
-        self.assertIn('页面会每 3 秒自动刷新一次', body)
+        self.assertIn('页面会每 3 秒检查一次任务状态', body)
+        self.assertIn('运行中不会刷新整页', body)
         self.assertIn('分析所选论文</button>', body)
         self.assertIn('disabled title="当前有后台任务运行中"', body)
 

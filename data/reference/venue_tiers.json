@@ -262,6 +262,267 @@
       "tier_system": "project_seed",
       "venue_type": "journal",
       "source": "manual_seed"
+    },
+    {
+      "name": "AAAI Conference on Artificial Intelligence",
+      "aliases": ["AAAI", "Proceedings of the AAAI Conference on Artificial Intelligence", "AAAI Conference"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Joint Conference on Artificial Intelligence",
+      "aliases": ["IJCAI"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM International Conference on Knowledge Discovery and Data Mining",
+      "aliases": ["KDD", "ACM SIGKDD", "SIGKDD", "Knowledge Discovery and Data Mining"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "The Web Conference",
+      "aliases": ["WWW", "International World Wide Web Conference", "ACM Web Conference", "The ACM Web Conference"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM International Conference on Web Search and Data Mining",
+      "aliases": ["WSDM", "Web Search and Data Mining", "Proceedings of the ACM International Conference on Web Search and Data Mining"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM SIGIR Conference on Research and Development in Information Retrieval",
+      "aliases": ["SIGIR", "ACM SIGIR", "Research and Development in Information Retrieval"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM International Conference on Information and Knowledge Management",
+      "aliases": ["CIKM", "Information and Knowledge Management"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM International Conference on Multimedia",
+      "aliases": ["ACM MM", "MM", "ACM Multimedia"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Conference on Computational Linguistics",
+      "aliases": ["COLING"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "North American Chapter of the Association for Computational Linguistics",
+      "aliases": ["NAACL", "NAACL-HLT", "North American Chapter of the ACL"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM Transactions on Graphics",
+      "aliases": ["TOG", "ACM TOG"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM Computing Surveys",
+      "aliases": ["CSUR", "ACM CSUR", "ACM Computing Surveys (CSUR)"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "Journal of Machine Learning Research",
+      "aliases": ["JMLR"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Transactions on Neural Networks and Learning Systems",
+      "aliases": ["TNNLS", "IEEE TNNLS"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Transactions on Image Processing",
+      "aliases": ["TIP", "IEEE TIP"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Transactions on Signal Processing",
+      "aliases": ["TSP", "IEEE TSP"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "Digital Signal Processing",
+      "aliases": ["Digital Signal Processing: A Review Journal", "DSP"],
+      "tier": "field_seed",
+      "tier_label": "Signal journal seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Transactions on Robotics",
+      "aliases": ["T-RO", "TRO", "IEEE TRO"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "The International Journal of Robotics Research",
+      "aliases": ["IJRR", "International Journal of Robotics Research"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Transactions on Automatic Control",
+      "aliases": ["TAC", "IEEE TAC"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "Automatica",
+      "aliases": ["Automatica"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Conference on Decision and Control",
+      "aliases": ["CDC", "Conference on Decision and Control"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "International Conference on Principles of Knowledge Representation and Reasoning",
+      "aliases": ["KR", "Knowledge Representation and Reasoning"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM Symposium on Theory of Computing",
+      "aliases": ["STOC"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Symposium on Foundations of Computer Science",
+      "aliases": ["FOCS"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM Conference on Computer and Communications Security",
+      "aliases": ["CCS", "ACM CCS", "Computer and Communications Security"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "IEEE Symposium on Security and Privacy",
+      "aliases": ["S&P", "IEEE S&P", "Oakland"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "USENIX Security Symposium",
+      "aliases": ["USENIX Security"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
+    },
+    {
+      "name": "ACM SIGCOMM Conference",
+      "aliases": ["SIGCOMM", "ACM SIGCOMM"],
+      "tier": "top",
+      "tier_label": "Top venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "conference",
+      "source": "manual_seed"
     }
   ]
 }

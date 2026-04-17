@@ -46,6 +46,41 @@ class VenueStatisticsTestCase(unittest.TestCase):
         self.assertFalse(unmatched["matched"])
         self.assertEqual(unmatched["tier"], "unmatched")
 
+    def test_normalize_venue_key_removes_proceedings_prefix_and_ordinals(self):
+        normalized = self.impact_cli.normalize_venue_key(
+            "Proceedings of the Fifteenth ACM International Conference on Web Search and Data Mining"
+        )
+
+        self.assertEqual(normalized, "acm international web search and data mining")
+        self.assertEqual(
+            self.impact_cli.normalize_venue_key("Proceedings of the AAAI Conference on Artificial Intelligence"),
+            self.impact_cli.normalize_venue_key("AAAI Conference on Artificial Intelligence"),
+        )
+
+    def test_project_registry_matches_common_openalex_and_s2_venue_names(self):
+        tier_index = self.impact_cli.build_venue_tier_index()
+
+        cases = [
+            (
+                "Proceedings of the AAAI Conference on Artificial Intelligence",
+                "AAAI Conference on Artificial Intelligence",
+                "conference",
+            ),
+            (
+                "Proceedings of the Fifteenth ACM International Conference on Web Search and Data Mining",
+                "ACM International Conference on Web Search and Data Mining",
+                "conference",
+            ),
+            ("ACM Computing Surveys", "ACM Computing Surveys", "journal"),
+            ("Digital Signal Processing", "Digital Signal Processing", "journal"),
+        ]
+        for venue, expected_name, expected_type in cases:
+            with self.subTest(venue=venue):
+                matched = self.impact_cli.classify_venue_tier(venue, tier_index)
+                self.assertTrue(matched["matched"])
+                self.assertEqual(matched["matched_name"], expected_name)
+                self.assertEqual(matched["venue_type"], expected_type)
+
     def test_build_venue_statistics_counts_venues_and_tiers(self):
         tier_index = self.impact_cli.build_venue_tier_index({
             "entries": [

@@ -501,8 +501,18 @@ def normalize_venue_key(value: str) -> str:
     text = str(value or "").strip().lower()
     text = text.replace("&", " and ")
     text = re.sub(r"\([^)]*\)", " ", text)
+    text = re.sub(r"\b\d+(?:st|nd|rd|th)\b", " ", text)
+    text = re.sub(r"\b(?:19|20)\d{2}\b", " ", text)
     text = re.sub(r"[^a-z0-9]+", " ", text)
-    text = re.sub(r"\b(proceedings|proceeding|proc|of|the)\b", " ", text)
+    ordinal_words = (
+        "first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|"
+        "eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|"
+        "seventeenth|eighteenth|nineteenth|twentieth|twenty first|"
+        "twenty second|twenty third|twenty fourth|twenty fifth|twenty sixth|"
+        "twenty seventh|twenty eighth|twenty ninth|thirtieth|thirty first"
+    )
+    text = re.sub(rf"\b({ordinal_words})\b", " ", text)
+    text = re.sub(r"\b(proceedings|proceeding|proc|conference|conf|symposium|of|the|on)\b", " ", text)
     return re.sub(r"\s+", " ", text).strip()
 
 

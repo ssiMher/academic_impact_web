@@ -126,6 +126,84 @@ python3 scripts/compare_analysis_scopes.py <session_id_or_session_dir> \
 
 并发能力可以通过提高 `--concurrency` 观察吞吐和失败率。模型服务若是单实例，建议先从 `--concurrency 1`、`2`、`4` 分档测试。
 
+## 人工 gold 标注工作流
+
+`compare_analysis_scopes.py` 只有在 `data/reference/fulltext_regression_set.json` 中存在对应 `session_id + paper_id` 样本时，才会计算 `gold_pass_rate`。不要直接把模型输出当 gold；先生成 review 模板，人工确认后再合并。
+
+### 1. 从 benchmark report 生成 review 模板
+
+推荐从 analysis scope benchmark 的 `report.json` 生成，因为模板会同时带上 `candidate_spans` 和 `fulltext_direct` 的状态、标签、finding 摘要和产物路径：
+
+```bash
+python3 scripts/fulltext_gold_workflow.py template \
+  --benchmark-report data/runs/analysis_scope_benchmarks/<run>/report.json \
+  --output data/runs/gold_reviews/<session>_gold_review.json \
+  --markdown-output data/runs/gold_reviews/<session>_gold_review.md
+```
+
+也可以从现有 session 生成模板；这种方式只会记录 session 当前已有的分析结果，另一个 scope 可能显示 `available: false`：
+
+```bash
+python3 scripts/fulltext_gold_workflow.py template \
+  --session <session_id_or_session_dir> \
+  --ids P001,P002 \
+  --output data/runs/gold_reviews/<session>_gold_review.json
+```
+
+### 2. 人工填写 expected
+
+打开生成的 JSON，只填写每个样本的 `expected`：
+
+```json
+{
+  "final_status": "fulltext_analyzed",
+  "has_findings": true,
+  "min_labels": ["method"]
+}
+```
+
+字段含义：
+
+- `final_status`：人工确认的最终状态，支持 `fulltext_analyzed`、`mention_only`、`fulltext_no_finding`、`context_only`、`fulltext_extract_failed`、`analysis_failed`、`write_output_failed`
+- `has_findings`：是否应存在可靠 finding
+- `min_labels`：至少必须命中的标签数组；可以为空数组
+
+### 3. 校验模板
+
+```bash
+python3 scripts/fulltext_gold_workflow.py validate \
+  data/runs/gold_reviews/<session>_gold_review.json
+```
+
+未填写 `expected.final_status`、`expected.has_findings`，或同一模板里存在重复 `session_id + paper_id`，都会返回失败。
+
+### 4. 合并到 regression set
+
+先 dry-run：
+
+```bash
+python3 scripts/fulltext_gold_workflow.py append \
+  data/runs/gold_reviews/<session>_gold_review.json \
+  --dry-run
+```
+
+确认无误后写入默认 gold 文件：
+
+```bash
+python3 scripts/fulltext_gold_workflow.py append \
+  data/runs/gold_reviews/<session>_gold_review.json
+```
+
+默认会跳过已存在的 `session_id + paper_id`，避免重复样本；如果人工重新审核后确实要更新旧样本，显式加：
+
+```bash
+python3 scripts/fulltext_gold_workflow.py append \
+  data/runs/gold_reviews/<session>_gold_review.json \
+  --replace-existing
+```
+
+合并后再跑 benchmark，报告中的 `gold_available_count`、`gold_pass_count` 和 `gold_pass_rate` 才会有值。
+
 如果需要临时回退旧双阶段链路：
 
 ```bash

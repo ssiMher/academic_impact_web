@@ -19,6 +19,16 @@
     {% set analysis_percent = (analyzed_count * 100 / paper_total) | round(0, 'floor') if paper_total else 0 %}
     {% set probe_percent = (probed_count * 100 / paper_total) | round(0, 'floor') if paper_total else 0 %}
     {% set pagination = detail_payload.pagination or {} %}
+    {% set discovery_waiting = task_active and task_state.task_type == 'discover' and not paper_total %}
+    {% macro server_pager(pagination, session_id, label) %}
+    {% if pagination.total_pages and pagination.total_pages > 1 %}
+    <nav class="server-pager" aria-label="{{ label }}">
+      <a class="button-link ghost {% if not pagination.has_previous %}disabled{% endif %}" href="/sessions/{{ session_id }}?{{ pagination.previous_query }}">上一页</a>
+      <span>第 {{ pagination.page }} / {{ pagination.total_pages }} 页</span>
+      <a class="button-link ghost {% if not pagination.has_next %}disabled{% endif %}" href="/sessions/{{ session_id }}?{{ pagination.next_query }}">下一页</a>
+    </nav>
+    {% endif %}
+    {% endmacro %}
     <main class="page">
       <section class="panel">
         <p><a href="/">← 返回首页</a></p>
@@ -58,8 +68,14 @@
                 <span>探查</span>
                 <strong><span data-progress-value="probe">{{ probe_percent }}</span>%</strong>
               </div>
-              <div class="progress-track"><span data-progress-bar="probe" style="width: {{ probe_percent }}%"></span></div>
-              <p class="muted"><span data-progress-count="probe">{{ probed_count }}</span> / {{ paper_total }} 篇已有探查结果</p>
+              <div class="progress-track {% if discovery_waiting %}is-indeterminate{% endif %}"><span data-progress-bar="probe" style="width: {{ probe_percent }}%"></span></div>
+              <p class="muted">
+                {% if discovery_waiting %}
+                正在等待引用列表 API 返回；返回前无法计算百分比。
+                {% else %}
+                <span data-progress-count="probe">{{ probed_count }}</span> / {{ paper_total }} 篇已有探查结果
+                {% endif %}
+              </p>
             </div>
             <div class="progress-card">
               <div class="progress-meta">
@@ -249,7 +265,7 @@
           </div>
 
           <div class="table-shell">
-          <table data-paginated-list="paper-table" data-page-size="{{ pagination.page_size or 20 }}">
+          <table>
             <thead>
               <tr>
                 <th></th>
@@ -265,7 +281,7 @@
             </thead>
             <tbody>
               {% for item in detail_payload.papers %}
-              <tr data-page-item>
+              <tr>
                 <td><input type="checkbox" name="paper_ids" value="{{ item.id }}" {% if task_active %}disabled{% endif %} data-task-control /></td>
                 <td>{{ item.id }}</td>
                 <td class="title-cell">{{ item.title }}</td>
@@ -280,18 +296,11 @@
             </tbody>
           </table>
           </div>
-          <div class="pager" data-pagination-controls="paper-table" aria-label="引用论文列表分页"></div>
-          {% if pagination.total_pages and pagination.total_pages > 1 %}
-          <nav class="server-pager" aria-label="引用论文服务端分页">
-            <a class="button-link ghost {% if not pagination.has_previous %}disabled{% endif %}" href="{{ request.url.include_query_params(page=pagination.previous_page) }}">上一页</a>
-            <span>第 {{ pagination.page }} / {{ pagination.total_pages }} 页</span>
-            <a class="button-link ghost {% if not pagination.has_next %}disabled{% endif %}" href="{{ request.url.include_query_params(page=pagination.next_page) }}">下一页</a>
-          </nav>
-          {% endif %}
         </form>
-        <div class="cards" data-paginated-list="upload-cards" data-page-size="{{ pagination.page_size or 20 }}">
+        {{ server_pager(pagination, session_id, '引用论文列表分页') }}
+        <div class="cards">
           {% for item in detail_payload.papers %}
-          <article class="card" data-page-item>
+          <article class="card">
             <div class="card-header">
               <div>
                 <strong>{{ item.id }} {{ item.title }}</strong>
@@ -309,7 +318,7 @@
           </article>
           {% endfor %}
         </div>
-        <div class="pager" data-pagination-controls="upload-cards" aria-label="PDF 上传卡片分页"></div>
+        {{ server_pager(pagination, session_id, 'PDF 上传卡片分页') }}
       </section>
 
       <section class="panel">
@@ -319,9 +328,9 @@
             <h2>单篇引用方式分析结果</h2>
           </div>
         </div>
-        <div class="cards" data-paginated-list="analysis-cards" data-page-size="{{ pagination.page_size or 20 }}">
+        <div class="cards">
           {% for item in detail_payload.papers %}
-          <article class="card" data-page-item>
+          <article class="card">
             <div class="card-header">
               <div>
                 <strong>{{ item.id }} {{ item.title }}</strong>
@@ -360,7 +369,7 @@
           </article>
           {% endfor %}
         </div>
-        <div class="pager" data-pagination-controls="analysis-cards" aria-label="分析结果分页"></div>
+        {{ server_pager(pagination, session_id, '分析结果分页') }}
       </section>
 
       <section class="panel">

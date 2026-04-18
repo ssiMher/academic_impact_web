@@ -1,13 +1,14 @@
 import argparse
 import importlib.util
 import json
+import os
 import re
 import shutil
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -96,6 +97,13 @@ STRONG_CLAIM_PATTERNS = [
         r"第一次",
     ]
 ]
+
+
+def env_flag(name: str, default: bool = False) -> bool:
+    raw_value = os.environ.get(name)
+    if raw_value is None:
+        return default
+    return raw_value.strip().lower() in {"1", "true", "yes", "on"}
 
 
 def load_module(name: str, path: Path):
@@ -1381,18 +1389,27 @@ def build_discover_session(
         return list_result
 
     warnings = []
-    try:
-        contexts_result = FETCH_CONTEXTS.get_citation_contexts(query)
-    except Exception as exc:
+    if env_flag("ACADEMIC_IMPACT_CONTEXTS_ENABLED", default=False):
+        try:
+            contexts_result = FETCH_CONTEXTS.get_citation_contexts(query)
+        except Exception as exc:
+            contexts_result = {
+                "ok": False,
+                "query": query,
+                "results": [],
+                "error": str(exc),
+            }
+            warnings.append(
+                "citation contexts 拉取失败，当前先返回引用论文列表；如需上下文级置信度和快速分析，可稍后重试。"
+            )
+    else:
         contexts_result = {
             "ok": False,
             "query": query,
             "results": [],
-            "error": str(exc),
+            "skipped": True,
+            "message": "citation contexts 默认关闭；全文分析会直接基于 PDF/候选段落运行。",
         }
-        warnings.append(
-            "citation contexts 拉取失败，当前先返回引用论文列表；如需上下文级置信度和快速分析，可稍后重试。"
-        )
     write_json(session_dir / "contexts.json", contexts_result)
 
     target = list_result.get("target", {})
@@ -2055,6 +2072,24 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
     page_start = (page - 1) * page_size
     page_end = page_start + page_size
     paged_detail_papers = detail_papers[page_start:page_end]
+    pagination_query_base = {
+        "page_size": page_size,
+    }
+    download_status_filter = (filters.get("download_status") or "").strip()
+    analysis_status_filter = (filters.get("analysis_status") or "").strip()
+    if download_status_filter:
+        pagination_query_base["download_status"] = download_status_filter
+    if analysis_status_filter:
+        pagination_query_base["analysis_status"] = analysis_status_filter
+    if str(filters.get("strong_only") or "").strip().lower() in {"1", "true", "on", "yes"}:
+        pagination_query_base["strong_only"] = "on"
+    if str(filters.get("candidate_only") or "").strip().lower() in {"1", "true", "on", "yes"}:
+        pagination_query_base["candidate_only"] = "on"
+
+    def make_page_query(target_page: int) -> str:
+        query_params = dict(pagination_query_base)
+        query_params["page"] = target_page
+        return urlencode(query_params)
 
     confirmed_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "confirmed"]
     pending_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "pending"]
@@ -2098,6 +2133,8 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             "has_next": page < total_pages,
             "previous_page": page - 1 if page > 1 else 1,
             "next_page": page + 1 if page < total_pages else total_pages,
+            "previous_query": make_page_query(page - 1 if page > 1 else 1),
+            "next_query": make_page_query(page + 1 if page < total_pages else total_pages),
         },
         "papers": paged_detail_papers,
         "venue_statistics": venue_statistics,

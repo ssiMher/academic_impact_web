@@ -184,6 +184,8 @@ class VenueStatisticsTestCase(unittest.TestCase):
                 "has_next": True,
                 "previous_page": 1,
                 "next_page": 3,
+                "previous_query": "page_size=5&page=1",
+                "next_query": "page_size=5&page=3",
             },
         )
 

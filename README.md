@@ -94,9 +94,11 @@ ACADEMIC_IMPACT_LLM_MODEL=Qwen3.5-27B-Q4_K_M.gguf
 ACADEMIC_IMPACT_LLM_API_KEY=
 ACADEMIC_IMPACT_LLM_DISABLE_THINKING=true
 ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS=90000
+ACADEMIC_IMPACT_CITATION_SOURCE=auto
+ACADEMIC_IMPACT_CONTEXTS_ENABLED=false
 ```
 
-这 4 个值都需要人工确认/填写：
+这些值都需要人工确认/填写：
 
 - `ACADEMIC_IMPACT_ANALYSIS_MODE`：默认 `single_model`，由一个模型直接完成语义判断并输出结构化 JSON
 - `ACADEMIC_IMPACT_LLM_URL`：必须填成实际可访问的 OpenAI-compatible `/chat/completions` 地址
@@ -104,6 +106,8 @@ ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS=90000
 - `ACADEMIC_IMPACT_LLM_API_KEY`：本地无鉴权服务可留空；DeepSeek、DashScope/Qwen 等 API 服务需填真实 key
 - `ACADEMIC_IMPACT_LLM_DISABLE_THINKING`：默认 `true`，会在支持的 llama.cpp/Qwen 服务上关闭 thinking，避免只返回 `reasoning_content` 而没有最终 JSON
 - `ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS`：可选，`fulltext_direct` 深度模式一次送入模型的全文字符上限，默认 `90000`
+- `ACADEMIC_IMPACT_CITATION_SOURCE`：可选，引用论文列表来源；`auto` 会先试 Semantic Scholar、失败后回退 OpenAlex，`openalex` 会直接使用 OpenAlex
+- `ACADEMIC_IMPACT_CONTEXTS_ENABLED`：可选，是否拉取 Semantic Scholar citation contexts；默认 `false`，因为 contexts 只是排序/快速置信度辅助，全文分析不依赖它
 
 说明：
 

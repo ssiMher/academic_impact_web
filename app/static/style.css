@@ -293,6 +293,22 @@ button.ghost,
   background: linear-gradient(90deg, var(--accent), var(--blue), var(--amber));
 }
 
+.progress-track.is-indeterminate span {
+  width: 42% !important;
+  background: linear-gradient(90deg, var(--accent), var(--blue), var(--amber));
+  animation: progress-scan 1.2s ease-in-out infinite;
+}
+
+@keyframes progress-scan {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  100% {
+    transform: translateX(250%);
+  }
+}
+
 .table-shell {
   width: 100%;
   overflow-x: auto;

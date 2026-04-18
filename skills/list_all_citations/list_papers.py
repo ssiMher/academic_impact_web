@@ -1,5 +1,6 @@
 import sys
 import json
+import os
 import time
 import requests
 import urllib.parse
@@ -357,11 +358,18 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
     #paper_id = target["paperId"]
     desired_limit = max(1, int(limit or 100))
     desired_fetch = max(desired_limit, int(fetch_limit or max(100, min(desired_limit * 5, 500))))
+    source_preference = os.environ.get("ACADEMIC_IMPACT_CITATION_SOURCE", "auto").strip().lower()
 
     # ==========================================
-    # 1. 优先尝试 Semantic Scholar (主数据源)
+    # 1. 选择引用论文列表数据源
     # ==========================================
-    try:
+    if source_preference in {"openalex", "oa"}:
+        target = resolve_paper_openalex(query)
+        paper_id = target["paperId"]
+        data = fetch_citations_openalex(paper_id, fetch_limit=desired_fetch)
+        url = f"https://openalex.org/{paper_id}"
+        used_source = "OpenAlex"
+    elif source_preference in {"semantic_scholar", "semanticscholar", "s2"}:
         target = resolve_paper(query)
         paper_id = target["paperId"]
         data = fetch_citations(paper_id, fetch_limit=desired_fetch)
@@ -370,17 +378,27 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
             "?fields=title,year,venue,externalIds,authors"
         )
         used_source = "Semantic Scholar"
-        
+
     # ==========================================
-    # 2. 失败则降级使用 OpenAlex (备用数据源)
+    # 2. 自动模式：Semantic Scholar 失败则降级使用 OpenAlex
     # ==========================================
-    except Exception as e:
-        print(f"[WARN] Semantic Scholar 请求失败 ({str(e)}), 自动切换至 OpenAlex 备用源...", file=sys.stderr)
-        target = resolve_paper_openalex(query)
-        paper_id = target["paperId"]
-        data = fetch_citations_openalex(paper_id, fetch_limit=desired_fetch)
-        url = f"https://openalex.org/{paper_id}"
-        used_source = "OpenAlex (Fallback)"
+    else:
+        try:
+            target = resolve_paper(query)
+            paper_id = target["paperId"]
+            data = fetch_citations(paper_id, fetch_limit=desired_fetch)
+            url = (
+                f"https://api.semanticscholar.org/graph/v1/paper/{paper_id}/citations"
+                "?fields=title,year,venue,externalIds,authors"
+            )
+            used_source = "Semantic Scholar"
+        except Exception as e:
+            print(f"[WARN] Semantic Scholar 请求失败 ({str(e)}), 自动切换至 OpenAlex 备用源...", file=sys.stderr)
+            target = resolve_paper_openalex(query)
+            paper_id = target["paperId"]
+            data = fetch_citations_openalex(paper_id, fetch_limit=desired_fetch)
+            url = f"https://openalex.org/{paper_id}"
+            used_source = "OpenAlex (Fallback)"
 
     # ==========================================
     # 3. 统一的数据清洗与格式化 (无需修改结构)

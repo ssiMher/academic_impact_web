@@ -1984,6 +1984,7 @@ def build_status_payload(session: dict):
         "displayed_paper_count": len(papers),
         "total_citation_count": (session.get("target") or {}).get("citationCount"),
         "analysis_mode": session.get("analysis_mode_last"),
+        "task_state": session.get("task_state", default_task_state()),
         "warnings": session.get("warnings", []),
         "list_preferences": session.get("list_preferences", {}),
         "download_status_counts": counts,
@@ -2039,6 +2040,22 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             continue
         detail_papers.append(paper_payload)
 
+    total_filtered_papers = len(detail_papers)
+    try:
+        page_size = int(filters.get("page_size") or 20)
+    except (TypeError, ValueError):
+        page_size = 20
+    page_size = min(max(page_size, 5), 100)
+    total_pages = max(1, (total_filtered_papers + page_size - 1) // page_size)
+    try:
+        page = int(filters.get("page") or 1)
+    except (TypeError, ValueError):
+        page = 1
+    page = min(max(page, 1), total_pages)
+    page_start = (page - 1) * page_size
+    page_end = page_start + page_size
+    paged_detail_papers = detail_papers[page_start:page_end]
+
     confirmed_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "confirmed"]
     pending_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "pending"]
     rejected_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "rejected"]
@@ -2058,6 +2075,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             "warnings": status_payload.get("warnings", []),
             "updated_at": session.get("updated_at") or session.get("created_at"),
         },
+        "task_state": status_payload.get("task_state", default_task_state()),
         "paper_filters": {
             "download_status_counts": status_payload.get("download_status_counts", {}),
             "analysis_mode": status_payload.get("analysis_mode"),
@@ -2066,9 +2084,22 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
                 "analysis_status": (filters.get("analysis_status") or "").strip(),
                 "strong_only": str(filters.get("strong_only") or "").strip().lower() in {"1", "true", "on", "yes"},
                 "candidate_only": str(filters.get("candidate_only") or "").strip().lower() in {"1", "true", "on", "yes"},
+                "page_size": page_size,
             },
         },
-        "papers": detail_papers,
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total": total_filtered_papers,
+            "total_pages": total_pages,
+            "start": page_start + 1 if total_filtered_papers else 0,
+            "end": min(page_end, total_filtered_papers),
+            "has_previous": page > 1,
+            "has_next": page < total_pages,
+            "previous_page": page - 1 if page > 1 else 1,
+            "next_page": page + 1 if page < total_pages else total_pages,
+        },
+        "papers": paged_detail_papers,
         "venue_statistics": venue_statistics,
         "person_candidates": status_payload.get("person_candidates", []),
         "person_summary": {

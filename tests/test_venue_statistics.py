@@ -148,6 +148,45 @@ class VenueStatisticsTestCase(unittest.TestCase):
         self.assertEqual(payload["papers"][0]["venue_tier"]["tier_label"], "Top venue seed")
         self.assertEqual(payload["papers"][1]["venue_tier"]["tier"], "unmatched")
 
+    def test_session_detail_payload_paginates_after_filters(self):
+        session = {
+            "ok": True,
+            "query": "Target",
+            "target": {"title": "Target", "year": 2024, "venue": "NeurIPS"},
+            "papers": [
+                {
+                    "id": f"P{index:03d}",
+                    "title": f"Paper {index}",
+                    "year": 2020 + index,
+                    "venue": "ICRA",
+                    "download_probe": {"status": "downloaded"},
+                    "analysis_result": {"status": None, "paths": {}},
+                }
+                for index in range(1, 13)
+            ],
+            "person_candidates": [],
+            "overview_stats": self.impact_cli.default_overview_stats(),
+        }
+
+        payload = self.impact_cli.build_session_detail_payload(session, {"page": "2", "page_size": "5"})
+
+        self.assertEqual([paper["id"] for paper in payload["papers"]], ["P006", "P007", "P008", "P009", "P010"])
+        self.assertEqual(
+            payload["pagination"],
+            {
+                "page": 2,
+                "page_size": 5,
+                "total": 12,
+                "total_pages": 3,
+                "start": 6,
+                "end": 10,
+                "has_previous": True,
+                "has_next": True,
+                "previous_page": 1,
+                "next_page": 3,
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

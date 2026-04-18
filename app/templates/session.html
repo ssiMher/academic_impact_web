@@ -9,6 +9,16 @@
   <body>
     {% set task_state = detail_payload.task_state or {} %}
     {% set task_active = task_state.active %}
+    {% set overview_stats = detail_payload.target_overview.overview_stats or {} %}
+    {% set paper_total = detail_payload.target_overview.paper_count or 0 %}
+    {% set downloaded_count = overview_stats.downloaded_count or 0 %}
+    {% set analyzed_count = overview_stats.analyzed_count or 0 %}
+    {% set not_probed_count = detail_payload.paper_filters.download_status_counts.get('not_probed', 0) if detail_payload.paper_filters.download_status_counts else 0 %}
+    {% set probed_count = paper_total - not_probed_count if paper_total > not_probed_count else 0 %}
+    {% set download_percent = (downloaded_count * 100 / paper_total) | round(0, 'floor') if paper_total else 0 %}
+    {% set analysis_percent = (analyzed_count * 100 / paper_total) | round(0, 'floor') if paper_total else 0 %}
+    {% set probe_percent = (probed_count * 100 / paper_total) | round(0, 'floor') if paper_total else 0 %}
+    {% set pagination = detail_payload.pagination or {} %}
     <main class="page">
       <section class="panel">
         <p><a href="/">← 返回首页</a></p>
@@ -42,6 +52,32 @@
           {% else %}
           <p id="task-status-message">当前没有后台任务正在运行，可以继续操作。</p>
           {% endif %}
+          <div class="task-progress-grid" aria-label="当前会话进度">
+            <div class="progress-card">
+              <div class="progress-meta">
+                <span>探查</span>
+                <strong><span data-progress-value="probe">{{ probe_percent }}</span>%</strong>
+              </div>
+              <div class="progress-track"><span data-progress-bar="probe" style="width: {{ probe_percent }}%"></span></div>
+              <p class="muted"><span data-progress-count="probe">{{ probed_count }}</span> / {{ paper_total }} 篇已有探查结果</p>
+            </div>
+            <div class="progress-card">
+              <div class="progress-meta">
+                <span>下载</span>
+                <strong><span data-progress-value="download">{{ download_percent }}</span>%</strong>
+              </div>
+              <div class="progress-track"><span data-progress-bar="download" style="width: {{ download_percent }}%"></span></div>
+              <p class="muted"><span data-progress-count="download">{{ downloaded_count }}</span> / {{ paper_total }} 篇可本地分析</p>
+            </div>
+            <div class="progress-card">
+              <div class="progress-meta">
+                <span>分析</span>
+                <strong><span data-progress-value="analysis">{{ analysis_percent }}</span>%</strong>
+              </div>
+              <div class="progress-track {% if task_active and task_state.task_type == 'analyze' %}is-active{% endif %}"><span data-progress-bar="analysis" style="width: {{ analysis_percent }}%"></span></div>
+              <p class="muted"><span data-progress-count="analysis">{{ analyzed_count }}</span> / {{ paper_total }} 篇已有全文结论</p>
+            </div>
+          </div>
         </div>
         {% endif %}
         <div class="grid meta-grid">
@@ -93,6 +129,7 @@
             {% endfor %}
           </div>
           {% if venue_stats.top_venues %}
+          <div class="table-shell">
           <table>
             <thead>
               <tr>
@@ -113,6 +150,7 @@
               {% endfor %}
             </tbody>
           </table>
+          </div>
           {% endif %}
         </div>
         {% endif %}
@@ -133,7 +171,10 @@
           <div>
             <p class="eyebrow">02</p>
             <h2>引用论文列表与状态</h2>
-            <p class="muted">当前显示 {{ detail_payload.papers | length }} / {{ detail_payload.target_overview.paper_count }} 篇</p>
+            <p class="muted">
+              当前显示第 {{ pagination.start or 0 }} - {{ pagination.end or 0 }} 篇；
+              筛选后共 {{ pagination.total or 0 }} 篇，候选总数 {{ detail_payload.target_overview.paper_count }} 篇。
+            </p>
           </div>
           <div class="status-chips">
             {% for key, value in detail_payload.paper_filters.download_status_counts.items() %}
@@ -143,6 +184,7 @@
         </div>
         <form method="get" class="stack">
           <div class="inline-controls">
+            <input type="hidden" name="page" value="1" />
             <label>
               下载状态筛选
               <select name="download_status">
@@ -169,6 +211,14 @@
             <label class="checkbox">
               <input type="checkbox" name="candidate_only" {% if detail_payload.paper_filters.active.candidate_only %}checked{% endif %} />
               仅看命中人物候选
+            </label>
+            <label>
+              每页显示
+              <select name="page_size">
+                {% for size in [10, 20, 50, 100] %}
+                <option value="{{ size }}" {% if detail_payload.paper_filters.active.page_size == size %}selected{% endif %}>{{ size }}</option>
+                {% endfor %}
+              </select>
             </label>
             <div class="actions">
               <button type="submit">应用筛选</button>
@@ -198,7 +248,8 @@
             </label>
           </div>
 
-          <table>
+          <div class="table-shell">
+          <table data-paginated-list="paper-table" data-page-size="{{ pagination.page_size or 20 }}">
             <thead>
               <tr>
                 <th></th>
@@ -214,10 +265,10 @@
             </thead>
             <tbody>
               {% for item in detail_payload.papers %}
-              <tr>
+              <tr data-page-item>
                 <td><input type="checkbox" name="paper_ids" value="{{ item.id }}" {% if task_active %}disabled{% endif %} data-task-control /></td>
                 <td>{{ item.id }}</td>
-                <td>{{ item.title }}</td>
+                <td class="title-cell">{{ item.title }}</td>
                 <td>{{ item.year or '-' }} / {{ item.venue or '-' }}</td>
                 <td>{{ item.venue_tier.tier_label or '-' }}</td>
                 <td>{{ item.download_status or '-' }}</td>
@@ -228,10 +279,19 @@
               {% endfor %}
             </tbody>
           </table>
+          </div>
+          <div class="pager" data-pagination-controls="paper-table" aria-label="引用论文列表分页"></div>
+          {% if pagination.total_pages and pagination.total_pages > 1 %}
+          <nav class="server-pager" aria-label="引用论文服务端分页">
+            <a class="button-link ghost {% if not pagination.has_previous %}disabled{% endif %}" href="{{ request.url.include_query_params(page=pagination.previous_page) }}">上一页</a>
+            <span>第 {{ pagination.page }} / {{ pagination.total_pages }} 页</span>
+            <a class="button-link ghost {% if not pagination.has_next %}disabled{% endif %}" href="{{ request.url.include_query_params(page=pagination.next_page) }}">下一页</a>
+          </nav>
+          {% endif %}
         </form>
-        <div class="cards">
+        <div class="cards" data-paginated-list="upload-cards" data-page-size="{{ pagination.page_size or 20 }}">
           {% for item in detail_payload.papers %}
-          <article class="card">
+          <article class="card" data-page-item>
             <div class="card-header">
               <div>
                 <strong>{{ item.id }} {{ item.title }}</strong>
@@ -249,6 +309,7 @@
           </article>
           {% endfor %}
         </div>
+        <div class="pager" data-pagination-controls="upload-cards" aria-label="PDF 上传卡片分页"></div>
       </section>
 
       <section class="panel">
@@ -258,9 +319,9 @@
             <h2>单篇引用方式分析结果</h2>
           </div>
         </div>
-        <div class="cards">
+        <div class="cards" data-paginated-list="analysis-cards" data-page-size="{{ pagination.page_size or 20 }}">
           {% for item in detail_payload.papers %}
-          <article class="card">
+          <article class="card" data-page-item>
             <div class="card-header">
               <div>
                 <strong>{{ item.id }} {{ item.title }}</strong>
@@ -292,10 +353,14 @@
             </details>
             {% endif %}
             {% endif %}
-            <p>{{ item.citation_method_summary.evidence_excerpt or '暂无可展示的结构化证据片段。' }}</p>
+            <details class="evidence-block" {% if item.citation_method_summary.evidence_excerpt %}open{% endif %}>
+              <summary>证据片段</summary>
+              <p class="evidence-excerpt">{{ item.citation_method_summary.evidence_excerpt or '暂无可展示的结构化证据片段。' }}</p>
+            </details>
           </article>
           {% endfor %}
         </div>
+        <div class="pager" data-pagination-controls="analysis-cards" aria-label="分析结果分页"></div>
       </section>
 
       <section class="panel">
@@ -311,9 +376,9 @@
           </div>
         </div>
         {% if detail_payload.person_candidates %}
-        <div class="cards">
+        <div class="cards" data-paginated-list="person-candidates" data-page-size="8">
           {% for candidate in detail_payload.person_candidates %}
-          <article class="card">
+          <article class="card" data-page-item>
             <div class="card-header">
               <div>
                 <strong>{{ candidate.name }}</strong>
@@ -354,6 +419,7 @@
           </article>
           {% endfor %}
         </div>
+        <div class="pager" data-pagination-controls="person-candidates" aria-label="人物候选分页"></div>
         {% else %}
         <p class="muted">当前没有命中任何人物候选。可通过补充 `data/reference/person_tag_registry.json` 提供候选来源。</p>
         {% endif %}
@@ -371,7 +437,10 @@
           </div>
         </div>
         {% if report_md %}
-        <pre>{{ report_md }}</pre>
+        <details class="report-block" open>
+          <summary>查看 Markdown 汇总</summary>
+          <pre>{{ report_md }}</pre>
+        </details>
         {% else %}
         <p class="muted">当前还没有导出报告，请先执行分析或刷新页面。</p>
         {% endif %}
@@ -384,11 +453,48 @@
         </details>
       </section>
     </main>
-    {% if task_active %}
     <script>
       (function () {
+        const initializePagination = () => {
+          document.querySelectorAll('[data-paginated-list]').forEach((list) => {
+            const key = list.getAttribute('data-paginated-list');
+            const pageSize = Number(list.getAttribute('data-page-size') || 20);
+            const controls = document.querySelector(`[data-pagination-controls="${key}"]`);
+            const items = Array.from(list.querySelectorAll('[data-page-item]'));
+            if (!controls || items.length <= pageSize) {
+              if (controls) controls.hidden = true;
+              return;
+            }
+            let page = 1;
+            const totalPages = Math.ceil(items.length / pageSize);
+            const render = () => {
+              const start = (page - 1) * pageSize;
+              const end = start + pageSize;
+              items.forEach((item, index) => {
+                item.hidden = index < start || index >= end;
+              });
+              controls.hidden = false;
+              controls.innerHTML = `
+                <button type="button" class="ghost" data-page-prev ${page === 1 ? 'disabled' : ''}>上一页</button>
+                <span>第 ${page} / ${totalPages} 页</span>
+                <button type="button" class="ghost" data-page-next ${page === totalPages ? 'disabled' : ''}>下一页</button>
+              `;
+              controls.querySelector('[data-page-prev]')?.addEventListener('click', () => {
+                page = Math.max(1, page - 1);
+                render();
+              });
+              controls.querySelector('[data-page-next]')?.addEventListener('click', () => {
+                page = Math.min(totalPages, page + 1);
+                render();
+              });
+            };
+            render();
+          });
+        };
+
         const statusMessage = document.getElementById('task-status-message');
         const taskControls = Array.from(document.querySelectorAll('[data-task-control]'));
+        const taskActive = {{ 'true' if task_active else 'false' }};
         const taskLabelMap = {
           discover: '引用论文发现',
           refresh: '下载状态刷新',
@@ -398,6 +504,26 @@
         let reloadScheduled = false;
 
         const taskLabel = (taskType) => taskLabelMap[taskType] || '任务';
+
+        const setProgress = (name, count, total) => {
+          const percent = total ? Math.floor((count * 100) / total) : 0;
+          const value = document.querySelector(`[data-progress-value="${name}"]`);
+          const bar = document.querySelector(`[data-progress-bar="${name}"]`);
+          const counter = document.querySelector(`[data-progress-count="${name}"]`);
+          if (value) value.textContent = String(percent);
+          if (bar) bar.style.width = `${percent}%`;
+          if (counter) counter.textContent = String(count);
+        };
+
+        const updateProgressFromPayload = (payload) => {
+          const total = Number(payload.paper_count || 0);
+          const counts = payload.download_status_counts || {};
+          const overview = payload.overview_stats || {};
+          const probed = Math.max(0, total - Number(counts.not_probed || 0));
+          setProgress('probe', probed, total);
+          setProgress('download', Number(overview.downloaded_count || 0), total);
+          setProgress('analysis', Number(overview.analyzed_count || 0), total);
+        };
 
         const setTaskControlsDisabled = (disabled) => {
           taskControls.forEach((control) => {
@@ -436,6 +562,7 @@
             const payload = await response.json();
             const taskState = payload.task_state;
             if (!taskState) return;
+            updateProgressFromPayload(payload);
             if (taskState.active && taskState.status === 'running') {
               updateRunningStatus(taskState);
             } else {
@@ -445,10 +572,12 @@
             // Ignore transient polling errors in the minimal first version.
           }
         };
-        setTaskControlsDisabled(true);
-        window.setInterval(poll, 3000);
+        initializePagination();
+        if (taskActive) {
+          setTaskControlsDisabled(true);
+          window.setInterval(poll, 3000);
+        }
       })();
     </script>
-    {% endif %}
   </body>
 </html>

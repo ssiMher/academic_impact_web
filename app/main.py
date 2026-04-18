@@ -57,6 +57,8 @@ async def session_detail(
     analysis_status: str = "",
     strong_only: bool = False,
     candidate_only: bool = False,
+    page: int = 1,
+    page_size: int = 20,
 ):
     session, status_payload, detail_payload, report_md = impact_core.load_status(
         session_id,
@@ -65,6 +67,8 @@ async def session_detail(
             "analysis_status": analysis_status,
             "strong_only": strong_only,
             "candidate_only": candidate_only,
+            "page": page,
+            "page_size": page_size,
         },
     )
     return templates.TemplateResponse(

@@ -171,14 +171,46 @@ def mark_task_finished(session_id: str, *, status: str, message: str = "", error
     return update_task_state(session_id, **updates)
 
 
+def _build_progress_payload(session: dict[str, Any]) -> dict[str, Any]:
+    counts = {
+        "local_available": 0,
+        "auto_downloadable": 0,
+        "manual_required": 0,
+        "not_probed": 0,
+        "analysis_ready": 0,
+    }
+    analyzed_count = 0
+    for item in session.get("papers", []):
+        probe_status = item.get("download_probe", {}).get("status") or "not_probed"
+        counts[probe_status] = counts.get(probe_status, 0) + 1
+        if probe_status == "local_available":
+            counts["analysis_ready"] += 1
+        if item.get("analysis_result", {}).get("status"):
+            analyzed_count += 1
+
+    overview_stats = session.get("overview_stats") if isinstance(session.get("overview_stats"), dict) else {}
+    overview_stats = dict(overview_stats)
+    overview_stats.setdefault("downloaded_count", counts["analysis_ready"])
+    overview_stats.setdefault("analyzed_count", analyzed_count)
+    return {
+        "download_status_counts": counts,
+        "overview_stats": overview_stats,
+        "analysis": session.get("analysis", {}),
+    }
+
+
 def get_task_status(session_id: str):
     session = load_session_record(session_id)
     task_state = ensure_task_state(session)
+    progress_payload = _build_progress_payload(session)
     return {
         "ok": True,
         "session_id": session_id,
         "task_state": task_state,
         "paper_count": len(session.get("papers", [])),
+        "download_status_counts": progress_payload["download_status_counts"],
+        "overview_stats": progress_payload["overview_stats"],
+        "analysis": progress_payload["analysis"],
         "updated_at": session.get("updated_at") or session.get("created_at"),
     }
 

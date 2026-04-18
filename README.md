@@ -96,6 +96,8 @@ ACADEMIC_IMPACT_LLM_DISABLE_THINKING=true
 ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS=90000
 ACADEMIC_IMPACT_CITATION_SOURCE=auto
 ACADEMIC_IMPACT_CONTEXTS_ENABLED=false
+ELSEVIER_API_KEY=
+ELSEVIER_INSTTOKEN=
 ```
 
 这些值都需要人工确认/填写：
@@ -106,8 +108,10 @@ ACADEMIC_IMPACT_CONTEXTS_ENABLED=false
 - `ACADEMIC_IMPACT_LLM_API_KEY`：本地无鉴权服务可留空；DeepSeek、DashScope/Qwen 等 API 服务需填真实 key
 - `ACADEMIC_IMPACT_LLM_DISABLE_THINKING`：默认 `true`，会在支持的 llama.cpp/Qwen 服务上关闭 thinking，避免只返回 `reasoning_content` 而没有最终 JSON
 - `ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS`：可选，`fulltext_direct` 深度模式一次送入模型的全文字符上限，默认 `90000`
-- `ACADEMIC_IMPACT_CITATION_SOURCE`：可选，引用论文列表来源；`auto` 会先试 Semantic Scholar、失败后回退 OpenAlex，`openalex` 会直接使用 OpenAlex
+- `ACADEMIC_IMPACT_CITATION_SOURCE`：可选，引用论文列表来源；`auto` 会先试 Semantic Scholar、失败后回退 OpenAlex，`openalex` 会直接使用 OpenAlex，`scopus` 会使用 Elsevier Scopus Search API
 - `ACADEMIC_IMPACT_CONTEXTS_ENABLED`：可选，是否拉取 Semantic Scholar citation contexts；默认 `false`，因为 contexts 只是排序/快速置信度辅助，全文分析不依赖它
+- `ELSEVIER_API_KEY`：可选，仅 `ACADEMIC_IMPACT_CITATION_SOURCE=scopus` 时需要；只放在服务端 `.env`，不要提交到 git 或写进前端
+- `ELSEVIER_INSTTOKEN`：可选；如果学校订阅权限无法通过机构 IP 自动识别，Elsevier/学校可能会提供 Institutional Token
 
 说明：
 
@@ -120,6 +124,18 @@ ACADEMIC_IMPACT_CONTEXTS_ENABLED=false
 - 如果 URL 是 DeepSeek 且未设置 `ACADEMIC_IMPACT_LLM_API_KEY`，会兼容读取 `DEEPSEEK_API_KEY`
 - 临时回退旧两段链路时，可设置 `ACADEMIC_IMPACT_ANALYSIS_MODE=legacy_two_stage`
 - `ACADEMIC_IMPACT_DOWNLOAD_DIR`：推荐显式配置为你自己有写权限的 PDF 存储目录
+
+### Scopus 试验来源
+
+如需按导师建议尝试 Elsevier Scopus API，先在 Elsevier Developer Portal 创建 API key，然后在 `.env` 中配置：
+
+```bash
+ACADEMIC_IMPACT_CITATION_SOURCE=scopus
+ELSEVIER_API_KEY=your_elsevier_api_key
+ELSEVIER_INSTTOKEN=
+```
+
+Scopus 接入当前是试验来源：目标论文 DOI 查询、`citedby-count` 和 Scopus Search cited-reference 查询会映射到项目的引用论文列表 schema；如果学校权限不允许拉取 cited-by list，可切回 `openalex`，并把 Scopus 作为引用数/元数据校验源。
 
 如果未配置 LLM 服务或拿不到 PDF，分析会退化为 `context_only`，并在页面与导出中注明原因。
 
@@ -184,7 +200,7 @@ make analysis-scope-bench \
 
 ### 期刊/会议统计与等级
 
-Discover 阶段会保存每篇引用论文的 `venue` 字段，默认来自 Semantic Scholar；当 Semantic Scholar 不可用时，会降级到 OpenAlex 的 `primary_location.source.display_name`。详情页会基于当前 session 自动汇总：
+Discover 阶段会保存每篇引用论文的 `venue` 字段，来源取决于 `ACADEMIC_IMPACT_CITATION_SOURCE`：默认 `auto` 会先试 Semantic Scholar、失败后回退 OpenAlex；也可以显式使用 OpenAlex 或 Scopus。详情页会基于当前 session 自动汇总：
 
 - 已识别 venue 数、唯一 venue 数
 - top venue 及对应论文 ID

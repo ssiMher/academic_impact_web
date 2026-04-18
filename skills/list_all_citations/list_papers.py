@@ -91,6 +91,7 @@ def safe_get(url, retries=5, sleep_sec=3):
 # OpenAlex 备用源逻辑 (Fallback)
 # ==========================================
 OPENALEX_HEADERS = {"User-Agent": "mailto:youdeng78@gmail.com"} 
+ELSEVIER_SCOPUS_SEARCH_URL = "https://api.elsevier.com/content/search/scopus"
 
 def safe_get_openalex(url):
     """专门为 OpenAlex 准备的请求函数，同样套用重试逻辑"""
@@ -105,10 +106,208 @@ def safe_get_openalex(url):
     return None
 
 
+def build_url_with_params(url: str, params: dict) -> str:
+    return f"{url}?{urllib.parse.urlencode(params)}"
+
+
+def elsevier_headers():
+    api_key = os.environ.get("ELSEVIER_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("缺少 ELSEVIER_API_KEY，无法使用 Scopus 来源。")
+    headers = {
+        "Accept": "application/json",
+        "X-ELS-APIKey": api_key,
+        "User-Agent": HEADERS["User-Agent"],
+    }
+    insttoken = os.environ.get("ELSEVIER_INSTTOKEN", "").strip()
+    if insttoken:
+        headers["X-ELS-Insttoken"] = insttoken
+    return headers
+
+
+def safe_get_elsevier(url: str, params: dict, retries=3, sleep_sec=3):
+    cache_url = build_url_with_params(url, params)
+    cached = load_cached_response(cache_url)
+    if cached:
+        return CachedResponse(cached)
+
+    last_err = None
+    backoff_schedule = [3, 8, 15]
+    for attempt in range(1, retries + 1):
+        try:
+            r = requests.get(url, headers=elsevier_headers(), params=params, timeout=30)
+            if r.status_code == 200:
+                save_cached_response(cache_url, r)
+                return r
+            if r.status_code == 429:
+                last_err = f"[attempt {attempt}] Elsevier HTTP 429 rate limited"
+                time.sleep(backoff_schedule[min(attempt - 1, len(backoff_schedule) - 1)])
+                continue
+            last_err = f"[attempt {attempt}] Elsevier HTTP {r.status_code}: {r.text[:300]}"
+        except Exception as e:
+            last_err = f"[attempt {attempt}] {type(e).__name__}: {e!s}" or repr(e)
+            time.sleep(sleep_sec)
+    raise RuntimeError(last_err or "unknown Elsevier request error")
+
+
 def openalex_venue_name(work: dict):
     primary_location = work.get("primary_location") or {}
     source = primary_location.get("source") or {}
     return source.get("display_name")
+
+
+def scopus_entry_links(entry: dict):
+    links = entry.get("link") or []
+    if isinstance(links, dict):
+        links = [links]
+    return links if isinstance(links, list) else []
+
+
+def scopus_link(entry: dict, ref: str):
+    for link in scopus_entry_links(entry):
+        if link.get("@ref") == ref and link.get("@href"):
+            return link.get("@href")
+    return ""
+
+
+def parse_scopus_id(entry: dict) -> str:
+    identifier = entry.get("dc:identifier") or ""
+    if identifier.startswith("SCOPUS_ID:"):
+        return identifier.split(":", 1)[1]
+    eid = entry.get("eid") or ""
+    if eid.startswith("2-s2.0-"):
+        return eid.rsplit("-", 1)[-1]
+    return ""
+
+
+def parse_scopus_year(entry: dict):
+    cover_date = entry.get("prism:coverDate") or ""
+    if len(cover_date) >= 4 and cover_date[:4].isdigit():
+        return int(cover_date[:4])
+    pub_year = entry.get("pubyear") or ""
+    if str(pub_year).isdigit():
+        return int(pub_year)
+    return None
+
+
+def parse_int(value, default=0):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def normalize_scopus_entry(entry: dict) -> dict:
+    doi = entry.get("prism:doi") or ""
+    scopus_id = parse_scopus_id(entry)
+    eid = entry.get("eid") or ""
+    source_url = scopus_link(entry, "scopus") or entry.get("prism:url") or ""
+    creator = entry.get("dc:creator") or ""
+    authors = [{"name": creator}] if creator else []
+    external_ids = {}
+    if doi:
+        external_ids["DOI"] = doi
+    if scopus_id:
+        external_ids["Scopus"] = scopus_id
+    if eid:
+        external_ids["EID"] = eid
+    return {
+        "title": entry.get("dc:title", ""),
+        "year": parse_scopus_year(entry),
+        "venue": entry.get("prism:publicationName") or entry.get("prism:aggregationType") or "Unknown Venue",
+        "externalIds": external_ids,
+        "authors": authors,
+        "source_url": source_url,
+        "citedby_count": parse_int(entry.get("citedby-count")),
+    }
+
+
+def scopus_search(query: str, *, count: int = 25, start: int = 0, field: str = ""):
+    params = {
+        "query": query,
+        "count": max(1, min(int(count or 25), 200)),
+        "start": max(0, int(start or 0)),
+        "httpAccept": "application/json",
+    }
+    if field:
+        params["field"] = field
+    r = safe_get_elsevier(ELSEVIER_SCOPUS_SEARCH_URL, params)
+    return r.json().get("search-results", {})
+
+
+def resolve_paper_scopus(query: str):
+    query = query.strip()
+    if query.lower().startswith("10.48550/arxiv."):
+        query = normalize_arxiv_id(query)
+    if "/" in query or query.startswith("10."):
+        scopus_query = f"DOI({query})"
+    else:
+        escaped = query.replace('"', " ")
+        scopus_query = f'TITLE("{escaped}")'
+    fields = "dc:title,prism:doi,citedby-count,prism:coverDate,prism:publicationName,dc:identifier,eid,link"
+    data = scopus_search(scopus_query, count=1, field=fields)
+    entries = data.get("entry") or []
+    if not entries:
+        raise RuntimeError(f"[Scopus] 未找到论文: {query}")
+    paper = normalize_scopus_entry(entries[0])
+    return {
+        "paperId": paper["externalIds"].get("EID") or paper["externalIds"].get("Scopus") or paper["externalIds"].get("DOI"),
+        "title": paper.get("title", ""),
+        "year": paper.get("year"),
+        "venue": paper.get("venue"),
+        "externalIds": paper.get("externalIds", {}),
+        "citationCount": paper.get("citedby_count", 0),
+        "influentialCitationCount": 0,
+        "source_url": paper.get("source_url", ""),
+    }
+
+
+def scopus_reference_queries(target: dict):
+    external_ids = target.get("externalIds") or {}
+    queries = []
+    eid = external_ids.get("EID") or target.get("paperId", "")
+    scopus_id = external_ids.get("Scopus") or external_ids.get("ScopusID") or parse_scopus_id({"eid": eid})
+    doi = external_ids.get("DOI")
+    title = target.get("title")
+    if eid:
+        queries.append(f"REFEID({eid})")
+    if scopus_id and scopus_id != eid:
+        queries.append(f"REFEID({scopus_id})")
+    if doi:
+        queries.append(f"REFDOI({doi})")
+    if title:
+        escaped = title.replace('"', " ")
+        queries.append(f'REF("{escaped}")')
+    return queries
+
+
+def fetch_citations_scopus(target: dict, fetch_limit: int = 100):
+    fields = "dc:title,prism:doi,prism:coverDate,prism:publicationName,dc:identifier,eid,dc:creator,citedby-count,link"
+    page_size = 200
+    desired = max(1, int(fetch_limit or page_size))
+    last_error = None
+    for scopus_query in scopus_reference_queries(target):
+        rows = []
+        start = 0
+        try:
+            while len(rows) < desired:
+                batch_size = min(page_size, desired - len(rows))
+                data = scopus_search(scopus_query, count=batch_size, start=start, field=fields)
+                entries = data.get("entry") or []
+                if not entries:
+                    break
+                rows.extend({"citingPaper": normalize_scopus_entry(entry)} for entry in entries)
+                if len(entries) < batch_size:
+                    break
+                start += batch_size
+            if rows:
+                return rows
+        except Exception as exc:
+            last_error = exc
+            continue
+    if last_error:
+        raise RuntimeError(f"[Scopus] cited-by list 拉取失败: {last_error}")
+    return []
 
 def resolve_paper_openalex(query: str):
     """使用 OpenAlex 查找目标论文"""
@@ -290,6 +489,9 @@ def dedupe_papers(papers):
             external_ids.get("CorpusId")
             or external_ids.get("DOI")
             or external_ids.get("ArXiv")
+            or external_ids.get("EID")
+            or external_ids.get("Scopus")
+            or external_ids.get("ScopusID")
             or paper.get("title", "").strip().lower()
         )
         if not key or key in seen:
@@ -353,6 +555,21 @@ def build_openalex_author_details(citing: dict):
         })
     return details
 
+
+def build_scopus_author_details(citing: dict):
+    details = []
+    for author in citing.get("authors", []) or []:
+        name = (author.get("name") or "").strip() if isinstance(author, dict) else str(author or "").strip()
+        if not name:
+            continue
+        details.append({
+            "name": name,
+            "author_id": "",
+            "source_url": f"https://www.scopus.com/results/authorNamesList.uri?name={urllib.parse.quote(name)}",
+            "institutions": [],
+        })
+    return details
+
 def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "recent", fetch_limit: Optional[int] = None):
     #target = resolve_paper(query)
     #paper_id = target["paperId"]
@@ -369,6 +586,11 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
         data = fetch_citations_openalex(paper_id, fetch_limit=desired_fetch)
         url = f"https://openalex.org/{paper_id}"
         used_source = "OpenAlex"
+    elif source_preference in {"scopus", "elsevier"}:
+        target = resolve_paper_scopus(query)
+        data = fetch_citations_scopus(target, fetch_limit=desired_fetch)
+        url = target.get("source_url") or "https://www.scopus.com/"
+        used_source = "Scopus"
     elif source_preference in {"semantic_scholar", "semanticscholar", "s2"}:
         target = resolve_paper(query)
         paper_id = target["paperId"]
@@ -414,13 +636,16 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
             "year": citing.get("year"),
             "venue": citing.get("venue", "Unknown Venue"),
             "externalIds": citing.get("externalIds", {}),
-            # 注意：OpenAlex 映射后也是相同的 authors 列表结构，直接解析即可
             "authors": [a.get("name") for a in citing.get("authors", []) if a.get("name")],
             "author_details": (
                 build_openalex_author_details(citing)
                 if used_source.startswith("OpenAlex")
+                else build_scopus_author_details(citing)
+                if used_source.startswith("Scopus")
                 else build_semantic_scholar_author_details(citing)
             ),
+            "source_url": citing.get("source_url", ""),
+            "citedby_count": citing.get("citedby_count", 0),
         })
 
     papers = dedupe_papers(papers)

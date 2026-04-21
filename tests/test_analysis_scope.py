@@ -27,7 +27,7 @@ class AnalysisScopeTestCase(unittest.TestCase):
         cls.run_pipeline = load_module(RUN_PIPELINE_PATH, 'test_run_pipeline_analysis_scope')
         cls.impact_cli = load_module(IMPACT_CLI_PATH, 'test_impact_cli_analysis_scope')
 
-    def test_impact_cli_analyze_defaults_to_candidate_spans(self):
+    def test_impact_cli_analyze_defaults_to_fulltext_direct(self):
         args = self.impact_cli.build_parser().parse_args([
             'analyze',
             '/tmp/session',
@@ -35,7 +35,7 @@ class AnalysisScopeTestCase(unittest.TestCase):
             'P001',
         ])
 
-        self.assertEqual(args.analysis_scope, 'candidate_spans')
+        self.assertEqual(args.analysis_scope, 'fulltext_direct')
         self.assertEqual(args.top_k_spans, 8)
 
     def test_impact_cli_analyze_accepts_fulltext_direct(self):

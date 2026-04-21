@@ -1665,7 +1665,7 @@ def run_downloads(session_dir: Path, ids: List[str], auto_only: bool):
     }
 
 
-def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_scope: str = "candidate_spans"):
+def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_scope: str = "fulltext_direct"):
     analysis_scope = RUN_PIPELINE.normalize_analysis_scope(analysis_scope)
     session = load_session(session_dir)
     contexts_data = read_json(session_dir / "contexts.json")
@@ -1868,7 +1868,7 @@ def run_quick_analysis(session_dir: Path):
     }
 
 
-def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_spans: int = 8, analysis_scope: str = "candidate_spans"):
+def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_spans: int = 8, analysis_scope: str = "fulltext_direct"):
     session = load_session(session_dir)
     refresh_ids = [item.get("id") for item in session.get("papers", [])[: max(0, refresh_top_n)] if item.get("id")]
     refresh_result = {
@@ -2418,8 +2418,8 @@ def build_parser():
     analyze.add_argument(
         "--analysis-scope",
         choices=sorted(RUN_PIPELINE.VALID_ANALYSIS_SCOPES),
-        default="candidate_spans",
-        help="分析范围：candidate_spans 为默认候选段落模式，fulltext_direct 为单篇全文直读模式",
+        default="fulltext_direct",
+        help="分析范围：fulltext_direct 为默认单篇全文直读模式，candidate_spans 为候选段落模式",
     )
 
     attach_pdf = sub.add_parser("attach-pdf", help="把本地 PDF 绑定到某篇候选论文，后续按 local_available 处理")

@@ -69,7 +69,7 @@ def default_task_state() -> dict[str, Any]:
         "error": "",
         "requested_ids": [],
         "top_k_spans": None,
-        "analysis_scope": "candidate_spans",
+        "analysis_scope": "fulltext_direct",
     }
 
 
@@ -455,7 +455,7 @@ def download_papers(session_id: str, ids: list[str] | None = None, *, auto_only:
     return impact_cli().run_downloads(resolve_session_dir(session_id), ids or [], auto_only)
 
 
-def analyze_papers(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8, analysis_scope: str = "candidate_spans"):
+def analyze_papers(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8, analysis_scope: str = "fulltext_direct"):
     return impact_cli().run_analysis(resolve_session_dir(session_id), ids or [], top_k_spans, analysis_scope)
 
 
@@ -489,7 +489,7 @@ def start_download_task(session_id: str, ids: list[str] | None = None, *, auto_o
     )
 
 
-def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8, analysis_scope: str = "candidate_spans"):
+def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8, analysis_scope: str = "fulltext_direct"):
     ids = ids or []
     def worker():
         impact_cli().run_analysis(resolve_session_dir(session_id), ids, top_k_spans, analysis_scope)

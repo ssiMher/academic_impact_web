@@ -142,12 +142,12 @@ def should_prioritize_result(result: dict) -> bool:
 
 
 def normalize_analysis_scope(value: str = "") -> str:
-    scope = (value or "candidate_spans").strip().lower().replace("-", "_")
+    scope = (value or "fulltext_direct").strip().lower().replace("-", "_")
     if scope in {"candidate", "candidate_span", "spans"}:
         return "candidate_spans"
     if scope in {"fulltext", "full_text", "direct", "fulltext_direct"}:
         return "fulltext_direct"
-    return "candidate_spans"
+    return "fulltext_direct"
 
 
 def build_fulltext_direct_pages(fulltext_result: dict) -> List[dict]:
@@ -305,7 +305,7 @@ def process_citing_paper(
     item_dir: Path,
     top_k_spans: int,
     local_pdf_path: str = "",
-    analysis_scope: str = "candidate_spans",
+    analysis_scope: str = "fulltext_direct",
 ):
     analysis_scope = normalize_analysis_scope(analysis_scope)
     result = {
@@ -590,7 +590,7 @@ def run_pipeline(
     max_papers: int,
     top_k_spans: int,
     scan_limit: int,
-    analysis_scope: str = "candidate_spans",
+    analysis_scope: str = "fulltext_direct",
 ):
     analysis_scope = normalize_analysis_scope(analysis_scope)
     started_at = datetime.now().isoformat(timespec="seconds")
@@ -680,8 +680,8 @@ def parse_args():
     parser.add_argument(
         "--analysis-scope",
         choices=sorted(VALID_ANALYSIS_SCOPES),
-        default="candidate_spans",
-        help="分析范围：candidate_spans 为默认候选段落模式，fulltext_direct 为单篇全文直读模式",
+        default="fulltext_direct",
+        help="分析范围：fulltext_direct 为默认单篇全文直读模式，candidate_spans 为候选段落模式",
     )
     return parser.parse_args()
 

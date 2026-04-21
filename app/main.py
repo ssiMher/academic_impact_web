@@ -109,7 +109,7 @@ async def analyze_session(
     request: Request,
     session_id: str,
     top_k_spans: int = Form(8),
-    analysis_scope: str = Form("candidate_spans"),
+    analysis_scope: str = Form("fulltext_direct"),
 ):
     form = await request.form()
     ids = form.getlist("paper_ids")

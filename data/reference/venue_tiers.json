@@ -523,6 +523,51 @@
       "tier_system": "project_seed",
       "venue_type": "conference",
       "source": "manual_seed"
+    },
+    {
+      "name": "ACM International Conference on Mobile Computing and Networking",
+      "aliases": ["MobiCom", "ACM MobiCom", "ACM Mobicom", "Mobile Computing and Networking"],
+      "tier": "A",
+      "tier_label": "CCF A",
+      "tier_system": "CCF",
+      "venue_type": "conference",
+      "source": "CCF recommended international academic conferences and journals catalog 2026; official entry: https://www.ccf.org.cn/Academic_Evaluation/By_category"
+    },
+    {
+      "name": "ACM Conference on Embedded Networked Sensor Systems",
+      "aliases": ["SenSys", "ACM SenSys", "ACM Sensys", "Embedded Networked Sensor Systems"],
+      "tier": "B",
+      "tier_label": "CCF B",
+      "tier_system": "CCF",
+      "venue_type": "conference",
+      "source": "CCF recommended international academic conferences and journals catalog 2026; official entry: https://www.ccf.org.cn/Academic_Evaluation/By_category"
+    },
+    {
+      "name": "IEEE Journal on Selected Areas in Communications",
+      "aliases": ["JSAC", "IEEE JSAC"],
+      "tier": "A",
+      "tier_label": "CCF A",
+      "tier_system": "CCF",
+      "venue_type": "journal",
+      "source": "CCF recommended international academic conferences and journals catalog 2026; official entry: https://www.ccf.org.cn/Academic_Evaluation/By_category"
+    },
+    {
+      "name": "IEEE Transactions on Mobile Computing",
+      "aliases": ["TMC", "IEEE TMC"],
+      "tier": "A",
+      "tier_label": "CCF A",
+      "tier_system": "CCF",
+      "venue_type": "journal",
+      "source": "CCF recommended international academic conferences and journals catalog 2026; official entry: https://www.ccf.org.cn/Academic_Evaluation/By_category"
+    },
+    {
+      "name": "IEEE Transactions on Instrumentation and Measurement",
+      "aliases": ["TIM", "IEEE TIM"],
+      "tier": "tracked",
+      "tier_label": "Tracked venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed; no CCF entry confirmed"
     }
   ]
 }

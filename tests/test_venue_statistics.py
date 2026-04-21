@@ -73,6 +73,31 @@ class VenueStatisticsTestCase(unittest.TestCase):
             ),
             ("ACM Computing Surveys", "ACM Computing Surveys", "journal"),
             ("Digital Signal Processing", "Digital Signal Processing", "journal"),
+            (
+                "ACM Mobicom 2024 Proceedings of the 30th International Conference on Mobile Computing and Networking",
+                "ACM International Conference on Mobile Computing and Networking",
+                "conference",
+            ),
+            (
+                "ACM Sensys 2025 23 rd ACM Conference on Embedded Networked Sensor Systems",
+                "ACM Conference on Embedded Networked Sensor Systems",
+                "conference",
+            ),
+            (
+                "IEEE Journal on Selected Areas in Communications",
+                "IEEE Journal on Selected Areas in Communications",
+                "journal",
+            ),
+            (
+                "IEEE Transactions on Mobile Computing",
+                "IEEE Transactions on Mobile Computing",
+                "journal",
+            ),
+            (
+                "IEEE Transactions on Instrumentation and Measurement",
+                "IEEE Transactions on Instrumentation and Measurement",
+                "journal",
+            ),
         ]
         for venue, expected_name, expected_type in cases:
             with self.subTest(venue=venue):
@@ -80,6 +105,27 @@ class VenueStatisticsTestCase(unittest.TestCase):
                 self.assertTrue(matched["matched"])
                 self.assertEqual(matched["matched_name"], expected_name)
                 self.assertEqual(matched["venue_type"], expected_type)
+
+    def test_project_registry_marks_confirmed_ccf_network_venues(self):
+        tier_index = self.impact_cli.build_venue_tier_index()
+
+        cases = [
+            (
+                "ACM Mobicom 2024 Proceedings of the 30th International Conference on Mobile Computing and Networking",
+                "CCF A",
+                "CCF",
+            ),
+            ("ACM SenSys", "CCF B", "CCF"),
+            ("IEEE Journal on Selected Areas in Communications", "CCF A", "CCF"),
+            ("IEEE Transactions on Mobile Computing", "CCF A", "CCF"),
+            ("IEEE Transactions on Instrumentation and Measurement", "Tracked venue seed", "project_seed"),
+        ]
+        for venue, expected_label, expected_system in cases:
+            with self.subTest(venue=venue):
+                matched = self.impact_cli.classify_venue_tier(venue, tier_index)
+                self.assertTrue(matched["matched"])
+                self.assertEqual(matched["tier_label"], expected_label)
+                self.assertEqual(matched["tier_system"], expected_system)
 
     def test_build_venue_statistics_counts_venues_and_tiers(self):
         tier_index = self.impact_cli.build_venue_tier_index({

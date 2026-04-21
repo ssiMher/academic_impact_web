@@ -589,6 +589,17 @@ def classify_venue_tier(venue: str, tier_index: Optional[dict] = None) -> dict:
 
     entry = (tier_index.get("by_key") or {}).get(normalized)
     if not entry:
+        padded_normalized = f" {normalized} "
+        substring_matches = []
+        for key, candidate in (tier_index.get("by_key") or {}).items():
+            if len(key) < 8:
+                continue
+            padded_key = f" {key} "
+            if padded_key in padded_normalized or padded_normalized in padded_key:
+                substring_matches.append((len(key), candidate))
+        if substring_matches:
+            entry = sorted(substring_matches, key=lambda item: item[0], reverse=True)[0][1]
+    if not entry:
         return {
             "venue": raw_venue,
             "normalized_venue": normalized,

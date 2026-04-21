@@ -196,6 +196,58 @@ class VenueStatisticsTestCase(unittest.TestCase):
         self.assertEqual(payload["papers"][0]["venue_tier"]["tier_label"], "Top venue seed")
         self.assertEqual(payload["papers"][1]["venue_tier"]["tier"], "unmatched")
 
+    def test_session_detail_payload_includes_person_tag_statistics(self):
+        session = {
+            "ok": True,
+            "query": "Target",
+            "target": {"title": "Target", "year": 2024, "venue": "NeurIPS"},
+            "papers": [],
+            "person_candidates": [
+                {
+                    "candidate_id": "acm_fellow::alice",
+                    "name": "Alice",
+                    "tag_type": "acm_fellow",
+                    "tag_label": "ACM Fellow",
+                    "matched_paper_ids": ["P001", "P002"],
+                    "source_links": ["https://example.test/alice"],
+                    "status": "pending",
+                },
+                {
+                    "candidate_id": "acm_fellow::bob",
+                    "name": "Bob",
+                    "tag_type": "acm_fellow",
+                    "tag_label": "ACM Fellow",
+                    "matched_paper_ids": ["P002"],
+                    "source_links": [],
+                    "status": "confirmed",
+                },
+                {
+                    "candidate_id": "ieee_fellow::carol",
+                    "name": "Carol",
+                    "tag_type": "ieee_fellow",
+                    "tag_label": "IEEE Fellow",
+                    "matched_paper_ids": ["P003"],
+                    "source_links": ["https://example.test/carol"],
+                    "status": "rejected",
+                },
+            ],
+            "overview_stats": self.impact_cli.default_overview_stats(),
+        }
+
+        payload = self.impact_cli.build_session_detail_payload(session)
+        stats = payload["person_tag_statistics"]
+        acm_group = next(group for group in stats["groups"] if group["tag_type"] == "acm_fellow")
+        ieee_group = next(group for group in stats["groups"] if group["tag_type"] == "ieee_fellow")
+
+        self.assertEqual(stats["total_candidate_count"], 3)
+        self.assertEqual(stats["pending_count"], 1)
+        self.assertEqual(stats["confirmed_count"], 1)
+        self.assertEqual(stats["rejected_count"], 1)
+        self.assertEqual(acm_group["candidate_count"], 2)
+        self.assertEqual(acm_group["source_complete_count"], 1)
+        self.assertEqual(acm_group["matched_paper_count"], 2)
+        self.assertEqual(ieee_group["candidate_count"], 1)
+
     def test_session_detail_payload_exposes_structured_finding_details(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)

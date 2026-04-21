@@ -552,6 +552,43 @@ def build_overview_stats(session: dict):
     }
 
 
+def build_person_tag_statistics(person_candidates: List[dict]):
+    tag_labels = getattr(PERSON_CANDIDATES, "TAG_LABELS", {})
+    ordered_tag_types = list(tag_labels.keys())
+    for candidate in person_candidates:
+        tag_type = candidate.get("tag_type") or ""
+        if tag_type and tag_type not in ordered_tag_types:
+            ordered_tag_types.append(tag_type)
+
+    groups = []
+    for tag_type in ordered_tag_types:
+        candidates = [item for item in person_candidates if item.get("tag_type") == tag_type]
+        paper_ids = set()
+        for candidate in candidates:
+            paper_ids.update(candidate.get("matched_paper_ids") or [])
+        groups.append({
+            "tag_type": tag_type,
+            "tag_label": tag_labels.get(tag_type, tag_type or "-"),
+            "candidate_count": len(candidates),
+            "confirmed_count": sum(1 for item in candidates if item.get("status") == "confirmed"),
+            "pending_count": sum(1 for item in candidates if item.get("status") == "pending"),
+            "rejected_count": sum(1 for item in candidates if item.get("status") == "rejected"),
+            "source_complete_count": sum(1 for item in candidates if item.get("source_links")),
+            "matched_paper_count": len(paper_ids),
+            "candidate_preview": candidates[:5],
+        })
+
+    return {
+        "schema_version": "1.0",
+        "total_candidate_count": len(person_candidates),
+        "confirmed_count": sum(1 for item in person_candidates if item.get("status") == "confirmed"),
+        "pending_count": sum(1 for item in person_candidates if item.get("status") == "pending"),
+        "rejected_count": sum(1 for item in person_candidates if item.get("status") == "rejected"),
+        "source_complete_count": sum(1 for item in person_candidates if item.get("source_links")),
+        "groups": groups,
+    }
+
+
 def normalize_venue_key(value: str) -> str:
     text = str(value or "").strip().lower()
     text = text.replace("&", " and ")
@@ -2170,6 +2207,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
     pending_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "pending"]
     rejected_candidates = [item for item in status_payload.get("person_candidates", []) if item.get("status") == "rejected"]
     venue_statistics = build_venue_statistics(session.get("papers", []), venue_tier_index)
+    person_tag_statistics = build_person_tag_statistics(status_payload.get("person_candidates", []))
 
     return {
         "target_overview": {
@@ -2213,6 +2251,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
         },
         "papers": paged_detail_papers,
         "venue_statistics": venue_statistics,
+        "person_tag_statistics": person_tag_statistics,
         "person_candidates": status_payload.get("person_candidates", []),
         "person_summary": {
             "pending_count": len(pending_candidates),

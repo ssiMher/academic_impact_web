@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -193,6 +195,85 @@ class VenueStatisticsTestCase(unittest.TestCase):
         self.assertEqual(payload["venue_statistics"]["matched_tier_count"], 1)
         self.assertEqual(payload["papers"][0]["venue_tier"]["tier_label"], "Top venue seed")
         self.assertEqual(payload["papers"][1]["venue_tier"]["tier"], "unmatched")
+
+    def test_session_detail_payload_exposes_structured_finding_details(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            analysis_path = tmp_path / "fulltext_analysis.json"
+            candidate_path = tmp_path / "candidate_spans.json"
+            analysis_path.write_text(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "findings": [
+                            {
+                                "page": 4,
+                                "span_index": 2,
+                                "citation_text": "We compare against the target model as a baseline.",
+                                "keep": True,
+                                "aspect": "comparison",
+                                "stance": "neutral",
+                                "function": "将目标论文作为实验比较对象。",
+                                "reason": "正文明确说明与目标模型进行对比。",
+                                "confidence": 0.87,
+                                "mention_type": "explicit_citation",
+                            }
+                        ],
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            candidate_path.write_text(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "spans": [
+                            {
+                                "page": 4,
+                                "span_index": 2,
+                                "text": "We compare against the target model as a baseline.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            session = {
+                "ok": True,
+                "query": "Target",
+                "target": {"title": "Target", "year": 2024, "venue": "NeurIPS"},
+                "papers": [
+                    {
+                        "id": "P001",
+                        "title": "Robotics",
+                        "year": 2025,
+                        "venue": "ICRA",
+                        "download_probe": {"status": "downloaded"},
+                        "analysis_result": {
+                            "status": "fulltext_analyzed",
+                            "paths": {
+                                "analysis": str(analysis_path),
+                                "candidate_spans": str(candidate_path),
+                            },
+                        },
+                    }
+                ],
+                "person_candidates": [],
+                "overview_stats": self.impact_cli.default_overview_stats(),
+            }
+
+            paper = self.impact_cli.build_session_detail_payload(session)["papers"][0]
+            summary = paper["citation_method_summary"]
+
+            self.assertEqual(summary["primary_aspect_label"], "比较对象")
+            self.assertEqual(summary["primary_mention_type_label"], "明确引用")
+            self.assertEqual(summary["primary_stance_label"], "中性")
+            self.assertEqual(summary["primary_function"], "将目标论文作为实验比较对象。")
+            self.assertEqual(summary["primary_reason"], "正文明确说明与目标模型进行对比。")
+            self.assertEqual(summary["finding_count"], 1)
+            self.assertEqual(summary["kept_finding_count"], 1)
+            self.assertEqual(summary["finding_preview"][0]["citation_excerpt"], "We compare against the target model as a baseline.")
 
     def test_session_detail_payload_paginates_after_filters(self):
         session = {

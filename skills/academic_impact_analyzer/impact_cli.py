@@ -57,6 +57,28 @@ ANALYSIS_STATUS_LABELS = {
     "write_output_failed": "结果写出失败",
 }
 
+ASPECT_LABELS = {
+    "background": "背景",
+    "method": "方法采用",
+    "baseline": "基线",
+    "comparison": "比较对象",
+    "extension": "扩展",
+    "application": "应用",
+    "other": "其他",
+}
+
+MENTION_TYPE_LABELS = {
+    "explicit_citation": "明确引用",
+    "grouped_literature_mention": "组引用/综述提及",
+    "weak_body_mention": "弱正文提及",
+}
+
+STANCE_LABELS = {
+    "positive": "正向",
+    "neutral": "中性",
+    "negative": "负向",
+}
+
 NUMBER_WORDS = {
     "一": 1,
     "二": 2,
@@ -445,6 +467,31 @@ def build_primary_evidence(candidate_data: dict, analysis_data: dict):
             "confidence": (matched_finding or {}).get("confidence"),
             "mention_type": (matched_finding or {}).get("mention_type"),
         },
+    }
+
+
+def build_finding_detail(finding: dict):
+    if not isinstance(finding, dict):
+        return None
+    aspect = (finding.get("aspect") or "").strip()
+    mention_type = (finding.get("mention_type") or "").strip()
+    stance = (finding.get("stance") or "").strip()
+    confidence = finding.get("confidence")
+    return {
+        "page": finding.get("page"),
+        "span_index": finding.get("span_index"),
+        "citation_text": finding.get("citation_text") or "",
+        "citation_excerpt": truncate_text(finding.get("citation_text") or "", limit=360),
+        "aspect": aspect,
+        "aspect_label": ASPECT_LABELS.get(aspect, aspect or "-"),
+        "mention_type": mention_type,
+        "mention_type_label": MENTION_TYPE_LABELS.get(mention_type, mention_type or "-"),
+        "stance": stance,
+        "stance_label": STANCE_LABELS.get(stance, stance or "-"),
+        "function": finding.get("function") or "",
+        "reason": finding.get("reason") or "",
+        "confidence": confidence if isinstance(confidence, (int, float)) else None,
+        "keep": bool(finding.get("keep", True)),
     }
 
 
@@ -892,6 +939,7 @@ def summarize_citation_method(item: dict):
             previous_page, previous_span = current_page, current_span
 
     labels = []
+    finding_details = []
     for finding in findings:
         aspect = (finding.get("aspect") or "").strip()
         mention_type = (finding.get("mention_type") or "").strip()
@@ -899,6 +947,9 @@ def summarize_citation_method(item: dict):
             labels.append(aspect)
         if mention_type and mention_type != "explicit_citation":
             labels.append(mention_type)
+        detail = build_finding_detail(finding)
+        if detail:
+            finding_details.append(detail)
     if status and status not in {"fulltext_analyzed", "mention_only"}:
         labels.append(status)
 
@@ -918,6 +969,8 @@ def summarize_citation_method(item: dict):
     ]
     confidence = max(confidence_values) if confidence_values else primary_evidence.get("finding", {}).get("confidence")
     analysis_reason = build_analysis_reason(item, status, fallback_data)
+    kept_findings = [finding for finding in finding_details if finding.get("keep")]
+    primary_finding = kept_findings[0] if kept_findings else (finding_details[0] if finding_details else {})
 
     return {
         "labels": unique_strings(labels),
@@ -929,6 +982,17 @@ def summarize_citation_method(item: dict):
         "first_claim_hit": bool(first_claim_hit),
         "confidence": confidence,
         "status": status,
+        "status_label": ANALYSIS_STATUS_LABELS.get(status, status or "-"),
+        "finding_count": len(finding_details),
+        "kept_finding_count": len(kept_findings),
+        "finding_details": finding_details,
+        "finding_preview": finding_details[:3],
+        "extra_finding_count": max(0, len(finding_details) - 3),
+        "primary_aspect_label": primary_finding.get("aspect_label") or "-",
+        "primary_mention_type_label": primary_finding.get("mention_type_label") or "-",
+        "primary_stance_label": primary_finding.get("stance_label") or "-",
+        "primary_function": primary_finding.get("function") or "",
+        "primary_reason": primary_finding.get("reason") or "",
         "primary_evidence": primary_evidence,
         "analysis_reason": analysis_reason,
     }

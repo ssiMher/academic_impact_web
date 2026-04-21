@@ -336,15 +336,32 @@
                 <strong>{{ item.id }} {{ item.title }}</strong>
                 <p class="muted">{{ item.year or '-' }} / {{ item.venue or '-' }} / {{ item.venue_tier.tier_label or '-' }}</p>
               </div>
-              <span class="chip">{{ item.analysis_status or 'not_analyzed' }}</span>
+              <span class="chip">{{ item.analysis_status_label or item.analysis_status or 'not_analyzed' }}</span>
             </div>
             <div class="card-metrics">
               <span class="chip">标签：{{ item.citation_method_summary.labels | join(' / ') if item.citation_method_summary.labels else '-' }}</span>
-              <span class="chip">引用次数：{{ item.citation_method_summary.citation_occurrence_count }}</span>
+              <span class="chip">模型结论：{{ item.citation_method_summary.primary_aspect_label }}</span>
+              <span class="chip">提及类型：{{ item.citation_method_summary.primary_mention_type_label }}</span>
+              <span class="chip">立场：{{ item.citation_method_summary.primary_stance_label }}</span>
+              <span class="chip">证据数：{{ item.citation_method_summary.kept_finding_count }}/{{ item.citation_method_summary.finding_count }}</span>
+              {% if item.citation_method_summary.confidence is not none %}
+              <span class="chip">最高置信度：{{ ((item.citation_method_summary.confidence * 100) | round(0)) | int }}%</span>
+              {% endif %}
+              <span class="chip">引用位置：{{ item.citation_method_summary.citation_occurrence_count }}</span>
               <span class="chip">连续引用段数：{{ item.citation_method_summary.continuous_mention_count }}</span>
               <span class="chip">首次/强表述：{{ '是' if item.citation_method_summary.first_claim_hit else '否' }}</span>
               <span class="chip">页码：{{ item.citation_method_summary.page_start or '-' }} - {{ item.citation_method_summary.page_end or item.citation_method_summary.page_start or '-' }}</span>
             </div>
+            {% if item.citation_method_summary.primary_function or item.citation_method_summary.primary_reason %}
+            <div class="analysis-conclusion">
+              {% if item.citation_method_summary.primary_function %}
+              <p><strong>引用作用：</strong>{{ item.citation_method_summary.primary_function }}</p>
+              {% endif %}
+              {% if item.citation_method_summary.primary_reason %}
+              <p><strong>判断理由：</strong>{{ item.citation_method_summary.primary_reason }}</p>
+              {% endif %}
+            </div>
+            {% endif %}
             {% if item.analysis_reason %}
             <p class="muted">
               当前限制：
@@ -366,6 +383,35 @@
               <summary>证据片段</summary>
               <p class="evidence-excerpt">{{ item.citation_method_summary.evidence_excerpt or '暂无可展示的结构化证据片段。' }}</p>
             </details>
+            {% if item.citation_method_summary.finding_preview %}
+            <details class="finding-block" open>
+              <summary>结构化判断明细</summary>
+              <div class="finding-list">
+                {% for finding in item.citation_method_summary.finding_preview %}
+                <div class="finding-item">
+                  <div class="finding-meta">
+                    <span class="chip">{{ finding.aspect_label }}</span>
+                    <span class="chip">{{ finding.mention_type_label }}</span>
+                    <span class="chip">第 {{ finding.page or '-' }} 页 / 片段 {{ finding.span_index or '-' }}</span>
+                    {% if finding.confidence is not none %}
+                    <span class="chip">置信度 {{ ((finding.confidence * 100) | round(0)) | int }}%</span>
+                    {% endif %}
+                  </div>
+                  {% if finding.function %}
+                  <p><strong>作用：</strong>{{ finding.function }}</p>
+                  {% endif %}
+                  {% if finding.reason %}
+                  <p><strong>理由：</strong>{{ finding.reason }}</p>
+                  {% endif %}
+                  <p class="evidence-excerpt">{{ finding.citation_excerpt or '暂无原文摘录。' }}</p>
+                </div>
+                {% endfor %}
+              </div>
+              {% if item.citation_method_summary.extra_finding_count %}
+              <p class="muted">还有 {{ item.citation_method_summary.extra_finding_count }} 条结构化判断，保留在本地 fulltext_analysis.json 中。</p>
+              {% endif %}
+            </details>
+            {% endif %}
           </article>
           {% endfor %}
         </div>

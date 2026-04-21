@@ -354,6 +354,44 @@ tr:last-child td {
   margin-top: 14px;
 }
 
+.analysis-conclusion {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--accent);
+  background: #f4f8f5;
+}
+
+.analysis-conclusion p,
+.finding-item p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.finding-block {
+  margin-top: 14px;
+}
+
+.finding-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.finding-item {
+  display: grid;
+  gap: 10px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.finding-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .evidence-excerpt {
   max-height: 220px;
   overflow: auto;

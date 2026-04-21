@@ -384,7 +384,7 @@
               <p class="evidence-excerpt">{{ item.citation_method_summary.evidence_excerpt or '暂无可展示的结构化证据片段。' }}</p>
             </details>
             {% if item.citation_method_summary.finding_preview %}
-            <details class="finding-block" open>
+            <details class="finding-block">
               <summary>结构化判断明细</summary>
               <div class="finding-list">
                 {% for finding in item.citation_method_summary.finding_preview %}

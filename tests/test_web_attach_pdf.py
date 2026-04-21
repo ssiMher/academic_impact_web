@@ -43,6 +43,9 @@ class WebAttachPdfTestCase(unittest.TestCase):
     def tearDown(self):
         if TEST_SESSION_DIR.exists():
             shutil.rmtree(TEST_SESSION_DIR)
+        uploaded = ROOT / "data" / "downloads" / "Test Paper.pdf"
+        if uploaded.exists():
+            uploaded.unlink()
 
     def test_attach_uploaded_pdf_uses_temp_file_and_cleans_it_up(self):
         observed = {}
@@ -73,6 +76,32 @@ class WebAttachPdfTestCase(unittest.TestCase):
         self.assertEqual(observed["parent_name"], "uploads")
         self.assertTrue(observed["exists_during_call"])
         self.assertFalse(Path(observed["file_path"]).exists())
+
+    def test_attach_uploaded_pdf_binds_real_pdf_without_internal_error(self):
+        result = impact_core.attach_uploaded_pdf(
+            TEST_SESSION_ID,
+            "P001",
+            "evidence.pdf",
+            b"%PDF-1.4\n% minimal test pdf bytes\n",
+        )
+
+        self.assertTrue(result["ok"])
+        session = json.loads((TEST_SESSION_DIR / "session.json").read_text(encoding="utf-8"))
+        probe = session["papers"][0]["download_probe"]
+        self.assertEqual(probe["status"], "local_available")
+        self.assertEqual(probe["source"], "manual_upload")
+        self.assertTrue(Path(probe["local_file_path"]).exists())
+
+    def test_attach_uploaded_pdf_rejects_fake_pdf_bytes(self):
+        with self.assertRaises(ValueError) as ctx:
+            impact_core.attach_uploaded_pdf(
+                TEST_SESSION_ID,
+                "P001",
+                "not-really.pdf",
+                b"<html>not a pdf</html>",
+            )
+
+        self.assertIn("downloaded_non_pdf", str(ctx.exception))
 
 
 if __name__ == "__main__":

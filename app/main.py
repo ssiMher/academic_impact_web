@@ -131,7 +131,10 @@ async def attach_pdf(
     if not content:
         raise HTTPException(status_code=400, detail="上传的 PDF 文件为空。")
 
-    impact_core.attach_uploaded_pdf(session_id, paper_id, filename, content)
+    try:
+        impact_core.attach_uploaded_pdf(session_id, paper_id, filename, content)
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return redirect_to_session(session_id)
 
 

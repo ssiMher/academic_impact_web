@@ -136,6 +136,48 @@ def find_local_pdf(query: str = "", title: str = "", doi: str = "", arxiv_id: st
     return candidates[0][1]
 
 
+def inspect_pdf_file(file_path: str):
+    path = Path(file_path).expanduser()
+    if not path.exists():
+        return {
+            "ok": False,
+            "error_type": "pdf_file_missing",
+            "error": f"未找到 PDF 文件: {path}",
+        }
+    if not path.is_file():
+        return {
+            "ok": False,
+            "error_type": "pdf_path_not_file",
+            "error": f"PDF 路径不是文件: {path}",
+        }
+    if path.suffix.lower() != ".pdf":
+        return {
+            "ok": False,
+            "error_type": "unsupported_file_type",
+            "error": "当前只支持 .pdf 文件。",
+        }
+    try:
+        with path.open("rb") as handle:
+            header = handle.read(8)
+    except Exception as exc:
+        return {
+            "ok": False,
+            "error_type": "pdf_read_failed",
+            "error": f"读取 PDF 文件失败: {type(exc).__name__}: {exc}",
+        }
+    if not header.startswith(b"%PDF-"):
+        return {
+            "ok": False,
+            "error_type": "downloaded_non_pdf",
+            "error": "该文件扩展名是 PDF，但内容不是有效 PDF 文件。",
+        }
+    return {
+        "ok": True,
+        "file_path": str(path),
+        "size_bytes": path.stat().st_size,
+    }
+
+
 def is_probable_pdf_url(url: str) -> bool:
     url_n = (url or "").strip().lower()
     return bool(url_n) and (

@@ -133,10 +133,10 @@ data/scholar_sessions/{session_id}/session.json
       "source_publication_id": "S001",
       "citing_paper_id": "C000001",
       "citing_title": "A citing paper title",
-      "year": 2026,
-      "venue": "ACM MobiCom",
-      "doi": "",
-      "authors": ["A Fellow", "Another Author"],
+      "citing_year": 2026,
+      "citing_venue": "ACM MobiCom",
+      "citing_doi": "",
+      "citing_authors": ["A Fellow", "Another Author"],
       "provider": "Scopus",
       "cited_publication_title": "Unison: A Parallel-Efficient and User-Transparent Network Simulation Kernel."
     }
@@ -489,7 +489,7 @@ git commit -m "Fetch scholar publications from DBLP" \
 - Create: `skills/scholar_impact_analyzer/SCHOLAR_SESSION_SCHEMA.md`
 - Test: `tests/test_scholar_pipeline.py`
 
-- [ ] **Step 1: Write session creation tests**
+- [x] **Step 1: Write session creation tests**
 
 Create `tests/test_scholar_pipeline.py`:
 
@@ -564,6 +564,7 @@ class ScholarPipelineTestCase(unittest.TestCase):
             "citation_edges": [],
             "statistics": {},
             "task_state": {"active": False},
+            "updated_at": "old",
         }
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -572,13 +573,15 @@ class ScholarPipelineTestCase(unittest.TestCase):
             loaded = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
 
         self.assertEqual(loaded["session_id"], "test_scholar")
+        self.assertIn("updated_at", loaded)
+        self.assertNotEqual(loaded["updated_at"], "old")
 
 
 if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -588,7 +591,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_pipeline -q
 
 Expected: fails because `scholar_pipeline.py` does not exist.
 
-- [ ] **Step 3: Implement minimal scholar session builder**
+- [x] **Step 3: Implement minimal scholar session builder**
 
 Create `skills/scholar_impact_analyzer/scholar_pipeline.py`:
 
@@ -649,6 +652,7 @@ def build_initial_statistics(publications: list[dict[str, Any]]) -> dict[str, An
         "citing_venue_tiers": [],
         "person_tag_statistics": [],
         "yearly_citations": [],
+        "strong_evidence_count": 0,
         "top_publications": sorted(
             publications,
             key=lambda item: (-(item.get("citation_count") or 0), -(item.get("year") or 0), item.get("title") or ""),
@@ -681,6 +685,7 @@ def build_scholar_session(selected_author: dict[str, Any], session_dir: Path) ->
 
 
 def save_scholar_session(session_dir: Path, session: dict[str, Any]):
+    session["updated_at"] = datetime.now().isoformat(timespec="seconds")
     session_dir.mkdir(parents=True, exist_ok=True)
     (session_dir / "session.json").write_text(
         json.dumps(session, ensure_ascii=False, indent=2),
@@ -690,7 +695,7 @@ def save_scholar_session(session_dir: Path, session: dict[str, Any]):
 
 Create `skills/scholar_impact_analyzer/SCHOLAR_SESSION_SCHEMA.md` with the session JSON shape from the "Data Model" section of this plan.
 
-- [ ] **Step 4: Run test**
+- [x] **Step 4: Run test**
 
 Run:
 
@@ -700,7 +705,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_pipeline -q
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/scholar_impact_analyzer/scholar_pipeline.py skills/scholar_impact_analyzer/SCHOLAR_SESSION_SCHEMA.md tests/test_scholar_pipeline.py

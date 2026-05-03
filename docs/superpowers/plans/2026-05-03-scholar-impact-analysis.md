@@ -726,7 +726,7 @@ git commit -m "Create scholar impact session pipeline" \
 - Modify: `skills/scholar_impact_analyzer/scholar_pipeline.py`
 - Test: `tests/test_scholar_pipeline.py`
 
-- [ ] **Step 1: Add tests for citation edge expansion**
+- [x] **Step 1: Add tests for citation edge expansion**
 
 Append to `ScholarPipelineTestCase`:
 
@@ -764,11 +764,12 @@ Append to `ScholarPipelineTestCase`:
         self.assertEqual(len(updated["citation_edges"]), 1)
         edge = updated["citation_edges"][0]
         self.assertEqual(edge["source_publication_id"], "S001")
+        self.assertEqual(edge["citing_paper_id"], "scopus-citing-001")
         self.assertEqual(edge["citing_title"], "Citing Paper")
         self.assertEqual(edge["cited_publication_title"], "Target Paper")
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -778,7 +779,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_pipeline -q
 
 Expected: fails because `LIST_PAPERS` and `expand_publication_citations` are undefined.
 
-- [ ] **Step 3: Implement citation expansion**
+- [x] **Step 3: Implement citation expansion**
 
 Add to `scholar_pipeline.py`:
 
@@ -794,7 +795,20 @@ def publication_query(publication: dict[str, Any]) -> str:
 def edge_key(edge: dict[str, Any]) -> tuple[str, str]:
     return (
         edge.get("source_publication_id") or "",
-        edge.get("citing_doi") or edge.get("citing_title") or "",
+        edge.get("citing_paper_id") or edge.get("citing_doi") or edge.get("citing_title") or "",
+    )
+
+
+def citing_paper_id(citing_paper: dict[str, Any]) -> str:
+    external_ids = citing_paper.get("externalIds") or {}
+    return (
+        citing_paper.get("paperId")
+        or external_ids.get("Scopus")
+        or external_ids.get("OpenAlex")
+        or external_ids.get("DOI")
+        or citing_paper.get("source_url")
+        or citing_paper.get("title")
+        or ""
     )
 
 
@@ -810,6 +824,7 @@ def normalize_citation_edge(source_publication: dict[str, Any], citing_paper: di
         "source_publication_id": source_publication.get("id"),
         "source_publication_doi": source_publication.get("doi") or (source_publication.get("unique_ids") or {}).get("DOI", ""),
         "cited_publication_title": source_publication.get("title") or "",
+        "citing_paper_id": citing_paper_id(citing_paper),
         "citing_title": citing_paper.get("title") or "",
         "citing_doi": external_ids.get("DOI", ""),
         "citing_year": citing_paper.get("year"),
@@ -822,21 +837,31 @@ def normalize_citation_edge(source_publication: dict[str, Any], citing_paper: di
 
 def expand_publication_citations(session: dict[str, Any], limit_per_publication: int = 100) -> dict[str, Any]:
     existing = {edge_key(edge): edge for edge in session.get("citation_edges", [])}
+    errors = []
     for publication in session.get("publications", []):
         query = publication_query(publication)
         if not query:
             continue
-        payload = LIST_PAPERS.list_all_citations(query, limit=limit_per_publication)
+        try:
+            payload = LIST_PAPERS.list_all_citations(query, limit=limit_per_publication)
+        except Exception as exc:
+            errors.append({
+                "source_publication_id": publication.get("id"),
+                "query": query,
+                "error": str(exc),
+            })
+            continue
         provider = payload.get("data_provider") or "unknown"
         for citing_paper in payload.get("papers", []):
             edge = normalize_citation_edge(publication, citing_paper, provider)
             existing[edge_key(edge)] = edge
     session["citation_edges"] = list(existing.values())
+    session["citation_expansion_errors"] = errors
     session.setdefault("statistics", {})["citation_edge_count"] = len(session["citation_edges"])
     return session
 ```
 
-- [ ] **Step 4: Run test**
+- [x] **Step 4: Run test**
 
 Run:
 
@@ -846,7 +871,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_pipeline -q
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/scholar_impact_analyzer/scholar_pipeline.py tests/test_scholar_pipeline.py

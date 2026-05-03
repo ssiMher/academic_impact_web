@@ -81,6 +81,120 @@ class ScholarPipelineTestCase(unittest.TestCase):
         self.assertIn("updated_at", loaded)
         self.assertNotEqual(loaded["updated_at"], "old")
 
+    def test_expand_publication_citations_adds_edges_from_provider_results(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "doi": "10.1000/target",
+                    "unique_ids": {"DOI": "10.1000/target"},
+                }
+            ],
+            "citation_edges": [],
+            "statistics": {},
+        }
+        citation_result = {
+            "ok": True,
+            "data_provider": "Scopus",
+            "papers": [
+                {
+                    "paperId": "scopus-citing-001",
+                    "title": "Citing Paper",
+                    "year": 2025,
+                    "venue": "ACM MobiCom",
+                    "externalIds": {"DOI": "10.1000/citing"},
+                    "authors": ["Fellow A"],
+                    "source_url": "https://example.test/citing",
+                }
+            ],
+        }
+
+        with mock.patch.object(
+            self.pipeline.LIST_PAPERS,
+            "list_all_citations",
+            return_value=citation_result,
+        ) as list_all_citations:
+            expanded = self.pipeline.expand_publication_citations(
+                session,
+                limit_per_publication=10,
+            )
+
+        list_all_citations.assert_called_once_with("10.1000/target", limit=10)
+        self.assertEqual(len(expanded["citation_edges"]), 1)
+        edge = expanded["citation_edges"][0]
+        self.assertEqual(edge["source_publication_id"], "S001")
+        self.assertEqual(edge["citing_paper_id"], "scopus-citing-001")
+        self.assertEqual(edge["citing_title"], "Citing Paper")
+        self.assertEqual(edge["cited_publication_title"], "Target Paper")
+        self.assertEqual(edge["citing_doi"], "10.1000/citing")
+        self.assertEqual(edge["citing_year"], 2025)
+        self.assertEqual(edge["citing_venue"], "ACM MobiCom")
+        self.assertEqual(edge["citing_authors"], ["Fellow A"])
+        self.assertEqual(edge["provider"], "Scopus")
+        self.assertEqual(edge["source_url"], "https://example.test/citing")
+        self.assertEqual(expanded["statistics"]["citation_edge_count"], 1)
+
+    def test_expand_publication_citations_records_provider_errors_and_continues(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Broken Paper",
+                    "doi": "10.1000/broken",
+                    "unique_ids": {"DOI": "10.1000/broken"},
+                },
+                {
+                    "id": "S002",
+                    "title": "Recoverable Paper",
+                    "doi": "10.1000/recoverable",
+                    "unique_ids": {"DOI": "10.1000/recoverable"},
+                },
+            ],
+            "citation_edges": [],
+            "statistics": {},
+        }
+        citation_result = {
+            "ok": True,
+            "data_provider": "OpenAlex",
+            "papers": [
+                {
+                    "title": "Later Citing Paper",
+                    "year": 2026,
+                    "venue": "USENIX ATC",
+                    "externalIds": {"OpenAlex": "W123"},
+                    "authors": [{"name": "Fellow B"}],
+                    "source_url": "https://example.test/later-citing",
+                }
+            ],
+        }
+
+        with mock.patch.object(
+            self.pipeline.LIST_PAPERS,
+            "list_all_citations",
+            side_effect=[RuntimeError("boom"), citation_result],
+        ):
+            expanded = self.pipeline.expand_publication_citations(
+                session,
+                limit_per_publication=10,
+            )
+
+        self.assertEqual(len(expanded["citation_edges"]), 1)
+        edge = expanded["citation_edges"][0]
+        self.assertEqual(edge["source_publication_id"], "S002")
+        self.assertEqual(edge["citing_paper_id"], "W123")
+        self.assertEqual(expanded["statistics"]["citation_edge_count"], 1)
+        self.assertEqual(
+            expanded["citation_expansion_errors"],
+            [
+                {
+                    "source_publication_id": "S001",
+                    "query": "10.1000/broken",
+                    "error": "boom",
+                }
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

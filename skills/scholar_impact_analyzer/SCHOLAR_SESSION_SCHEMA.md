@@ -12,6 +12,8 @@ Scholar impact sessions are stored as UTF-8 JSON at
 - `selected_author`: resolved author identity.
 - `publications`: scholar publication records with stable local IDs.
 - `citation_edges`: citing-paper links for scholar publications.
+- `citation_expansion_errors`: per-publication citation provider failures from the
+  latest expansion run.
 - `statistics`: aggregate publication and citation statistics.
 - `deep_analysis_queue`: citing papers selected for later full-text analysis.
 - `task_state`: background task status.

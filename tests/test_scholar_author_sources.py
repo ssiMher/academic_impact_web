@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,6 +83,110 @@ class ScholarAuthorSourcesTestCase(unittest.TestCase):
                 "Nanjing University, China",
                 "State Key Laboratory for Novel Software Technology",
             ],
+        )
+
+    def test_normalize_dblp_publication(self):
+        entry = {
+            "info": {
+                "title": "Unison: A Parallel-Efficient and User-Transparent Network Simulation Kernel.",
+                "year": "2024",
+                "venue": "EuroSys",
+                "doi": "10.1145/3627703.3629574",
+                "authors": {
+                    "author": ["Songyuan Bai", "Hao Zheng", "Chen Tian", "A. Coauthor"]
+                },
+                "key": "conf/eurosys/BaiZTWLXXD024",
+            }
+        }
+
+        publication = self.sources.normalize_dblp_publication(
+            entry, selected_author_name="Chen Tian"
+        )
+
+        self.assertEqual(
+            publication["title"],
+            "Unison: A Parallel-Efficient and User-Transparent Network Simulation Kernel.",
+        )
+        self.assertEqual(publication["year"], 2024)
+        self.assertEqual(publication["venue"], "EuroSys")
+        self.assertEqual(publication["doi"], "10.1145/3627703.3629574")
+        self.assertEqual(
+            publication["authors"],
+            ["Songyuan Bai", "Hao Zheng", "Chen Tian", "A. Coauthor"],
+        )
+        self.assertEqual(publication["author_position"], "middle_author")
+        self.assertEqual(
+            publication["unique_ids"]["DBLP"], "conf/eurosys/BaiZTWLXXD024"
+        )
+
+    def test_author_position_identifies_multi_author_last_author(self):
+        position = self.sources.author_position(
+            ["Songyuan Bai", "Hao Zheng", "Chen Tian"], "Chen Tian"
+        )
+
+        self.assertEqual(position, "last_author")
+
+    def test_author_position_ignores_dblp_disambiguation_suffix(self):
+        self.assertEqual(
+            self.sources.author_position(
+                ["A. Coauthor", "Chen Tian 0001"], "Chen Tian"
+            ),
+            "last_author",
+        )
+        self.assertEqual(
+            self.sources.author_position(
+                ["A. Coauthor", "Chen Tian"], "Chen Tian 0001"
+            ),
+            "last_author",
+        )
+
+    def test_fetch_dblp_publications_parses_xml_publications(self):
+        class Response:
+            text = """<dblpperson>
+                <r>
+                    <inproceedings key="conf/eurosys/BaiZTWLXXD024">
+                        <author>Songyuan Bai</author>
+                        <author>Hao Zheng</author>
+                        <author>Chen Tian</author>
+                        <author>A. Coauthor</author>
+                        <title>Unison: A Parallel-Efficient and User-Transparent Network Simulation Kernel.</title>
+                        <year>2024</year>
+                        <booktitle>EuroSys</booktitle>
+                        <ee>https://doi.org/10.1145/3627703.3629574</ee>
+                    </inproceedings>
+                </r>
+            </dblpperson>"""
+
+            def raise_for_status(self):
+                pass
+
+        with patch.object(self.sources.requests, "get", return_value=Response()) as get:
+            publications = self.sources.fetch_dblp_publications(
+                "94/1247-1", "Chen Tian"
+            )
+
+        get.assert_called_once_with(
+            "https://dblp.org/pid/94/1247-1.xml", timeout=20
+        )
+        self.assertEqual(len(publications), 1)
+        publication = publications[0]
+        self.assertEqual(
+            publication["title"],
+            "Unison: A Parallel-Efficient and User-Transparent Network Simulation Kernel.",
+        )
+        self.assertEqual(publication["year"], 2024)
+        self.assertEqual(publication["venue"], "EuroSys")
+        self.assertEqual(publication["doi"], "10.1145/3627703.3629574")
+        self.assertEqual(
+            publication["authors"],
+            ["Songyuan Bai", "Hao Zheng", "Chen Tian", "A. Coauthor"],
+        )
+        self.assertEqual(publication["author_position"], "middle_author")
+        self.assertEqual(
+            publication["unique_ids"]["DBLP"], "conf/eurosys/BaiZTWLXXD024"
+        )
+        self.assertEqual(
+            publication["unique_ids"]["DOI"], "10.1145/3627703.3629574"
         )
 
 

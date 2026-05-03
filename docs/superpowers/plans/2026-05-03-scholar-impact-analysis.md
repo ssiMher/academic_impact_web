@@ -336,7 +336,7 @@ git commit -m "Add scholar author search foundations" \
 - Modify: `skills/scholar_impact_analyzer/author_sources.py`
 - Test: `tests/test_scholar_author_sources.py`
 
-- [ ] **Step 1: Add tests for DBLP publication normalization**
+- [x] **Step 1: Add tests for DBLP publication normalization**
 
 Append to `ScholarAuthorSourcesTestCase`:
 
@@ -348,7 +348,7 @@ Append to `ScholarAuthorSourcesTestCase`:
                 "year": "2024",
                 "venue": "EuroSys",
                 "doi": "10.1145/3627703.3629574",
-                "authors": {"author": ["Songyuan Bai", "Hao Zheng", "Chen Tian"]},
+                "authors": {"author": ["Songyuan Bai", "Hao Zheng", "Chen Tian", "A. Coauthor"]},
                 "key": "conf/eurosys/BaiZTWLXXD024"
             }
         }
@@ -359,12 +359,12 @@ Append to `ScholarAuthorSourcesTestCase`:
         self.assertEqual(paper["year"], 2024)
         self.assertEqual(paper["venue"], "EuroSys")
         self.assertEqual(paper["doi"], "10.1145/3627703.3629574")
-        self.assertEqual(paper["authors"], ["Songyuan Bai", "Hao Zheng", "Chen Tian"])
+        self.assertEqual(paper["authors"], ["Songyuan Bai", "Hao Zheng", "Chen Tian", "A. Coauthor"])
         self.assertEqual(paper["author_position"], "middle_author")
         self.assertEqual(paper["unique_ids"]["DBLP"], "conf/eurosys/BaiZTWLXXD024")
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -374,12 +374,19 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_author_sourc
 
 Expected: fails because `normalize_dblp_publication` is undefined.
 
-- [ ] **Step 3: Implement publication normalization and fetch**
+- [x] **Step 3: Implement publication normalization and fetch**
+
+Implementation note: DBLP's recommended stable person export API uses PID XML URLs such as
+`https://dblp.org/pid/65/9612.xml`; the original JSON sketch was replaced because live
+`/pid/<PID>.json` probes returned 404.
 
 Add to `author_sources.py`:
 
 ```python
-DBLP_AUTHOR_PUBS_URL = "https://dblp.org/pid/{dblp_id}.json"
+import xml.etree.ElementTree as ET
+
+
+DBLP_AUTHOR_PUBS_URL = "https://dblp.org/pid/{dblp_id}.xml"
 
 
 def normalize_author_list(authors: Any) -> list[str]:
@@ -442,18 +449,15 @@ def normalize_dblp_publication(entry: dict[str, Any], selected_author_name: str)
 def fetch_dblp_publications(dblp_id: str, selected_author_name: str) -> list[dict[str, Any]]:
     response = requests.get(DBLP_AUTHOR_PUBS_URL.format(dblp_id=dblp_id), timeout=20)
     response.raise_for_status()
-    payload = response.json()
-    publications = (((payload.get("result") or {}).get("hits") or {}).get("hit") or [])
-    if isinstance(publications, dict):
-        publications = [publications]
+    root = ET.fromstring(response.text)
+    publications = [list(record)[0] for record in root.findall("r") if list(record)]
     return [
         normalize_dblp_publication(item, selected_author_name=selected_author_name)
         for item in publications
-        if isinstance(item, dict)
     ]
 ```
 
-- [ ] **Step 4: Run test**
+- [x] **Step 4: Run test**
 
 Run:
 
@@ -463,7 +467,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_author_sourc
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/scholar_impact_analyzer/author_sources.py tests/test_scholar_author_sources.py

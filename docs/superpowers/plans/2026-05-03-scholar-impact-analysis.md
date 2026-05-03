@@ -168,7 +168,7 @@ data/scholar_sessions/{session_id}/session.json
 - Create: `skills/scholar_impact_analyzer/author_sources.py`
 - Test: `tests/test_scholar_author_sources.py`
 
-- [ ] **Step 1: Write tests for DBLP author candidate parsing**
+- [x] **Step 1: Write tests for DBLP author candidate parsing**
 
 Add `tests/test_scholar_author_sources.py`:
 
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -242,7 +242,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_author_sourc
 
 Expected: fails because `skills/scholar_impact_analyzer/author_sources.py` does not exist.
 
-- [ ] **Step 3: Implement DBLP author normalization and search skeleton**
+- [x] **Step 3: Implement DBLP author normalization and search skeleton**
 
 Create `skills/scholar_impact_analyzer/__init__.py` as an empty file.
 
@@ -305,7 +305,7 @@ def search_dblp_authors(name: str, limit: int = 10) -> list[dict[str, Any]]:
     return [normalize_dblp_author_hit(hit) for hit in hits if isinstance(hit, dict)]
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -315,7 +315,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_author_sourc
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/scholar_impact_analyzer/__init__.py skills/scholar_impact_analyzer/author_sources.py tests/test_scholar_author_sources.py

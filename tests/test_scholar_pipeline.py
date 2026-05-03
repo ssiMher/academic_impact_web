@@ -135,6 +135,46 @@ class ScholarPipelineTestCase(unittest.TestCase):
         self.assertEqual(edge["source_url"], "https://example.test/citing")
         self.assertEqual(expanded["statistics"]["citation_edge_count"], 1)
 
+    def test_expand_publication_citations_preserves_strong_evidence_count(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "doi": "10.1000/target",
+                    "unique_ids": {"DOI": "10.1000/target"},
+                }
+            ],
+            "citation_edges": [],
+            "statistics": {"strong_evidence_count": 7},
+        }
+        citation_result = {
+            "ok": True,
+            "data_provider": "Scopus",
+            "papers": [
+                {
+                    "paperId": "scopus-citing-001",
+                    "title": "Citing Paper",
+                    "year": 2025,
+                    "venue": "ACM MobiCom",
+                    "externalIds": {"DOI": "10.1000/citing"},
+                    "authors": ["Fellow A"],
+                }
+            ],
+        }
+
+        with mock.patch.object(
+            self.pipeline.LIST_PAPERS,
+            "list_all_citations",
+            return_value=citation_result,
+        ):
+            expanded = self.pipeline.expand_publication_citations(
+                session,
+                limit_per_publication=10,
+            )
+
+        self.assertEqual(expanded["statistics"]["strong_evidence_count"], 7)
+
     def test_expand_publication_citations_records_provider_errors_and_continues(self):
         session = {
             "publications": [

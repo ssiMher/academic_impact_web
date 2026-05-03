@@ -10,6 +10,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 AUTHOR_SOURCES_PATH = ROOT / "skills" / "scholar_impact_analyzer" / "author_sources.py"
 LIST_PAPERS_PATH = ROOT / "skills" / "list_all_citations" / "list_papers.py"
+SCHOLAR_STATS_PATH = ROOT / "skills" / "scholar_impact_analyzer" / "scholar_stats.py"
 
 
 def load_module(name: str, path: Path):
@@ -23,6 +24,7 @@ def load_module(name: str, path: Path):
 
 AUTHOR_SOURCES = load_module("scholar_author_sources", AUTHOR_SOURCES_PATH)
 LIST_PAPERS = load_module("scholar_list_papers", LIST_PAPERS_PATH)
+SCHOLAR_STATS = load_module("scholar_stats", SCHOLAR_STATS_PATH)
 
 
 def default_task_state() -> dict[str, Any]:
@@ -48,27 +50,7 @@ def assign_publication_ids(publications: list[dict[str, Any]]) -> list[dict[str,
 
 
 def build_initial_statistics(publications: list[dict[str, Any]]) -> dict[str, Any]:
-    top_publications = sorted(
-        publications,
-        key=lambda item: (
-            -(item.get("citation_count") or 0),
-            -(item.get("year") or 0),
-            item.get("title") or "",
-        ),
-    )[:10]
-    return {
-        "publication_count": len(publications),
-        "citation_edge_count": 0,
-        "total_citation_count": sum(
-            item.get("citation_count") or 0 for item in publications
-        ),
-        "publication_tiers": [],
-        "citing_venue_tiers": [],
-        "person_tag_statistics": [],
-        "yearly_citations": [],
-        "top_publications": top_publications,
-        "strong_evidence_count": 0,
-    }
+    return SCHOLAR_STATS.build_scholar_statistics(publications, [], [])
 
 
 def build_scholar_session(
@@ -196,8 +178,12 @@ def expand_publication_citations(
 
     session["citation_edges"] = list(existing.values())
     session["citation_expansion_errors"] = errors
-    session.setdefault("statistics", {})["citation_edge_count"] = len(
-        session["citation_edges"]
+    existing_statistics = session.get("statistics") or {}
+    session["statistics"] = SCHOLAR_STATS.build_scholar_statistics(
+        session.get("publications", []),
+        session.get("citation_edges", []),
+        session.get("person_candidates", []),
+        strong_evidence_count=existing_statistics.get("strong_evidence_count", 0),
     )
     return session
 

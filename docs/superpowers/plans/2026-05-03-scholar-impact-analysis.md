@@ -893,7 +893,7 @@ git commit -m "Expand scholar publications into citing papers" \
 - Modify: `skills/scholar_impact_analyzer/scholar_pipeline.py`
 - Test: `tests/test_scholar_stats.py`
 
-- [ ] **Step 1: Write tests for publication, citing venue, and person-tag stats**
+- [x] **Step 1: Write tests for publication, citing venue, and person-tag stats**
 
 Create `tests/test_scholar_stats.py`:
 
@@ -975,9 +975,13 @@ class ScholarStatsTestCase(unittest.TestCase):
         self.assertEqual(result["citation_edge_count"], 2)
         self.assertEqual(result["top_publications"][0]["title"], "Paper One")
         self.assertEqual(result["person_tag_statistics"][0]["tag_label"], "ACM Fellow")
+        self.assertEqual(result["strong_evidence_count"], 0)
+
+    def test_person_tag_statistics_omits_empty_groups(self):
+        self.assertEqual(self.stats.person_tag_statistics([]), [])
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -987,7 +991,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_stats -q
 
 Expected: fails because `scholar_stats.py` does not exist.
 
-- [ ] **Step 3: Implement statistics aggregation**
+- [x] **Step 3: Implement statistics aggregation**
 
 Create `skills/scholar_impact_analyzer/scholar_stats.py`:
 
@@ -1039,15 +1043,30 @@ def venue_distribution(items: list[dict[str, Any]], venue_key: str) -> list[dict
 
 def person_tag_statistics(person_candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
     labels = PERSON_CANDIDATES.TAG_LABELS
+    present_tag_types = {candidate.get("tag_type") or "" for candidate in person_candidates}
+    present_tag_types.discard("")
+    ordered_tag_types = [tag_type for tag_type in labels.keys() if tag_type in present_tag_types]
+    for candidate in person_candidates:
+        tag_type = candidate.get("tag_type") or ""
+        if tag_type and tag_type not in ordered_tag_types:
+            ordered_tag_types.append(tag_type)
+
     result = []
-    for tag_type, tag_label in labels.items():
+    for tag_type in ordered_tag_types:
         candidates = [item for item in person_candidates if item.get("tag_type") == tag_type]
+        matched_paper_ids = set()
+        for candidate in candidates:
+            matched_paper_ids.update(candidate.get("matched_paper_ids") or [])
         result.append({
             "tag_type": tag_type,
-            "tag_label": tag_label,
+            "tag_label": labels.get(tag_type, tag_type or "-"),
             "count": len(candidates),
             "confirmed_count": sum(1 for item in candidates if item.get("status") == "confirmed"),
             "pending_count": sum(1 for item in candidates if item.get("status") == "pending"),
+            "rejected_count": sum(1 for item in candidates if item.get("status") == "rejected"),
+            "source_complete_count": sum(1 for item in candidates if item.get("source_links")),
+            "matched_paper_count": len(matched_paper_ids),
+            "candidates": candidates[:5],
         })
     return result
 
@@ -1056,6 +1075,7 @@ def build_scholar_statistics(
     publications: list[dict[str, Any]],
     citation_edges: list[dict[str, Any]],
     person_candidates: list[dict[str, Any]],
+    strong_evidence_count: int = 0,
 ) -> dict[str, Any]:
     return {
         "publication_count": len(publications),
@@ -1073,10 +1093,11 @@ def build_scholar_statistics(
             publications,
             key=lambda item: (-(item.get("citation_count") or 0), -(item.get("year") or 0), item.get("title") or ""),
         )[:10],
+        "strong_evidence_count": strong_evidence_count,
     }
 ```
 
-- [ ] **Step 4: Wire stats into pipeline**
+- [x] **Step 4: Wire stats into pipeline**
 
 Modify `scholar_pipeline.py`:
 
@@ -1098,10 +1119,11 @@ session["statistics"] = SCHOLAR_STATS.build_scholar_statistics(
     session.get("publications", []),
     session.get("citation_edges", []),
     session.get("person_candidates", []),
+    strong_evidence_count=(session.get("statistics") or {}).get("strong_evidence_count", 0),
 )
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -1111,7 +1133,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_stats tests.
 
 Expected: `OK`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/scholar_impact_analyzer/scholar_stats.py skills/scholar_impact_analyzer/scholar_pipeline.py tests/test_scholar_stats.py tests/test_scholar_pipeline.py

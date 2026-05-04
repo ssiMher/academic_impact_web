@@ -179,12 +179,24 @@ def normalize_strong_evidence(
 def expand_publication_citations(
     session: dict[str, Any],
     limit_per_publication: int = 100,
+    progress_callback=None,
 ) -> dict[str, Any]:
     existing = {edge_key(edge): edge for edge in session.get("citation_edges", [])}
     errors = []
-    for publication in session.get("publications", []):
+    publications = session.get("publications", []) or []
+    total_count = len(publications)
+    for index, publication in enumerate(publications, 1):
         query = publication_query(publication)
         if not query:
+            if progress_callback:
+                progress_callback(
+                    {
+                        "processed_count": index,
+                        "total_count": total_count,
+                        "citation_edge_count": len(existing),
+                        "error_count": len(errors),
+                    }
+                )
             continue
 
         try:
@@ -200,12 +212,30 @@ def expand_publication_citations(
                     "error": str(exc),
                 }
             )
+            if progress_callback:
+                progress_callback(
+                    {
+                        "processed_count": index,
+                        "total_count": total_count,
+                        "citation_edge_count": len(existing),
+                        "error_count": len(errors),
+                    }
+                )
             continue
 
         provider = payload.get("data_provider") or "unknown"
         for citing_paper in payload.get("papers", []):
             edge = normalize_citation_edge(publication, citing_paper, provider)
             existing[edge_key(edge)] = edge
+        if progress_callback:
+            progress_callback(
+                {
+                    "processed_count": index,
+                    "total_count": total_count,
+                    "citation_edge_count": len(existing),
+                    "error_count": len(errors),
+                }
+            )
 
     session["citation_edges"] = list(existing.values())
     session["citation_expansion_errors"] = errors

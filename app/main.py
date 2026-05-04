@@ -126,6 +126,31 @@ def create_scholar(
     return RedirectResponse(url=f"/scholars/{session_id}", status_code=303)
 
 
+@app.post("/scholars/{session_id}/expand-citations")
+def expand_scholar_citations(
+    session_id: str,
+    limit_per_publication: int = Form(100),
+):
+    if limit_per_publication < 1 or limit_per_publication > 200:
+        raise HTTPException(status_code=400, detail="每篇论文最多引用数必须在 1 到 200 之间")
+    try:
+        scholar_core.start_expand_citations_task(
+            session_id,
+            limit_per_publication=limit_per_publication,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return RedirectResponse(url=f"/scholars/{session_id}", status_code=303)
+
+
+@app.get("/scholars/{session_id}/task-status")
+def scholar_task_status(session_id: str):
+    try:
+        return scholar_core.get_scholar_task_status(session_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @app.post("/sessions/{session_id}/refresh")
 async def refresh_session(request: Request, session_id: str):
     form = await request.form()

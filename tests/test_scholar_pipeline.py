@@ -235,6 +235,49 @@ class ScholarPipelineTestCase(unittest.TestCase):
             ],
         )
 
+    def test_expand_publication_citations_reports_progress(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "doi": "10.1000/target",
+                    "unique_ids": {"DOI": "10.1000/target"},
+                }
+            ],
+            "citation_edges": [],
+            "statistics": {},
+        }
+        citation_result = {
+            "ok": True,
+            "data_provider": "OpenAlex",
+            "papers": [
+                {
+                    "title": "Citing Paper",
+                    "year": 2025,
+                    "venue": "ACM MobiCom",
+                    "externalIds": {"OpenAlex": "W123"},
+                    "authors": [{"name": "Fellow B"}],
+                }
+            ],
+        }
+        progress_events = []
+
+        with mock.patch.object(
+            self.pipeline.LIST_PAPERS,
+            "list_all_citations",
+            return_value=citation_result,
+        ):
+            self.pipeline.expand_publication_citations(
+                session,
+                limit_per_publication=10,
+                progress_callback=progress_events.append,
+            )
+
+        self.assertEqual(progress_events[-1]["processed_count"], 1)
+        self.assertEqual(progress_events[-1]["total_count"], 1)
+        self.assertEqual(progress_events[-1]["citation_edge_count"], 1)
+
     def test_normalize_deep_analysis_finding_marks_long_positive_fellow_citation(self):
         edge = {
             "source_publication_id": "S001",

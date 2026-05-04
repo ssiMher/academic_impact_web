@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import time
 import unittest
 from unittest import mock
 
@@ -75,6 +76,56 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Chen Tian", response.text)
 
+    def test_scholar_route_renders_expansion_controls_and_queue(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [
+                        {
+                            "id": "S001",
+                            "title": "Paper One",
+                            "year": 2025,
+                            "venue": "ACM MobiCom",
+                            "unique_ids": {"DBLP": "conf/test/one"},
+                        }
+                    ],
+                    "citation_edges": [{"citing_title": "Citing Paper"}],
+                    "deep_analysis_queue": [
+                        {
+                            "citing_title": "Citing Paper",
+                            "citing_venue": "ACM MobiCom",
+                            "citing_year": 2026,
+                            "citing_authors": ["Alice Fellow"],
+                            "priority_score": 50,
+                            "reasons": ["person_tag:ACM Fellow"],
+                        }
+                    ],
+                    "statistics": {
+                        "publication_count": 1,
+                        "citation_edge_count": 1,
+                        "person_tag_statistics": [],
+                    },
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("展开引用论文", response.text)
+        self.assertIn("高价值引用队列", response.text)
+        self.assertIn("person_tag:ACM Fellow", response.text)
+        self.assertIn("CCF A", response.text)
+
     def test_create_scholar_session_from_author_payload(self):
         author = {
             "display_name": "Chen Tian",
@@ -144,6 +195,131 @@ class ScholarWebTestCase(unittest.TestCase):
 
         self.assertNotEqual(first, second)
         self.assertIn("_scholar_chen_tian", first)
+
+    def test_expand_scholar_citations_task_updates_session(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [{"id": "S001", "title": "Paper One"}],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [],
+                    "statistics": {"publication_count": 1},
+                    "task_state": scholar_core.default_task_state(),
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        class FakePipeline:
+            @staticmethod
+            def expand_publication_citations(session, limit_per_publication=100, progress_callback=None):
+                time.sleep(0.05)
+                session["citation_edges"] = [
+                    {
+                        "source_publication_id": "S001",
+                        "citing_title": "Citing Paper",
+                        "citing_venue": "ACM MobiCom",
+                    }
+                ]
+                session["deep_analysis_queue"] = [
+                    {"citing_title": "Citing Paper", "priority_score": 25, "reasons": ["venue:Top venue seed"]}
+                ]
+                session["statistics"] = {"publication_count": 1, "citation_edge_count": 1}
+                if progress_callback:
+                    progress_callback(
+                        {
+                            "processed_count": 1,
+                            "total_count": 1,
+                            "citation_edge_count": 1,
+                            "error_count": 0,
+                        }
+                    )
+                return session
+
+        with mock.patch.object(scholar_core, "_decorate_publication_venue_tiers"), \
+             mock.patch.object(scholar_core, "scholar_pipeline", return_value=FakePipeline()):
+            started, state = scholar_core.start_expand_citations_task(TEST_SESSION_ID, limit_per_publication=10)
+            self.assertTrue(started)
+            self.assertTrue(state["active"])
+            self.assertEqual(state["task_type"], "expand_citations")
+
+            started_again, duplicate_state = scholar_core.start_expand_citations_task(TEST_SESSION_ID, limit_per_publication=10)
+            self.assertFalse(started_again)
+            self.assertTrue(duplicate_state["active"])
+
+            deadline = time.time() + 2
+            final_status = None
+            while time.time() < deadline:
+                final_status = scholar_core.get_scholar_task_status(TEST_SESSION_ID)
+                if not final_status["task_state"]["active"]:
+                    break
+                time.sleep(0.05)
+
+        self.assertIsNotNone(final_status)
+        self.assertEqual(final_status["task_state"]["status"], "succeeded")
+        self.assertEqual(final_status["citation_edge_count"], 1)
+        payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
+        self.assertEqual(payload["deep_analysis_queue"][0]["citing_title"], "Citing Paper")
+
+    def test_expand_scholar_citations_route_redirects(self):
+        client = TestClient(app)
+        with mock.patch.object(scholar_core, "start_expand_citations_task", return_value=(True, {})) as start_task:
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/expand-citations",
+                data={"limit_per_publication": "12"},
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(response.headers["location"], f"/scholars/{TEST_SESSION_ID}")
+        start_task.assert_called_once_with(TEST_SESSION_ID, limit_per_publication=12)
+
+    def test_expand_scholar_citations_route_rejects_invalid_limit(self):
+        client = TestClient(app)
+        with mock.patch.object(scholar_core, "start_expand_citations_task") as start_task:
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/expand-citations",
+                data={"limit_per_publication": "1000"},
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 400)
+        start_task.assert_not_called()
+
+    def test_scholar_task_status_route_returns_counts(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [{"id": "S001", "title": "Paper One"}],
+                    "citation_edges": [{"citing_title": "Citing Paper"}],
+                    "deep_analysis_queue": [{"citing_title": "Citing Paper"}],
+                    "statistics": {"publication_count": 1, "citation_edge_count": 1},
+                    "task_state": scholar_core.default_task_state(),
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}/task-status")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["publication_count"], 1)
+        self.assertEqual(payload["citation_edge_count"], 1)
+        self.assertEqual(payload["deep_analysis_queue_count"], 1)
 
 
 if __name__ == "__main__":

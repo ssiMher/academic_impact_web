@@ -9,6 +9,11 @@
   <body>
     {% set author = payload.selected_author or {} %}
     {% set statistics = payload.statistics or {} %}
+    {% set task_state = payload.task_state or {} %}
+    {% set task_active = task_state.active %}
+    {% set expand_processed = task_state.processed_count or 0 %}
+    {% set expand_total = task_state.total_count or statistics.publication_count or 0 %}
+    {% set expand_percent = (expand_processed * 100 / expand_total) | round(0, 'floor') if expand_total else 0 %}
     <main class="page">
       <section class="panel">
         <p><a href="/">← 返回首页</a></p>
@@ -28,6 +33,39 @@
           <div class="stat"><span>总引用数</span><strong>{{ statistics.total_citation_count or 0 }}</strong></div>
           <div class="stat"><span>一作论文</span><strong>{{ statistics.first_author_publication_count or 0 }}</strong></div>
         </div>
+        {% if task_state %}
+        <div id="scholar-task-status" class="callout {% if task_active %}warning{% elif task_state.status == 'failed' %}warning{% else %}info{% endif %}">
+          <strong>后台任务状态</strong>
+          {% if task_active %}
+          <p id="scholar-task-status-message">正在展开引用网络。页面会自动检查任务状态，运行中不要重复点击。</p>
+          {% elif task_state.status == 'succeeded' %}
+          <p id="scholar-task-status-message">上一项后台任务已完成。{% if task_state.message %}{{ task_state.message }}{% endif %}</p>
+          {% elif task_state.status == 'failed' %}
+          <p id="scholar-task-status-message">上一项后台任务执行失败。{% if task_state.error %}{{ task_state.error }}{% endif %}</p>
+          {% else %}
+          <p id="scholar-task-status-message">当前没有后台任务正在运行，可以继续操作。</p>
+          {% endif %}
+          <div class="task-progress-grid" aria-label="学者会话进度">
+            <div class="progress-card">
+              <div class="progress-meta">
+                <span>引用展开</span>
+                <strong><span data-scholar-progress-value>{{ expand_percent }}</span>%</strong>
+              </div>
+              <div class="progress-track {% if task_active and task_state.task_type == 'expand_citations' %}is-active{% endif %}">
+                <span data-scholar-progress-bar style="width: {{ expand_percent }}%"></span>
+              </div>
+              <p class="muted"><span data-scholar-progress-count>{{ expand_processed }}</span> / <span data-scholar-progress-total>{{ expand_total }}</span> 篇论文已处理</p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        <form action="/scholars/{{ session_id }}/expand-citations" method="post" class="inline-actions">
+          <label>
+            每篇论文最多引用数
+            <input type="number" name="limit_per_publication" value="100" min="1" max="200" {% if task_active %}disabled{% endif %} data-scholar-task-control />
+          </label>
+          <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>展开引用论文</button>
+        </form>
       </section>
 
       <section class="panel">
@@ -91,6 +129,47 @@
         <div class="panel-header">
           <div>
             <p class="eyebrow">03</p>
+            <h2>高价值引用队列</h2>
+          </div>
+        </div>
+        {% if payload.deep_analysis_queue %}
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>优先级</th>
+                <th>原因</th>
+                <th>引用论文</th>
+                <th>年份</th>
+                <th>会议/期刊</th>
+                <th>引用作者</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for edge in payload.deep_analysis_queue[:20] %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ edge.priority_score }}</td>
+                <td>{{ (edge.reasons or []) | join(' / ') }}</td>
+                <td>{{ edge.citing_title or '-' }}</td>
+                <td>{{ edge.citing_year or '-' }}</td>
+                <td>{{ edge.citing_venue or '-' }}</td>
+                <td>{{ (edge.citing_authors or []) | join(', ') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="muted">展开引用网络后，这里会优先列出 Fellow 引用、顶会引用等适合深入全文分析的候选。</p>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">04</p>
             <h2>论文列表</h2>
           </div>
         </div>
@@ -137,5 +216,70 @@
         </details>
       </section>
     </main>
+    <script>
+      (() => {
+        const taskActive = {{ 'true' if task_active else 'false' }};
+        const controls = Array.from(document.querySelectorAll('[data-scholar-task-control]'));
+        const message = document.getElementById('scholar-task-status-message');
+        let reloadScheduled = false;
+
+        const setControlsDisabled = (disabled) => {
+          controls.forEach((control) => {
+            control.disabled = disabled;
+            if (disabled) {
+              control.title = '当前有后台任务运行中';
+            } else {
+              control.removeAttribute('title');
+            }
+          });
+        };
+
+        const setProgress = (processed, total) => {
+          const percent = total ? Math.floor((processed * 100) / total) : 0;
+          const value = document.querySelector('[data-scholar-progress-value]');
+          const bar = document.querySelector('[data-scholar-progress-bar]');
+          const count = document.querySelector('[data-scholar-progress-count]');
+          const totalNode = document.querySelector('[data-scholar-progress-total]');
+          if (value) value.textContent = String(percent);
+          if (bar) bar.style.width = `${percent}%`;
+          if (count) count.textContent = String(processed);
+          if (totalNode) totalNode.textContent = String(total);
+        };
+
+        const reloadOnce = () => {
+          if (reloadScheduled) return;
+          reloadScheduled = true;
+          setControlsDisabled(false);
+          if (message) message.textContent = '引用网络展开完成，正在刷新最新结果…';
+          window.setTimeout(() => window.location.reload(), 250);
+        };
+
+        const poll = async () => {
+          try {
+            const response = await fetch('/scholars/{{ session_id }}/task-status', { cache: 'no-store' });
+            if (!response.ok) return;
+            const payload = await response.json();
+            const taskState = payload.task_state || {};
+            const processed = Number(taskState.processed_count || 0);
+            const total = Number(taskState.total_count || payload.publication_count || 0);
+            setProgress(processed, total);
+            if (taskState.active && taskState.status === 'running') {
+              if (message) {
+                message.textContent = `${taskState.message || '正在展开引用网络'}。当前引用边：${payload.citation_edge_count || 0}，高价值队列：${payload.deep_analysis_queue_count || 0}。`;
+              }
+              return;
+            }
+            reloadOnce();
+          } catch (_err) {
+            // Ignore transient polling errors in the minimal first version.
+          }
+        };
+
+        if (taskActive) {
+          setControlsDisabled(true);
+          window.setInterval(poll, 3000);
+        }
+      })();
+    </script>
   </body>
 </html>

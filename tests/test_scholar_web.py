@@ -123,6 +123,8 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("展开引用论文", response.text)
         self.assertIn("高价值引用队列", response.text)
+        self.assertIn('name="queue_ids"', response.text)
+        self.assertIn("分析所选引用论文", response.text)
         self.assertIn("person_tag:ACM Fellow", response.text)
         self.assertIn("CCF A", response.text)
 
@@ -402,6 +404,47 @@ class ScholarWebTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 400)
         rebuild.assert_not_called()
+
+    def test_analyze_scholar_queue_route_redirects(self):
+        client = TestClient(app)
+        with mock.patch.object(
+            scholar_core,
+            "start_analyze_queue_task",
+            return_value=(True, {}),
+        ) as start_task:
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/analyze-queue",
+                data={
+                    "queue_ids": ["Q001", "Q002"],
+                    "top_k_spans": "8",
+                    "analysis_scope": "fulltext_direct",
+                },
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(
+            response.headers["location"],
+            f"/scholars/{TEST_SESSION_ID}",
+        )
+        start_task.assert_called_once_with(
+            TEST_SESSION_ID,
+            queue_ids=["Q001", "Q002"],
+            top_k_spans=8,
+            analysis_scope="fulltext_direct",
+        )
+
+    def test_analyze_scholar_queue_route_rejects_empty_selection(self):
+        client = TestClient(app)
+        with mock.patch.object(scholar_core, "start_analyze_queue_task") as start_task:
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/analyze-queue",
+                data={"top_k_spans": "8"},
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 400)
+        start_task.assert_not_called()
 
     def test_scholar_task_status_route_returns_counts(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

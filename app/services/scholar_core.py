@@ -71,6 +71,7 @@ def default_task_state() -> dict[str, Any]:
         "citation_edge_count": 0,
         "deep_analysis_queue_count": 0,
         "limit_per_publication": None,
+        "selected_queue_ids": [],
     }
 
 
@@ -146,6 +147,8 @@ def load_scholar_status(session_id: str) -> dict[str, Any]:
     session.setdefault("publications", [])
     session.setdefault("citation_edges", [])
     session.setdefault("deep_analysis_queue", [])
+    session.setdefault("strong_evidence", [])
+    session.setdefault("scholar_fulltext_results", [])
     session.setdefault("statistics", {})
     _decorate_publication_venue_tiers(session)
     return session
@@ -317,6 +320,79 @@ def rebuild_scholar_derived_outputs(
         )
         write_scholar_status(session_id, rebuilt)
         return rebuilt
+
+
+def analyze_scholar_queue(
+    session_id: str,
+    *,
+    queue_ids: list[str],
+    top_k_spans: int = 8,
+    analysis_scope: str = "fulltext_direct",
+) -> dict[str, Any]:
+    session = load_scholar_status(session_id)
+    session_dir = resolve_scholar_session_dir(session_id)
+    total = len(queue_ids)
+
+    def progress_callback(progress: dict[str, Any]) -> None:
+        update_task_state(
+            session_id,
+            processed_count=progress.get("processed_count", 0),
+            total_count=progress.get("total_count", total),
+            message=f"正在分析高价值引用 {progress.get('processed_count', 0)}/{progress.get('total_count', total)}",
+        )
+
+    analyzed = scholar_pipeline().analyze_scholar_queue(
+        session,
+        session_dir,
+        queue_ids=queue_ids,
+        top_k_spans=top_k_spans,
+        analysis_scope=analysis_scope,
+        progress_callback=progress_callback,
+    )
+    with _task_lock(session_id):
+        current = load_scholar_status(session_id)
+        analyzed["task_state"] = ensure_task_state(current)
+        write_scholar_status(session_id, analyzed)
+    return analyzed
+
+
+def start_analyze_queue_task(
+    session_id: str,
+    *,
+    queue_ids: list[str],
+    top_k_spans: int = 8,
+    analysis_scope: str = "fulltext_direct",
+) -> tuple[bool, dict[str, Any]]:
+    started, task_state = mark_task_running(
+        session_id,
+        "analyze_queue",
+        message="正在分析所选高价值引用论文…",
+    )
+    if not started:
+        return False, task_state
+    update_task_state(
+        session_id,
+        selected_queue_ids=queue_ids,
+        top_k_spans=top_k_spans,
+        total_count=len(queue_ids),
+    )
+
+    def worker():
+        analyze_scholar_queue(
+            session_id,
+            queue_ids=queue_ids,
+            top_k_spans=top_k_spans,
+            analysis_scope=analysis_scope,
+        )
+
+    thread = threading.Thread(
+        target=_run_background_task,
+        args=(session_id, "analyze_queue", worker),
+        kwargs={"success_message": "高价值引用分析完成"},
+        daemon=True,
+    )
+    thread.start()
+    return True, task_state
 
 
 def _run_background_task(session_id: str, task_type: str, worker, *, success_message: str) -> None:

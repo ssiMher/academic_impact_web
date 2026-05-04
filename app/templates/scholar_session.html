@@ -32,7 +32,7 @@
         <div class="stats stats-dense">
           <div class="stat"><span>论文数</span><strong>{{ statistics.publication_count or 0 }}</strong></div>
           <div class="stat"><span>引用边</span><strong>{{ statistics.citation_edge_count or 0 }}</strong></div>
-          <div class="stat"><span>总引用数</span><strong>{{ statistics.total_citation_count or 0 }}</strong></div>
+          <div class="stat"><span>高价值候选</span><strong>{{ queue.unfiltered_count or 0 }}</strong></div>
           <div class="stat"><span>一作论文</span><strong>{{ statistics.first_author_publication_count or 0 }}</strong></div>
         </div>
         {% if task_state %}
@@ -161,10 +161,20 @@
         <p class="muted">
           当前显示 {{ queue.total_count or 0 }} / {{ queue.unfiltered_count or 0 }} 篇高价值引用论文；同一引用论文命中多篇目标论文时会合并展示。
         </p>
+        <form action="/scholars/{{ session_id }}/analyze-queue" method="post">
+          <div class="inline-actions">
+            <label>
+              候选段落数
+              <input type="number" name="top_k_spans" value="8" min="1" max="20" {% if task_active %}disabled{% endif %} data-scholar-task-control />
+            </label>
+            <input type="hidden" name="analysis_scope" value="fulltext_direct" />
+            <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>分析所选引用论文</button>
+          </div>
         <div class="table-shell">
           <table>
             <thead>
               <tr>
+                <th>选择</th>
                 <th>#</th>
                 <th>优先级</th>
                 <th>原因</th>
@@ -178,6 +188,9 @@
             <tbody>
               {% for edge in queue["items"] or [] %}
               <tr>
+                <td>
+                  <input type="checkbox" name="queue_ids" value="{{ edge.queue_id }}" {% if not edge.queue_id or task_active %}disabled{% endif %} data-scholar-task-control />
+                </td>
                 <td>{{ (queue_pagination.start_index or 1) + loop.index0 }}</td>
                 <td>{{ edge.priority_score }}</td>
                 <td>{{ (edge.reasons or []) | join(' / ') }}</td>
@@ -194,12 +207,13 @@
               </tr>
               {% else %}
               <tr>
-                <td colspan="8">当前筛选条件下没有候选。</td>
+                <td colspan="9">当前筛选条件下没有候选。</td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
+        </form>
         {% if queue_pagination.total_pages and queue_pagination.total_pages > 1 %}
         <nav class="pager">
           {% if queue_pagination.has_previous %}

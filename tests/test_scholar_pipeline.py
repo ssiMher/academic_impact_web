@@ -298,6 +298,101 @@ class ScholarPipelineTestCase(unittest.TestCase):
             rebuilt["deep_analysis_queue"][0]["reasons"],
         )
 
+    def test_analyze_scholar_queue_records_strong_evidence_for_selected_items(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "year": 2024,
+                    "venue": "ACM MobiCom",
+                    "doi": "10.1000/target",
+                    "citation_count": 12,
+                }
+            ],
+            "citation_edges": [],
+            "person_candidates": [
+                {
+                    "name": "Alice Fellow",
+                    "tag_type": "acm_fellow",
+                    "tag_label": "ACM Fellow",
+                    "status": "pending",
+                }
+            ],
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q001",
+                    "source_publication_ids": ["S001"],
+                    "citing_paper_id": "C001",
+                    "citing_title": "Fellow Citing Paper",
+                    "citing_year": 2025,
+                    "citing_venue": "ACM MobiCom",
+                    "citing_doi": "10.1000/citing",
+                    "citing_authors": ["Alice Fellow"],
+                    "source_url": "https://example.test/citing",
+                },
+                {
+                    "queue_id": "Q002",
+                    "source_publication_ids": ["S001"],
+                    "citing_paper_id": "C002",
+                    "citing_title": "Unselected Paper",
+                    "citing_authors": ["Regular Author"],
+                },
+            ],
+            "statistics": {"strong_evidence_count": 0},
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            session_dir = Path(tmpdir)
+
+            def fake_process_citing_paper(**kwargs):
+                item_dir = kwargs["item_dir"]
+                item_dir.mkdir(parents=True, exist_ok=True)
+                analysis_path = item_dir / "fulltext_analysis.json"
+                analysis_path.write_text(
+                    json.dumps(
+                        {
+                            "ok": True,
+                            "findings": [
+                                {
+                                    "citation_text": "This influential work is important. " * 4,
+                                    "aspect": "method",
+                                    "stance": "positive",
+                                    "function": "引用者正向采用目标工作。",
+                                    "reason": "正文给出正向评价并采用。",
+                                    "confidence": 0.92,
+                                }
+                            ],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                return {
+                    "status": "fulltext_analyzed",
+                    "paths": {"analysis": str(analysis_path)},
+                    "analysis": {"findings_count": 1},
+                }
+
+            with mock.patch.object(
+                self.pipeline.RUN_PIPELINE,
+                "process_citing_paper",
+                side_effect=fake_process_citing_paper,
+            ) as process_citing_paper:
+                analyzed = self.pipeline.analyze_scholar_queue(
+                    session,
+                    session_dir,
+                    queue_ids=["Q001"],
+                    top_k_spans=8,
+                    analysis_scope="fulltext_direct",
+                )
+
+        process_citing_paper.assert_called_once()
+        self.assertEqual(len(analyzed["scholar_fulltext_results"]), 1)
+        self.assertEqual(analyzed["scholar_fulltext_results"][0]["queue_id"], "Q001")
+        self.assertEqual(len(analyzed["strong_evidence"]), 1)
+        self.assertTrue(analyzed["strong_evidence"][0]["fellow_strong_citation"])
+        self.assertEqual(analyzed["statistics"]["strong_evidence_count"], 1)
+
     def test_expand_publication_citations_records_provider_errors_and_continues(self):
         session = {
             "publications": [

@@ -178,6 +178,35 @@ def rebuild_scholar_derived_outputs(
     )
 
 
+@app.post("/scholars/{session_id}/analyze-queue")
+async def analyze_scholar_queue(
+    request: Request,
+    session_id: str,
+    top_k_spans: int = Form(8),
+    analysis_scope: str = Form("fulltext_direct"),
+):
+    form = await request.form()
+    queue_ids = [
+        str(item).strip()
+        for item in form.getlist("queue_ids")
+        if str(item).strip()
+    ]
+    if not queue_ids:
+        raise HTTPException(status_code=400, detail="请先选择要分析的高价值引用论文")
+    if top_k_spans < 1 or top_k_spans > 20:
+        raise HTTPException(status_code=400, detail="候选段落数必须在 1 到 20 之间")
+    try:
+        scholar_core.start_analyze_queue_task(
+            session_id,
+            queue_ids=queue_ids,
+            top_k_spans=top_k_spans,
+            analysis_scope=analysis_scope,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return RedirectResponse(url=f"/scholars/{session_id}", status_code=303)
+
+
 @app.get("/scholars/{session_id}/task-status")
 def scholar_task_status(session_id: str):
     try:

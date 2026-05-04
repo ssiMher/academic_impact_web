@@ -278,12 +278,14 @@ def build_deep_analysis_queue(
             item["cited_publication_titles"].append(cited_title)
         item["cited_publication_count"] = len(item["source_publication_ids"])
 
-    ranked = list(grouped.values())
-    return sorted(
-        ranked,
+    ranked = sorted(
+        list(grouped.values()),
         key=lambda item: (
             -(item["priority_score"]),
             -(item.get("cited_publication_count") or 0),
             item.get("citing_title") or "",
         ),
     )[:limit]
+    for index, item in enumerate(ranked, 1):
+        item["queue_id"] = f"Q{index:03d}"
+    return ranked

@@ -273,6 +273,7 @@ class ScholarStatsTestCase(unittest.TestCase):
         )
 
         self.assertEqual(len(queue), 1)
+        self.assertTrue(queue[0]["queue_id"].startswith("Q"))
         self.assertEqual(queue[0]["citing_title"], "Shared Citing Paper")
         self.assertEqual(queue[0]["cited_publication_count"], 2)
         self.assertEqual(queue[0]["source_publication_ids"], ["S001", "S002"])
@@ -311,6 +312,7 @@ class ScholarStatsTestCase(unittest.TestCase):
         )
 
         self.assertEqual(len(queue), 1)
+        self.assertTrue(queue[0]["queue_id"].startswith("Q"))
         self.assertEqual(queue[0]["cited_publication_count"], 2)
         self.assertEqual(queue[0]["source_publication_ids"], ["S001", "S002"])
 

@@ -1601,7 +1601,7 @@ git commit -m "Create scholar sessions from the web UI" \
 - Modify: `skills/scholar_impact_analyzer/scholar_pipeline.py`
 - Test: `tests/test_scholar_stats.py`
 
-- [ ] **Step 1: Add tests for queue ranking**
+- [x] **Step 1: Add tests for queue ranking**
 
 Append to `ScholarStatsTestCase`:
 
@@ -1638,7 +1638,7 @@ Append to `ScholarStatsTestCase`:
         self.assertTrue(any(item["citing_title"] == "Top Venue Citation" for item in queue))
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -1648,7 +1648,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_stats -q
 
 Expected: fails because `build_deep_analysis_queue` is undefined.
 
-- [ ] **Step 3: Implement queue ranking**
+- [x] **Step 3: Implement queue ranking**
 
 Add to `scholar_stats.py`:
 
@@ -1693,7 +1693,7 @@ def build_deep_analysis_queue(
     return sorted(ranked, key=lambda item: (-item["priority_score"], item.get("citing_title") or ""))[:limit]
 ```
 
-- [ ] **Step 4: Wire queue into pipeline**
+- [x] **Step 4: Wire queue into pipeline**
 
 In `scholar_pipeline.py`, after recomputing statistics:
 
@@ -1705,7 +1705,7 @@ session["deep_analysis_queue"] = SCHOLAR_STATS.build_deep_analysis_queue(
 )
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -1715,7 +1715,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_stats tests.
 
 Expected: `OK`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/scholar_impact_analyzer/scholar_stats.py skills/scholar_impact_analyzer/scholar_pipeline.py tests/test_scholar_stats.py

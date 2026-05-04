@@ -185,6 +185,11 @@ def expand_publication_citations(
         session.get("person_candidates", []),
         strong_evidence_count=existing_statistics.get("strong_evidence_count", 0),
     )
+    session["deep_analysis_queue"] = SCHOLAR_STATS.build_deep_analysis_queue(
+        session.get("citation_edges", []),
+        session.get("person_candidates", []),
+        limit=100,
+    )
     return session
 
 

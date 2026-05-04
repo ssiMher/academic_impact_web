@@ -134,3 +134,57 @@ def build_scholar_statistics(
         "top_publications": top_publications,
         "strong_evidence_count": strong_evidence_count,
     }
+
+
+def normalized_name(value: str) -> str:
+    return "".join(ch for ch in (value or "").lower() if ch.isalnum())
+
+
+def person_tag_by_author(person_candidates: list[dict[str, Any]]) -> dict[str, str]:
+    result = {}
+    for candidate in person_candidates:
+        if candidate.get("status") == "rejected":
+            continue
+        result[normalized_name(candidate.get("name") or "")] = (
+            candidate.get("tag_label") or candidate.get("tag_type") or ""
+        )
+    return result
+
+
+def build_deep_analysis_queue(
+    citation_edges: list[dict[str, Any]],
+    person_candidates: list[dict[str, Any]],
+    limit: int = 100,
+) -> list[dict[str, Any]]:
+    tag_map = person_tag_by_author(person_candidates)
+    tier_index = IMPACT_CLI.build_venue_tier_index()
+    ranked = []
+
+    for edge in citation_edges:
+        score = 0
+        reasons = []
+        for author in edge.get("citing_authors") or []:
+            label = tag_map.get(normalized_name(author))
+            if label:
+                score += 50
+                reasons.append(f"person_tag:{label}")
+
+        tier = IMPACT_CLI.classify_venue_tier(
+            edge.get("citing_venue") or "", tier_index
+        )
+        if tier.get("tier_label") in {"CCF A", "Top venue seed"}:
+            score += 25
+            reasons.append(f"venue:{tier.get('tier_label')}")
+
+        if score <= 0:
+            continue
+
+        item = dict(edge)
+        item["priority_score"] = score
+        item["reasons"] = reasons
+        ranked.append(item)
+
+    return sorted(
+        ranked,
+        key=lambda item: (-(item["priority_score"]), item.get("citing_title") or ""),
+    )[:limit]

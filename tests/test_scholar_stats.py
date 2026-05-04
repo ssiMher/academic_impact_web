@@ -148,6 +148,65 @@ class ScholarStatsTestCase(unittest.TestCase):
         self.assertEqual(group["matched_paper_count"], 7)
         self.assertEqual(len(group["candidates"]), 5)
 
+    def test_build_deep_analysis_queue_prioritizes_fellow_and_top_venue(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "citing_title": "Fellow Citation",
+                "citing_venue": "Unknown Venue",
+                "citing_authors": ["Alice Fellow"],
+            },
+            {
+                "source_publication_id": "S002",
+                "citing_title": "Top Venue Citation",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["Regular Author"],
+            },
+        ]
+        person_candidates = [
+            {
+                "name": "Alice Fellow",
+                "tag_type": "acm_fellow",
+                "tag_label": "ACM Fellow",
+                "matched_paper_ids": [],
+                "status": "pending",
+            }
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges, person_candidates, limit=10
+        )
+
+        self.assertEqual(queue[0]["citing_title"], "Fellow Citation")
+        self.assertIn("person_tag:ACM Fellow", queue[0]["reasons"])
+        self.assertTrue(
+            any(item["citing_title"] == "Top Venue Citation" for item in queue)
+        )
+
+    def test_build_deep_analysis_queue_ignores_rejected_person_tags(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "citing_title": "Rejected Fellow Citation",
+                "citing_venue": "Unknown Venue",
+                "citing_authors": ["Alice Fellow"],
+            }
+        ]
+        person_candidates = [
+            {
+                "name": "Alice Fellow",
+                "tag_type": "acm_fellow",
+                "tag_label": "ACM Fellow",
+                "status": "rejected",
+            }
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges, person_candidates, limit=10
+        )
+
+        self.assertEqual(queue, [])
+
 
 if __name__ == "__main__":
     unittest.main()

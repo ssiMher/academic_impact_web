@@ -239,6 +239,65 @@ class ScholarPipelineTestCase(unittest.TestCase):
 
         self.assertEqual(expanded["statistics"]["strong_evidence_count"], 7)
 
+    def test_rebuild_scholar_derived_outputs_uses_existing_edges_without_provider_calls(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "citation_count": 12,
+                }
+            ],
+            "citation_edges": [
+                {
+                    "source_publication_id": "S001",
+                    "cited_publication_title": "Target Paper",
+                    "citing_paper_id": "C001",
+                    "citing_title": "Top Venue Citation",
+                    "citing_year": 2025,
+                    "citing_venue": "ACM MobiCom",
+                    "citing_authors": ["Alice Fellow"],
+                }
+            ],
+            "person_candidates": [],
+            "deep_analysis_queue": [],
+            "statistics": {"strong_evidence_count": 3},
+        }
+        registry_entries = [
+            {
+                "name": "Alice Fellow",
+                "tag_type": "acm_fellow",
+                "tag_label": "ACM Fellow",
+                "aliases": [],
+                "source_links": ["https://example.test/alice"],
+                "matched_affiliations": [],
+                "note": "",
+            }
+        ]
+
+        with mock.patch.object(
+            self.pipeline.SCHOLAR_STATS.PERSON_CANDIDATES,
+            "load_registry",
+            return_value=registry_entries,
+        ), mock.patch.object(
+            self.pipeline.LIST_PAPERS,
+            "list_all_citations",
+        ) as list_all_citations:
+            rebuilt = self.pipeline.rebuild_scholar_derived_outputs(
+                session,
+                queue_limit=10,
+            )
+
+        list_all_citations.assert_not_called()
+        self.assertEqual(rebuilt["statistics"]["citation_edge_count"], 1)
+        self.assertEqual(rebuilt["statistics"]["strong_evidence_count"], 3)
+        self.assertEqual(rebuilt["person_candidates"][0]["name"], "Alice Fellow")
+        self.assertEqual(len(rebuilt["deep_analysis_queue"]), 1)
+        self.assertIn(
+            "person_tag:ACM Fellow",
+            rebuilt["deep_analysis_queue"][0]["reasons"],
+        )
+
     def test_expand_publication_citations_records_provider_errors_and_continues(self):
         session = {
             "publications": [

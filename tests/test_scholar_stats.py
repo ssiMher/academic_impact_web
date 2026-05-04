@@ -282,6 +282,38 @@ class ScholarStatsTestCase(unittest.TestCase):
         )
         self.assertEqual(queue[0]["reasons"], ["venue:CCF A"])
 
+    def test_build_deep_analysis_queue_groups_same_title_across_provider_ids(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "cited_publication_title": "Target One",
+                "citing_paper_id": "scopus-001",
+                "citing_title": "A General and Efficient Approach to Verifying Traffic Load Properties under Arbitrary Failures",
+                "citing_year": 2024,
+                "citing_venue": "ACM SIGCOMM 2024 Proceedings",
+                "citing_authors": ["Li R."],
+            },
+            {
+                "source_publication_id": "S002",
+                "cited_publication_title": "Target Two",
+                "citing_paper_id": "openalex-999",
+                "citing_title": "A general and efficient approach to verifying traffic-load properties under arbitrar y failures",
+                "citing_year": 2024,
+                "citing_venue": "ACM SIGCOMM 2024 Proceedings",
+                "citing_authors": ["Li R."],
+            },
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges,
+            person_candidates=[],
+            limit=10,
+        )
+
+        self.assertEqual(len(queue), 1)
+        self.assertEqual(queue[0]["cited_publication_count"], 2)
+        self.assertEqual(queue[0]["source_publication_ids"], ["S001", "S002"])
+
 
 if __name__ == "__main__":
     unittest.main()

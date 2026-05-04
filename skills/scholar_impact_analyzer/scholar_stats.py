@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -24,6 +25,17 @@ IMPACT_CLI = load_module("scholar_stats_impact_cli", IMPACT_CLI_PATH)
 PERSON_CANDIDATES = load_module(
     "scholar_stats_person_candidates", PERSON_CANDIDATES_PATH
 )
+
+
+def normalize_doi(value: str) -> str:
+    text = (value or "").strip().lower()
+    text = re.sub(r"^https?://(dx\.)?doi\.org/", "", text)
+    text = re.sub(r"^doi:\s*", "", text)
+    return text
+
+
+def normalize_title(value: str) -> str:
+    return re.sub(r"[^a-z0-9\u4e00-\u9fff]+", "", (value or "").lower())
 
 
 def venue_distribution(
@@ -171,6 +183,37 @@ def normalized_name(value: str) -> str:
     return "".join(ch for ch in (value or "").lower() if ch.isalnum())
 
 
+def citation_group_key(edge: dict[str, Any]) -> str:
+    doi = normalize_doi(edge.get("citing_doi") or "")
+    if doi:
+        return f"doi:{doi}"
+
+    title = normalize_title(edge.get("citing_title") or "")
+    if title:
+        authors = edge.get("citing_authors") or []
+        first_author = normalized_name(authors[0]) if authors else ""
+        return f"title:{title}|year:{edge.get('citing_year') or ''}|first:{first_author}"
+
+    return (
+        edge.get("citing_paper_id")
+        or edge.get("source_url")
+        or edge.get("citing_title")
+        or ""
+    )
+
+
+def reason_priority_score(reasons: list[str]) -> int:
+    score = 0
+    for reason in reasons:
+        if reason.startswith("person_tag:"):
+            score += 50
+        elif reason.startswith("venue:"):
+            score += 25
+        else:
+            score += 10
+    return score
+
+
 def person_tag_by_author(person_candidates: list[dict[str, Any]]) -> dict[str, str]:
     result = {}
     for candidate in person_candidates:
@@ -210,12 +253,7 @@ def build_deep_analysis_queue(
         if score <= 0:
             continue
 
-        key = (
-            edge.get("citing_paper_id")
-            or edge.get("citing_doi")
-            or edge.get("citing_title")
-            or ""
-        )
+        key = citation_group_key(edge)
         item = grouped.get(key)
         if item is None:
             item = dict(edge)
@@ -228,6 +266,10 @@ def build_deep_analysis_queue(
         for reason in reasons:
             if reason not in item["reasons"]:
                 item["reasons"].append(reason)
+        item["priority_score"] = max(
+            item.get("priority_score") or 0,
+            reason_priority_score(item["reasons"]),
+        )
         source_id = edge.get("source_publication_id")
         if source_id and source_id not in item["source_publication_ids"]:
             item["source_publication_ids"].append(source_id)

@@ -25,6 +25,7 @@ def load_module(name: str, path: Path):
 AUTHOR_SOURCES = load_module("scholar_author_sources", AUTHOR_SOURCES_PATH)
 LIST_PAPERS = load_module("scholar_list_papers", LIST_PAPERS_PATH)
 SCHOLAR_STATS = load_module("scholar_stats", SCHOLAR_STATS_PATH)
+DEFAULT_DEEP_ANALYSIS_QUEUE_LIMIT = 300
 
 
 def default_task_state() -> dict[str, Any]:
@@ -239,6 +240,16 @@ def expand_publication_citations(
 
     session["citation_edges"] = list(existing.values())
     session["citation_expansion_errors"] = errors
+    return rebuild_scholar_derived_outputs(
+        session,
+        queue_limit=DEFAULT_DEEP_ANALYSIS_QUEUE_LIMIT,
+    )
+
+
+def rebuild_scholar_derived_outputs(
+    session: dict[str, Any],
+    queue_limit: int = DEFAULT_DEEP_ANALYSIS_QUEUE_LIMIT,
+) -> dict[str, Any]:
     session["person_candidates"] = SCHOLAR_STATS.build_person_candidates_from_citation_edges(
         session.get("citation_edges", []),
         existing=session.get("person_candidates", []),
@@ -253,7 +264,7 @@ def expand_publication_citations(
     session["deep_analysis_queue"] = SCHOLAR_STATS.build_deep_analysis_queue(
         session.get("citation_edges", []),
         session.get("person_candidates", []),
-        limit=100,
+        limit=queue_limit,
     )
     return session
 

@@ -301,6 +301,24 @@ def expand_scholar_citations(session_id: str, *, limit_per_publication: int = 10
     return expanded
 
 
+def rebuild_scholar_derived_outputs(
+    session_id: str,
+    *,
+    queue_limit: int = 300,
+) -> dict[str, Any]:
+    with _task_lock(session_id):
+        session = load_scholar_status(session_id)
+        task_state = ensure_task_state(session)
+        if task_state.get("active"):
+            raise ValueError("当前后台任务仍在运行，暂时不能重建统计和队列。")
+        rebuilt = scholar_pipeline().rebuild_scholar_derived_outputs(
+            session,
+            queue_limit=queue_limit,
+        )
+        write_scholar_status(session_id, rebuilt)
+        return rebuilt
+
+
 def _run_background_task(session_id: str, task_type: str, worker, *, success_message: str) -> None:
     try:
         worker()

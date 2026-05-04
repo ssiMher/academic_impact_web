@@ -68,6 +68,13 @@
           </label>
           <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>展开引用论文</button>
         </form>
+        <form action="/scholars/{{ session_id }}/rebuild-derived" method="post" class="inline-actions">
+          <label>
+            高价值队列上限
+            <input type="number" name="queue_limit" value="300" min="1" max="1000" {% if task_active %}disabled{% endif %} data-scholar-task-control />
+          </label>
+          <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>重建统计和队列</button>
+        </form>
       </section>
 
       <section class="panel">

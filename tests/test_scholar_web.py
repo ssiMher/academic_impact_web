@@ -368,6 +368,41 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         start_task.assert_not_called()
 
+    def test_rebuild_scholar_derived_outputs_route_redirects(self):
+        client = TestClient(app)
+        with mock.patch.object(
+            scholar_core,
+            "rebuild_scholar_derived_outputs",
+            return_value={},
+        ) as rebuild:
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/rebuild-derived",
+                data={"queue_limit": "250"},
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(
+            response.headers["location"],
+            f"/scholars/{TEST_SESSION_ID}#deep-analysis-queue",
+        )
+        rebuild.assert_called_once_with(TEST_SESSION_ID, queue_limit=250)
+
+    def test_rebuild_scholar_derived_outputs_route_rejects_invalid_limit(self):
+        client = TestClient(app)
+        with mock.patch.object(
+            scholar_core,
+            "rebuild_scholar_derived_outputs",
+        ) as rebuild:
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/rebuild-derived",
+                data={"queue_limit": "5000"},
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 400)
+        rebuild.assert_not_called()
+
     def test_scholar_task_status_route_returns_counts(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
         (TEST_SESSION_DIR / "session.json").write_text(

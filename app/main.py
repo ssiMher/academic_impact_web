@@ -156,6 +156,28 @@ def expand_scholar_citations(
     return RedirectResponse(url=f"/scholars/{session_id}", status_code=303)
 
 
+@app.post("/scholars/{session_id}/rebuild-derived")
+def rebuild_scholar_derived_outputs(
+    session_id: str,
+    queue_limit: int = Form(300),
+):
+    if queue_limit < 1 or queue_limit > 1000:
+        raise HTTPException(status_code=400, detail="高价值队列上限必须在 1 到 1000 之间")
+    try:
+        scholar_core.rebuild_scholar_derived_outputs(
+            session_id,
+            queue_limit=queue_limit,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return RedirectResponse(
+        url=f"/scholars/{session_id}#deep-analysis-queue",
+        status_code=303,
+    )
+
+
 @app.get("/scholars/{session_id}/task-status")
 def scholar_task_status(session_id: str):
     try:

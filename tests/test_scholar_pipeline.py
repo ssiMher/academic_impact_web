@@ -135,6 +135,70 @@ class ScholarPipelineTestCase(unittest.TestCase):
         self.assertEqual(edge["source_url"], "https://example.test/citing")
         self.assertEqual(expanded["statistics"]["citation_edge_count"], 1)
 
+    def test_expand_publication_citations_builds_person_candidates_from_citing_authors(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "doi": "10.1000/target",
+                    "unique_ids": {"DOI": "10.1000/target"},
+                }
+            ],
+            "citation_edges": [],
+            "statistics": {},
+        }
+        citation_result = {
+            "ok": True,
+            "data_provider": "Scopus",
+            "papers": [
+                {
+                    "paperId": "scopus-citing-001",
+                    "title": "Fellow Citing Paper",
+                    "year": 2025,
+                    "venue": "ACM MobiCom",
+                    "externalIds": {"DOI": "10.1000/citing"},
+                    "authors": ["Alice Fellow"],
+                }
+            ],
+        }
+        registry_entries = [
+            {
+                "name": "Alice Fellow",
+                "tag_type": "acm_fellow",
+                "tag_label": "ACM Fellow",
+                "aliases": [],
+                "source_links": ["https://example.test/alice"],
+                "matched_affiliations": [],
+                "note": "",
+            }
+        ]
+
+        with mock.patch.object(
+            self.pipeline.LIST_PAPERS,
+            "list_all_citations",
+            return_value=citation_result,
+        ), mock.patch.object(
+            self.pipeline.SCHOLAR_STATS.PERSON_CANDIDATES,
+            "load_registry",
+            return_value=registry_entries,
+        ):
+            expanded = self.pipeline.expand_publication_citations(
+                session,
+                limit_per_publication=10,
+            )
+
+        self.assertEqual(len(expanded["person_candidates"]), 1)
+        self.assertEqual(expanded["person_candidates"][0]["name"], "Alice Fellow")
+        self.assertEqual(
+            expanded["statistics"]["person_tag_statistics"][0]["tag_label"],
+            "ACM Fellow",
+        )
+        self.assertIn(
+            "person_tag:ACM Fellow",
+            expanded["deep_analysis_queue"][0]["reasons"],
+        )
+
     def test_expand_publication_citations_preserves_strong_evidence_count(self):
         session = {
             "publications": [

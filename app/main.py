@@ -87,11 +87,23 @@ async def session_detail(
 
 
 @app.get("/scholars/{session_id}", response_class=HTMLResponse)
-async def scholar_detail(request: Request, session_id: str):
+async def scholar_detail(
+    request: Request,
+    session_id: str,
+    queue_reason: str = "",
+    queue_page: int = 1,
+    queue_page_size: int = 20,
+):
     try:
         payload = scholar_core.load_scholar_status(session_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    queue_view = scholar_core.build_deep_analysis_queue_view(
+        payload,
+        active_reason=queue_reason,
+        page=queue_page,
+        page_size=queue_page_size,
+    )
     return templates.TemplateResponse(
         request,
         "scholar_session.html",
@@ -99,6 +111,7 @@ async def scholar_detail(request: Request, session_id: str):
             "request": request,
             "session_id": session_id,
             "payload": payload,
+            "queue_view": queue_view,
             "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),
         },
     )

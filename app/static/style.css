@@ -163,6 +163,7 @@ button.ghost,
 
 .actions,
 .inline-controls,
+.inline-actions,
 .status-chips,
 .card-metrics,
 .pager,
@@ -175,6 +176,11 @@ button.ghost,
 
 .inline-controls {
   align-items: end;
+}
+
+.inline-actions {
+  align-items: end;
+  margin-top: 14px;
 }
 
 .stats {
@@ -358,6 +364,12 @@ tr:last-child td {
 .server-pager {
   justify-content: center;
   margin-top: 12px;
+}
+
+.pager .disabled,
+.server-pager .disabled {
+  color: var(--muted);
+  opacity: 0.6;
 }
 
 .evidence-block {

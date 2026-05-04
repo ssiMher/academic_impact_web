@@ -10,6 +10,8 @@
     {% set author = payload.selected_author or {} %}
     {% set statistics = payload.statistics or {} %}
     {% set task_state = payload.task_state or {} %}
+    {% set queue = queue_view or {} %}
+    {% set queue_pagination = queue.pagination or {} %}
     {% set task_active = task_state.active %}
     {% set expand_processed = task_state.processed_count or 0 %}
     {% set expand_total = task_state.total_count or statistics.publication_count or 0 %}
@@ -125,7 +127,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel" id="deep-analysis-queue">
         <div class="panel-header">
           <div>
             <p class="eyebrow">03</p>
@@ -133,6 +135,25 @@
           </div>
         </div>
         {% if payload.deep_analysis_queue %}
+        <form action="/scholars/{{ session_id }}#deep-analysis-queue" method="get" class="inline-actions">
+          <label>
+            筛选原因
+            <select name="queue_reason">
+              <option value="">全部原因</option>
+              {% for option in queue.reason_options or [] %}
+              <option value="{{ option.reason }}" {% if option.reason == queue.active_reason %}selected{% endif %}>{{ option.reason }} ({{ option.count }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            每页
+            <input type="number" name="queue_page_size" value="{{ queue_pagination.page_size or 20 }}" min="1" max="100" />
+          </label>
+          <button type="submit">筛选队列</button>
+        </form>
+        <p class="muted">
+          当前显示 {{ queue.total_count or 0 }} / {{ queue.unfiltered_count or 0 }} 篇高价值引用论文；同一引用论文命中多篇目标论文时会合并展示。
+        </p>
         <div class="table-shell">
           <table>
             <thead>
@@ -141,26 +162,52 @@
                 <th>优先级</th>
                 <th>原因</th>
                 <th>引用论文</th>
+                <th>命中目标论文</th>
                 <th>年份</th>
                 <th>会议/期刊</th>
                 <th>引用作者</th>
               </tr>
             </thead>
             <tbody>
-              {% for edge in payload.deep_analysis_queue[:20] %}
+              {% for edge in queue["items"] or [] %}
               <tr>
-                <td>{{ loop.index }}</td>
+                <td>{{ (queue_pagination.start_index or 1) + loop.index0 }}</td>
                 <td>{{ edge.priority_score }}</td>
                 <td>{{ (edge.reasons or []) | join(' / ') }}</td>
                 <td>{{ edge.citing_title or '-' }}</td>
+                <td>
+                  {{ edge.cited_publication_count or 1 }} 篇
+                  {% if edge.cited_publication_titles %}
+                  <br /><span class="muted">{{ (edge.cited_publication_titles or []) | join('；') }}</span>
+                  {% endif %}
+                </td>
                 <td>{{ edge.citing_year or '-' }}</td>
                 <td>{{ edge.citing_venue or '-' }}</td>
                 <td>{{ (edge.citing_authors or []) | join(', ') }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="8">当前筛选条件下没有候选。</td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
+        {% if queue_pagination.total_pages and queue_pagination.total_pages > 1 %}
+        <nav class="pager">
+          {% if queue_pagination.has_previous %}
+          <a href="{{ queue_pagination.previous_url }}">上一页</a>
+          {% else %}
+          <span class="disabled">上一页</span>
+          {% endif %}
+          <span>第 {{ queue_pagination.page }} / {{ queue_pagination.total_pages }} 页</span>
+          {% if queue_pagination.has_next %}
+          <a href="{{ queue_pagination.next_url }}">下一页</a>
+          {% else %}
+          <span class="disabled">下一页</span>
+          {% endif %}
+        </nav>
+        {% endif %}
         {% else %}
         <p class="muted">展开引用网络后，这里会优先列出 Fellow 引用、顶会引用等适合深入全文分析的候选。</p>
         {% endif %}

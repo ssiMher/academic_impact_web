@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -148,6 +150,43 @@ class ScholarStatsTestCase(unittest.TestCase):
         self.assertEqual(group["matched_paper_count"], 7)
         self.assertEqual(len(group["candidates"]), 5)
 
+    def test_build_person_candidates_from_citation_edges_uses_citing_authors(self):
+        citation_edges = [
+            {
+                "citing_paper_id": "C001",
+                "citing_title": "Fellow Citation",
+                "citing_authors": ["Alice Fellow", "Regular Author"],
+            },
+            {
+                "citing_paper_id": "C001",
+                "citing_title": "Fellow Citation",
+                "citing_authors": ["Alice Fellow"],
+            },
+        ]
+        registry = {
+            "items": [
+                {
+                    "name": "Alice Fellow",
+                    "tag_type": "acm_fellow",
+                    "source_links": ["https://example.test/alice"],
+                }
+            ]
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            registry_path = Path(tmpdir) / "registry.json"
+            registry_path.write_text(json.dumps(registry), encoding="utf-8")
+            candidates = self.stats.build_person_candidates_from_citation_edges(
+                citation_edges,
+                registry_path=str(registry_path),
+            )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["name"], "Alice Fellow")
+        self.assertEqual(candidates[0]["tag_label"], "ACM Fellow")
+        self.assertEqual(candidates[0]["matched_paper_ids"], ["C001"])
+        self.assertEqual(candidates[0]["matched_paper_titles"], ["Fellow Citation"])
+
     def test_build_deep_analysis_queue_prioritizes_fellow_and_top_venue(self):
         citation_edges = [
             {
@@ -206,6 +245,42 @@ class ScholarStatsTestCase(unittest.TestCase):
         )
 
         self.assertEqual(queue, [])
+
+    def test_build_deep_analysis_queue_groups_duplicate_citing_papers(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "cited_publication_title": "Target One",
+                "citing_paper_id": "C001",
+                "citing_title": "Shared Citing Paper",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["Regular Author"],
+            },
+            {
+                "source_publication_id": "S002",
+                "cited_publication_title": "Target Two",
+                "citing_paper_id": "C001",
+                "citing_title": "Shared Citing Paper",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["Regular Author"],
+            },
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges,
+            person_candidates=[],
+            limit=10,
+        )
+
+        self.assertEqual(len(queue), 1)
+        self.assertEqual(queue[0]["citing_title"], "Shared Citing Paper")
+        self.assertEqual(queue[0]["cited_publication_count"], 2)
+        self.assertEqual(queue[0]["source_publication_ids"], ["S001", "S002"])
+        self.assertEqual(
+            queue[0]["cited_publication_titles"],
+            ["Target One", "Target Two"],
+        )
+        self.assertEqual(queue[0]["reasons"], ["venue:CCF A"])
 
 
 if __name__ == "__main__":

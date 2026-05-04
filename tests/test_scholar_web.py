@@ -126,6 +126,82 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("person_tag:ACM Fellow", response.text)
         self.assertIn("CCF A", response.text)
 
+    def test_scholar_route_filters_high_value_queue_by_reason(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "citing_title": "Venue Citing Paper",
+                            "citing_venue": "ACM MobiCom",
+                            "citing_authors": ["Regular Author"],
+                            "priority_score": 25,
+                            "reasons": ["venue:CCF A"],
+                        },
+                        {
+                            "citing_title": "Fellow Citing Paper",
+                            "citing_venue": "Unknown Venue",
+                            "citing_authors": ["Alice Fellow"],
+                            "priority_score": 50,
+                            "reasons": ["person_tag:ACM Fellow"],
+                        },
+                    ],
+                    "statistics": {
+                        "publication_count": 0,
+                        "citation_edge_count": 0,
+                        "person_tag_statistics": [],
+                    },
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(
+            f"/scholars/{TEST_SESSION_ID}",
+            params={
+                "queue_reason": "person_tag:ACM Fellow",
+                "queue_page_size": "1",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Fellow Citing Paper", response.text)
+        self.assertNotIn("Venue Citing Paper</td>", response.text)
+        self.assertIn("当前显示 1 / 2 篇高价值引用论文", response.text)
+
+    def test_build_deep_analysis_queue_view_paginates(self):
+        session = {
+            "deep_analysis_queue": [
+                {
+                    "citing_title": f"Citing {index}",
+                    "reasons": ["venue:CCF A"],
+                }
+                for index in range(3)
+            ]
+        }
+
+        view = scholar_core.build_deep_analysis_queue_view(
+            session,
+            page=2,
+            page_size=2,
+        )
+
+        self.assertEqual(view["total_count"], 3)
+        self.assertEqual(view["items"][0]["citing_title"], "Citing 2")
+        self.assertEqual(view["pagination"]["page"], 2)
+        self.assertFalse(view["pagination"]["has_next"])
+        self.assertTrue(view["pagination"]["has_previous"])
+
     def test_create_scholar_session_from_author_payload(self):
         author = {
             "display_name": "Chen Tian",

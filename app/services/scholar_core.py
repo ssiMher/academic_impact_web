@@ -9,6 +9,7 @@ from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode
 from uuid import uuid4
 
 
@@ -148,6 +149,65 @@ def load_scholar_status(session_id: str) -> dict[str, Any]:
     session.setdefault("statistics", {})
     _decorate_publication_venue_tiers(session)
     return session
+
+
+def build_deep_analysis_queue_view(
+    session: dict[str, Any],
+    *,
+    active_reason: str = "",
+    page: int = 1,
+    page_size: int = 20,
+) -> dict[str, Any]:
+    queue = session.get("deep_analysis_queue", []) or []
+    reason_counts: dict[str, int] = {}
+    for item in queue:
+        for reason in item.get("reasons") or []:
+            reason_counts[reason] = reason_counts.get(reason, 0) + 1
+
+    filtered = queue
+    if active_reason:
+        filtered = [
+            item for item in queue if active_reason in (item.get("reasons") or [])
+        ]
+
+    page_size = min(max(page_size, 1), 100)
+    total_count = len(filtered)
+    total_pages = max((total_count + page_size - 1) // page_size, 1)
+    page = min(max(page, 1), total_pages)
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    def page_url(target_page: int) -> str:
+        query = {
+            "queue_page": target_page,
+            "queue_page_size": page_size,
+        }
+        if active_reason:
+            query["queue_reason"] = active_reason
+        return f"?{urlencode(query)}#deep-analysis-queue"
+
+    return {
+        "items": filtered[start:end],
+        "total_count": total_count,
+        "unfiltered_count": len(queue),
+        "active_reason": active_reason,
+        "reason_options": [
+            {"reason": reason, "count": count}
+            for reason, count in sorted(
+                reason_counts.items(), key=lambda pair: (-pair[1], pair[0])
+            )
+        ],
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "has_previous": page > 1,
+            "has_next": page < total_pages,
+            "previous_url": page_url(page - 1) if page > 1 else "",
+            "next_url": page_url(page + 1) if page < total_pages else "",
+            "start_index": start + 1 if total_count else 0,
+        },
+    }
 
 
 def update_task_state(session_id: str, **updates) -> dict[str, Any]:

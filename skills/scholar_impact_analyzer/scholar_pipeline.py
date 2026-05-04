@@ -239,6 +239,10 @@ def expand_publication_citations(
 
     session["citation_edges"] = list(existing.values())
     session["citation_expansion_errors"] = errors
+    session["person_candidates"] = SCHOLAR_STATS.build_person_candidates_from_citation_edges(
+        session.get("citation_edges", []),
+        existing=session.get("person_candidates", []),
+    )
     existing_statistics = session.get("statistics") or {}
     session["statistics"] = SCHOLAR_STATS.build_scholar_statistics(
         session.get("publications", []),

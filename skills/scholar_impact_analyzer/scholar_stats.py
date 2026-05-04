@@ -97,6 +97,37 @@ def person_tag_statistics(
     return result
 
 
+def build_person_candidates_from_citation_edges(
+    citation_edges: list[dict[str, Any]],
+    existing: list[dict[str, Any]] | None = None,
+    registry_path: str | None = None,
+) -> list[dict[str, Any]]:
+    papers = []
+    seen_ids = set()
+    for index, edge in enumerate(citation_edges, 1):
+        paper_id = (
+            edge.get("citing_paper_id")
+            or edge.get("citing_doi")
+            or edge.get("citing_title")
+            or f"C{index:06d}"
+        )
+        if paper_id in seen_ids:
+            continue
+        seen_ids.add(paper_id)
+        papers.append(
+            {
+                "id": paper_id,
+                "title": edge.get("citing_title") or "",
+                "authors": edge.get("citing_authors") or [],
+            }
+        )
+    return PERSON_CANDIDATES.build_candidates(
+        papers,
+        existing=existing,
+        registry_path=registry_path,
+    )
+
+
 def build_scholar_statistics(
     publications: list[dict[str, Any]],
     citation_edges: list[dict[str, Any]],
@@ -158,7 +189,7 @@ def build_deep_analysis_queue(
 ) -> list[dict[str, Any]]:
     tag_map = person_tag_by_author(person_candidates)
     tier_index = IMPACT_CLI.build_venue_tier_index()
-    ranked = []
+    grouped: dict[str, dict[str, Any]] = {}
 
     for edge in citation_edges:
         score = 0
@@ -179,12 +210,38 @@ def build_deep_analysis_queue(
         if score <= 0:
             continue
 
-        item = dict(edge)
-        item["priority_score"] = score
-        item["reasons"] = reasons
-        ranked.append(item)
+        key = (
+            edge.get("citing_paper_id")
+            or edge.get("citing_doi")
+            or edge.get("citing_title")
+            or ""
+        )
+        item = grouped.get(key)
+        if item is None:
+            item = dict(edge)
+            item["priority_score"] = score
+            item["reasons"] = []
+            item["source_publication_ids"] = []
+            item["cited_publication_titles"] = []
+            grouped[key] = item
+        item["priority_score"] = max(item.get("priority_score") or 0, score)
+        for reason in reasons:
+            if reason not in item["reasons"]:
+                item["reasons"].append(reason)
+        source_id = edge.get("source_publication_id")
+        if source_id and source_id not in item["source_publication_ids"]:
+            item["source_publication_ids"].append(source_id)
+        cited_title = edge.get("cited_publication_title")
+        if cited_title and cited_title not in item["cited_publication_titles"]:
+            item["cited_publication_titles"].append(cited_title)
+        item["cited_publication_count"] = len(item["source_publication_ids"])
 
+    ranked = list(grouped.values())
     return sorted(
         ranked,
-        key=lambda item: (-(item["priority_score"]), item.get("citing_title") or ""),
+        key=lambda item: (
+            -(item["priority_score"]),
+            -(item.get("cited_publication_count") or 0),
+            item.get("citing_title") or "",
+        ),
     )[:limit]

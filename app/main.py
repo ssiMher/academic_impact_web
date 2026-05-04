@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.services import impact_core
+from app.services import impact_core, scholar_core
 
 
 app = FastAPI(title="Academic Impact Web")
@@ -82,6 +82,24 @@ async def session_detail(
             "detail_payload": detail_payload,
             "status_json": json.dumps(status_payload, ensure_ascii=False, indent=2),
             "report_md": report_md,
+        },
+    )
+
+
+@app.get("/scholars/{session_id}", response_class=HTMLResponse)
+async def scholar_detail(request: Request, session_id: str):
+    try:
+        payload = scholar_core.load_scholar_status(session_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return templates.TemplateResponse(
+        request,
+        "scholar_session.html",
+        {
+            "request": request,
+            "session_id": session_id,
+            "payload": payload,
+            "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),
         },
     )
 

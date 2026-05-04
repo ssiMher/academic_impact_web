@@ -1157,7 +1157,7 @@ git commit -m "Aggregate scholar-level impact statistics" \
 - Modify: `app/templates/index.html`
 - Test: `tests/test_scholar_web.py`
 
-- [ ] **Step 1: Write service tests**
+- [x] **Step 1: Write service tests**
 
 Create `tests/test_scholar_web.py`:
 
@@ -1239,7 +1239,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -1249,7 +1249,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_web -q
 
 Expected: fails because `app.services.scholar_core` and `/scholars/{session_id}` do not exist.
 
-- [ ] **Step 3: Implement service layer**
+- [x] **Step 3: Implement service layer**
 
 Create `app/services/scholar_core.py`:
 
@@ -1295,7 +1295,7 @@ def load_scholar_status(session_id: str) -> dict[str, Any]:
     return json.loads(session_path.read_text(encoding="utf-8"))
 ```
 
-- [ ] **Step 4: Add FastAPI route**
+- [x] **Step 4: Add FastAPI route**
 
 Modify `app/main.py`:
 
@@ -1321,7 +1321,7 @@ async def scholar_detail(request: Request, session_id: str):
     )
 ```
 
-- [ ] **Step 5: Create scholar template**
+- [x] **Step 5: Create scholar template**
 
 Create `app/templates/scholar_session.html`:
 
@@ -1413,7 +1413,7 @@ Create `app/templates/scholar_session.html`:
 </html>
 ```
 
-- [ ] **Step 6: Run test**
+- [x] **Step 6: Run test**
 
 Run:
 
@@ -1423,7 +1423,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_web -q
 
 Expected: `OK`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add app/services/scholar_core.py app/main.py app/templates/scholar_session.html tests/test_scholar_web.py

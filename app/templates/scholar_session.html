@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ payload.selected_author.display_name }} · 学者影响力分析</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    {% set author = payload.selected_author or {} %}
+    {% set statistics = payload.statistics or {} %}
+    <main class="page">
+      <section class="panel">
+        <p><a href="/">← 返回首页</a></p>
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Scholar Impact</p>
+            <h1>{{ author.display_name or payload.query or session_id }}</h1>
+            {% if author.affiliations %}
+            <p class="muted">{{ author.affiliations | join(' / ') }}</p>
+            {% endif %}
+            <p class="muted">学者会话：{{ session_id }}</p>
+          </div>
+        </div>
+        <div class="stats stats-dense">
+          <div class="stat"><span>论文数</span><strong>{{ statistics.publication_count or 0 }}</strong></div>
+          <div class="stat"><span>引用边</span><strong>{{ statistics.citation_edge_count or 0 }}</strong></div>
+          <div class="stat"><span>总引用数</span><strong>{{ statistics.total_citation_count or 0 }}</strong></div>
+          <div class="stat"><span>一作论文</span><strong>{{ statistics.first_author_publication_count or 0 }}</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">01</p>
+            <h2>论文统计</h2>
+          </div>
+        </div>
+        <div class="status-chips">
+          {% for group in statistics.publication_tiers or [] %}
+          <span class="chip">{{ group.tier_label or "未分级" }}: {{ group.count }}</span>
+          {% else %}
+          <span class="chip">暂无分级统计</span>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">02</p>
+            <h2>人物标签统计</h2>
+          </div>
+        </div>
+        <div class="status-chips">
+          {% for group in statistics.person_tag_statistics or [] %}
+          <span class="chip">{{ group.tag_label or group.tag_type }}: {{ group.count }}</span>
+          {% else %}
+          <span class="chip">暂无人物标签命中</span>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">03</p>
+            <h2>论文列表</h2>
+          </div>
+        </div>
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>等级</th>
+                <th>年份</th>
+                <th>会议/期刊</th>
+                <th>标题</th>
+                <th>作者位置</th>
+                <th>引用</th>
+                <th>DOI / Unique ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for paper in payload.publications or [] %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ paper.venue_tier.tier_label if paper.venue_tier else "-" }}</td>
+                <td>{{ paper.year or "-" }}</td>
+                <td>{{ paper.venue or "-" }}</td>
+                <td>{{ paper.title or "-" }}</td>
+                <td>{{ paper.author_position or "-" }}</td>
+                <td>{{ paper.citation_count or 0 }}</td>
+                <td>{{ paper.doi or paper.unique_ids.DBLP or paper.unique_ids.OpenAlex or paper.unique_ids.Scopus or "-" }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="8">暂无论文记录。</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>调试：原始 JSON</summary>
+          <pre>{{ payload_json }}</pre>
+        </details>
+      </section>
+    </main>
+  </body>
+</html>

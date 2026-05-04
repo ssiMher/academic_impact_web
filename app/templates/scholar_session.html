@@ -16,6 +16,7 @@
     {% set expand_processed = task_state.processed_count or 0 %}
     {% set expand_total = task_state.total_count or statistics.publication_count or 0 %}
     {% set expand_percent = (expand_processed * 100 / expand_total) | round(0, 'floor') if expand_total else 0 %}
+    {% set analysis = analysis_summary or {} %}
     <main class="page">
       <section class="panel">
         <p><a href="/">← 返回首页</a></p>
@@ -91,8 +92,25 @@
               <span class="chip">字数：{{ evidence.citation_char_count }}</span>
               <span class="chip">Fellow 强引用：{{ '是' if evidence.fellow_strong_citation else '否' }}</span>
               <span class="chip">正向评价：{{ '是' if evidence.positive_evaluation else '否' }}</span>
+              <span class="chip">页码：{{ evidence.page or '-' }}</span>
+              <span class="chip">段落：{{ evidence.span_index or '-' }}</span>
+              <span class="chip">态度：{{ evidence.stance or '-' }}</span>
+              <span class="chip">类型：{{ evidence.mention_type or '-' }}</span>
+              <span class="chip">置信度：{{ evidence.confidence if evidence.confidence is not none else '-' }}</span>
             </div>
+            {% if evidence.cited_publication_title %}
+            <p class="muted">命中目标：{{ evidence.cited_publication_title }}</p>
+            {% endif %}
+            {% if evidence.citing_authors %}
+            <p class="muted">引用作者：{{ (evidence.citing_authors or []) | join(', ') }}</p>
+            {% endif %}
+            {% if evidence.person_tag_labels %}
+            <p class="muted">人物标签：{{ (evidence.person_tag_labels or []) | join(' / ') }}</p>
+            {% endif %}
             <p>{{ evidence.function }}</p>
+            {% if evidence.reason %}
+            <p><strong>判断理由：</strong>{{ evidence.reason }}</p>
+            {% endif %}
             <p class="evidence-excerpt">{{ evidence.citation_text }}</p>
           </article>
           {% endfor %}
@@ -101,6 +119,91 @@
         <p class="muted">当前还没有完成全文语义分析的强引用证据。</p>
         {% endif %}
       </section>
+
+      {% if analysis.target_summaries %}
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>目标论文影响力摘要</h2>
+            <p class="muted">按已完成全文语义分析的强引用证据聚合，帮助快速定位学者最有支撑的代表论文。</p>
+          </div>
+        </div>
+        <div class="cards">
+          {% for item in analysis.target_summaries %}
+          <article class="card">
+            <div class="card-header">
+              <strong>{{ item.title }}</strong>
+              <span class="chip">强引用：{{ item.evidence_count }}</span>
+            </div>
+            <div class="card-metrics">
+              <span class="chip">引用论文：{{ (item.citing_titles or []) | length }}</span>
+              <span class="chip">Fellow 强引用：{{ item.fellow_strong_count }}</span>
+              <span class="chip">正向评价：{{ item.positive_count }}</span>
+              <span class="chip">长引用：{{ item.long_context_count }}</span>
+              {% if item.aspects %}<span class="chip">{{ (item.aspects or []) | join(' / ') }}</span>{% endif %}
+            </div>
+            {% if item.citing_titles %}
+            <p class="muted">引用论文：{{ (item.citing_titles or []) | join('；') }}</p>
+            {% endif %}
+            {% if item.example_text %}
+            <p class="evidence-excerpt">{{ item.example_text }}</p>
+            {% endif %}
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      {% if analysis.result_count %}
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>全文分析状态</h2>
+            <p class="muted">
+              已分析 {{ analysis.result_count }} 个目标-引用组合；强引用证据 {{ analysis.strong_evidence_count or 0 }} 条；失败/待补全文：{{ analysis.failure_count or 0 }}。
+            </p>
+          </div>
+        </div>
+        <div class="status-chips">
+          {% for item in analysis.status_counts or [] %}
+          <span class="chip">{{ item.status }}: {{ item.count }}</span>
+          {% endfor %}
+        </div>
+        {% if analysis.failure_items %}
+        <div class="analysis-failure-list">
+          {% for item in analysis.failure_items %}
+          <article class="failure-item">
+            <div class="card-header">
+              <strong>{{ item.citing_title or item.queue_id or '未知引用论文' }}</strong>
+              <span class="chip">{{ item.status }}</span>
+            </div>
+            <p class="muted">命中目标：{{ item.cited_publication_title or '-' }}</p>
+            <p>{{ item.message }}</p>
+            <div class="card-metrics">
+              {% if item.error_type %}<span class="chip">错误：{{ item.error_type }}</span>{% endif %}
+              {% if item.error_detail_type %}<span class="chip">细节：{{ item.error_detail_type }}</span>{% endif %}
+              {% if item.download_source %}<span class="chip">下载源：{{ item.download_source }}</span>{% endif %}
+              {% if item.queue_id %}<span class="chip">队列：{{ item.queue_id }}</span>{% endif %}
+            </div>
+            {% if item.download_error %}
+            <p class="muted">下载信息：{{ item.download_error }}</p>
+            {% endif %}
+          </article>
+          {% endfor %}
+        </div>
+        {% if analysis.retry_queue_ids %}
+        <form action="/scholars/{{ session_id }}/analyze-queue" method="post" class="inline-actions">
+          <input type="hidden" name="top_k_spans" value="8" />
+          <input type="hidden" name="analysis_scope" value="fulltext_direct" />
+          {% for queue_id in analysis.retry_queue_ids %}
+          <input type="hidden" name="queue_ids" value="{{ queue_id }}" />
+          {% endfor %}
+          <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>重试失败项</button>
+        </form>
+        {% endif %}
+        {% endif %}
+      </section>
+      {% endif %}
 
       <section class="panel">
         <div class="panel-header">

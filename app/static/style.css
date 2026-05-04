@@ -234,11 +234,24 @@ button.ghost,
   gap: 14px;
 }
 
+.analysis-failure-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
 .card {
   padding: 16px;
   border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--line);
+}
+
+.failure-item {
+  padding: 14px;
+  border-radius: 8px;
+  background: #fffaf1;
+  border: 1px solid #ead17e;
 }
 
 .card-header {

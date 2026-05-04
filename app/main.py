@@ -104,6 +104,7 @@ async def scholar_detail(
         page=queue_page,
         page_size=queue_page_size,
     )
+    analysis_summary = scholar_core.build_scholar_analysis_summary(payload)
     return templates.TemplateResponse(
         request,
         "scholar_session.html",
@@ -112,6 +113,7 @@ async def scholar_detail(
             "session_id": session_id,
             "payload": payload,
             "queue_view": queue_view,
+            "analysis_summary": analysis_summary,
             "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),
         },
     )

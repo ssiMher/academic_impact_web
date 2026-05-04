@@ -213,6 +213,127 @@ def build_deep_analysis_queue_view(
     }
 
 
+def _result_citing_title(result: dict[str, Any]) -> str:
+    citing_paper = result.get("citing_paper") or {}
+    return (
+        result.get("citing_title")
+        or citing_paper.get("title")
+        or result.get("title")
+        or ""
+    )
+
+
+def _result_failure_message(result: dict[str, Any]) -> str:
+    status_note = result.get("status_note") or {}
+    analysis = result.get("analysis") or {}
+    download = result.get("download") or {}
+    fallback = result.get("fallback_analysis") or {}
+    return (
+        status_note.get("message")
+        or analysis.get("message")
+        or analysis.get("error")
+        or download.get("error")
+        or fallback.get("message")
+        or "未能完成全文分析。"
+    )
+
+
+def build_scholar_analysis_summary(session: dict[str, Any]) -> dict[str, Any]:
+    results = session.get("scholar_fulltext_results", []) or []
+    strong_evidence = session.get("strong_evidence", []) or []
+    status_counts: dict[str, int] = {}
+    failed_statuses = {
+        "context_only",
+        "fulltext_extract_failed",
+        "analysis_failed",
+        "write_output_failed",
+    }
+    failure_items = []
+    retry_queue_ids = []
+
+    for result in results:
+        status = result.get("status") or (result.get("analysis") or {}).get("final_status") or "unknown"
+        status_counts[status] = status_counts.get(status, 0) + 1
+        analysis = result.get("analysis") or {}
+        download = result.get("download") or {}
+        is_failed = status in failed_statuses or analysis.get("ok") is False
+        if not is_failed:
+            continue
+        queue_id = result.get("queue_id") or ""
+        if queue_id and queue_id not in retry_queue_ids:
+            retry_queue_ids.append(queue_id)
+        failure_items.append(
+            {
+                "queue_id": queue_id,
+                "status": status,
+                "citing_title": _result_citing_title(result),
+                "cited_publication_title": result.get("cited_publication_title") or "",
+                "message": _result_failure_message(result),
+                "error_type": analysis.get("error_type") or "",
+                "error_detail_type": analysis.get("error_detail_type") or "",
+                "download_source": download.get("source") or "",
+                "download_error": download.get("error") or "",
+            }
+        )
+
+    target_index: dict[str, dict[str, Any]] = {}
+    for evidence in strong_evidence:
+        title = evidence.get("cited_publication_title") or evidence.get("source_publication_id") or "未知目标论文"
+        key = f"{evidence.get('source_publication_id') or ''}::{title}"
+        item = target_index.setdefault(
+            key,
+            {
+                "source_publication_id": evidence.get("source_publication_id") or "",
+                "title": title,
+                "evidence_count": 0,
+                "citing_titles": [],
+                "aspects": [],
+                "positive_count": 0,
+                "long_context_count": 0,
+                "fellow_strong_count": 0,
+                "example_text": "",
+            },
+        )
+        item["evidence_count"] += 1
+        citing_title = evidence.get("citing_title") or ""
+        if citing_title and citing_title not in item["citing_titles"]:
+            item["citing_titles"].append(citing_title)
+        aspect = evidence.get("aspect") or ""
+        if aspect and aspect not in item["aspects"]:
+            item["aspects"].append(aspect)
+        if evidence.get("positive_evaluation") or (evidence.get("stance") or "").lower() == "positive":
+            item["positive_count"] += 1
+        if evidence.get("long_context_100_chars") or (evidence.get("citation_char_count") or 0) >= 100:
+            item["long_context_count"] += 1
+        if evidence.get("fellow_strong_citation"):
+            item["fellow_strong_count"] += 1
+        if not item["example_text"] and evidence.get("citation_text"):
+            item["example_text"] = evidence.get("citation_text")
+
+    target_summaries = sorted(
+        target_index.values(),
+        key=lambda item: (
+            item["evidence_count"],
+            item["fellow_strong_count"],
+            item["positive_count"],
+        ),
+        reverse=True,
+    )
+
+    return {
+        "result_count": len(results),
+        "strong_evidence_count": len(strong_evidence),
+        "failure_count": len(failure_items),
+        "status_counts": [
+            {"status": status, "count": count}
+            for status, count in sorted(status_counts.items())
+        ],
+        "failure_items": failure_items,
+        "retry_queue_ids": retry_queue_ids,
+        "target_summaries": target_summaries,
+    }
+
+
 def update_task_state(session_id: str, **updates) -> dict[str, Any]:
     with _task_lock(session_id):
         session = load_scholar_status(session_id)

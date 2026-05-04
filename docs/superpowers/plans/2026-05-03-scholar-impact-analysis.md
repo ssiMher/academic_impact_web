@@ -1446,7 +1446,7 @@ git commit -m "Add scholar impact web shell" \
 - Modify: `app/templates/index.html`
 - Test: `tests/test_scholar_web.py`
 
-- [ ] **Step 1: Add create-session service test**
+- [x] **Step 1: Add create-session service test**
 
 Append to `ScholarWebTestCase`:
 
@@ -1475,7 +1475,7 @@ Append to `ScholarWebTestCase`:
         self.assertTrue((TEST_SESSION_DIR / "session.json").exists())
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -1485,7 +1485,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_web -q
 
 Expected: fails because `create_scholar_session` is undefined.
 
-- [ ] **Step 3: Implement create service**
+- [x] **Step 3: Implement create service**
 
 Add to `scholar_core.py`:
 
@@ -1511,7 +1511,7 @@ def create_scholar_session(author: dict[str, Any]) -> str:
     return session_id
 ```
 
-- [ ] **Step 4: Add POST route for selected author**
+- [x] **Step 4: Add POST route for selected author**
 
 Modify `app/main.py`:
 
@@ -1535,7 +1535,7 @@ async def create_scholar(
     return RedirectResponse(url=f"/scholars/{session_id}", status_code=303)
 ```
 
-- [ ] **Step 5: Add index form**
+- [x] **Step 5: Add index form**
 
 Modify `app/templates/index.html` near the existing paper query form:
 
@@ -1569,7 +1569,7 @@ Modify `app/templates/index.html` near the existing paper query form:
 </section>
 ```
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 Run:
 
@@ -1579,7 +1579,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_web -q
 
 Expected: `OK`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add app/services/scholar_core.py app/main.py app/templates/index.html tests/test_scholar_web.py

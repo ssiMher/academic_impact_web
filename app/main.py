@@ -104,6 +104,28 @@ async def scholar_detail(request: Request, session_id: str):
     )
 
 
+@app.post("/scholars/create")
+def create_scholar(
+    display_name: str = Form(...),
+    dblp_id: str = Form(""),
+    openalex_id: str = Form(""),
+    scopus_author_id: str = Form(""),
+    affiliations: str = Form(""),
+):
+    normalized_dblp_id = dblp_id.strip()
+    if not normalized_dblp_id:
+        raise HTTPException(status_code=400, detail="创建学者会话需要 DBLP ID")
+    author = {
+        "display_name": display_name.strip(),
+        "dblp_id": normalized_dblp_id,
+        "openalex_id": openalex_id.strip(),
+        "scopus_author_id": scopus_author_id.strip(),
+        "affiliations": [item.strip() for item in affiliations.split("|") if item.strip()],
+    }
+    session_id = scholar_core.create_scholar_session(author)
+    return RedirectResponse(url=f"/scholars/{session_id}", status_code=303)
+
+
 @app.post("/sessions/{session_id}/refresh")
 async def refresh_session(request: Request, session_id: str):
     form = await request.form()

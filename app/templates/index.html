@@ -50,6 +50,34 @@
 
       <section class="panel">
         <div class="panel-header">
+          <div>
+            <p class="eyebrow">Scholar Impact</p>
+            <h2>学者影响力分析</h2>
+          </div>
+        </div>
+        <form action="/scholars/create" method="post" class="stack">
+          <label>
+            作者英文名
+            <input name="display_name" placeholder="Chen Tian" required />
+          </label>
+          <label>
+            DBLP ID
+            <input name="dblp_id" placeholder="94/1247-1" required />
+          </label>
+          <label>
+            Scopus Author ID
+            <input name="scopus_author_id" placeholder="可选" />
+          </label>
+          <label>
+            OpenAlex Author ID
+            <input name="openalex_id" placeholder="可选" />
+          </label>
+          <button type="submit">创建学者分析</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
           <h2>最近会话</h2>
         </div>
         {% if sessions %}

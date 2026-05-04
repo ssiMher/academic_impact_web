@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
+from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -20,11 +24,31 @@ def _load_module(path: Path, name: str):
     return module
 
 
+@lru_cache(maxsize=1)
 def scholar_pipeline():
     return _load_module(
         SKILLS_ROOT / "scholar_impact_analyzer" / "scholar_pipeline.py",
         "academic_impact_web_scholar_pipeline",
     )
+
+
+def slugify(value: str) -> str:
+    text = re.sub(r"[^a-z0-9]+", "_", (value or "").strip().lower())
+    return re.sub(r"_+", "_", text).strip("_") or "scholar"
+
+
+def make_scholar_session_id(display_name: str) -> str:
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{timestamp}_scholar_{slugify(display_name)}_{uuid4().hex[:8]}"
+
+
+def create_scholar_session(author: dict[str, Any]) -> str:
+    session_id = make_scholar_session_id(author.get("display_name") or "")
+    session_dir = SCHOLAR_SESSIONS_ROOT / session_id
+    pipeline = scholar_pipeline()
+    session = pipeline.build_scholar_session(author, session_dir)
+    pipeline.save_scholar_session(session_dir, session)
+    return session_id
 
 
 def resolve_scholar_session_dir(session_id: str) -> Path:

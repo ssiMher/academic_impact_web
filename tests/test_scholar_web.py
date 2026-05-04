@@ -666,6 +666,124 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("当前最强目标论文：Target Paper", response.text)
         self.assertIn("建议先重试失败项或补充 PDF。", response.text)
 
+    def test_scholar_route_renders_person_candidate_details(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [],
+                    "person_candidates": [
+                        {
+                            "candidate_id": "acm_fellow::alice-fellow",
+                            "name": "Alice Fellow",
+                            "tag_type": "acm_fellow",
+                            "tag_label": "ACM Fellow",
+                            "status": "pending",
+                            "matched_paper_ids": ["C001"],
+                            "matched_paper_titles": ["Fellow Citing Paper"],
+                            "source_links": ["https://example.test/alice"],
+                            "matched_affiliations": ["Example University"],
+                            "note": "ACM Fellow registry seed",
+                            "evidence": [
+                                {
+                                    "paper_id": "C001",
+                                    "matched_author": "Alice Fellow",
+                                    "paper_title": "Fellow Citing Paper",
+                                    "match_type": "exact_name",
+                                }
+                            ],
+                        }
+                    ],
+                    "statistics": {
+                        "publication_count": 0,
+                        "person_tag_statistics": [
+                            {
+                                "tag_type": "acm_fellow",
+                                "tag_label": "ACM Fellow",
+                                "count": 1,
+                                "confirmed_count": 0,
+                                "pending_count": 1,
+                                "rejected_count": 0,
+                                "source_complete_count": 1,
+                                "matched_paper_count": 1,
+                            }
+                        ],
+                    },
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("人物标签候选区", response.text)
+        self.assertIn("待处理：1", response.text)
+        self.assertIn("Alice Fellow", response.text)
+        self.assertIn("ACM Fellow · pending", response.text)
+        self.assertIn("Example University", response.text)
+        self.assertIn("https://example.test/alice", response.text)
+        self.assertIn("C001 · Alice Fellow · Fellow Citing Paper", response.text)
+        self.assertIn('action="/scholars/test_scholar_session/candidates/review"', response.text)
+
+    def test_scholar_candidate_review_route_updates_status(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [],
+                    "person_candidates": [
+                        {
+                            "candidate_id": "acm_fellow::alice-fellow",
+                            "name": "Alice Fellow",
+                            "tag_type": "acm_fellow",
+                            "tag_label": "ACM Fellow",
+                            "status": "pending",
+                        }
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.post(
+            f"/scholars/{TEST_SESSION_ID}/candidates/review",
+            data={
+                "candidate_id": "acm_fellow::alice-fellow",
+                "action": "confirm",
+                "note": "verified",
+            },
+            follow_redirects=False,
+        )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(response.headers["location"], f"/scholars/{TEST_SESSION_ID}#person-candidates")
+        payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
+        candidate = payload["person_candidates"][0]
+        self.assertEqual(candidate["status"], "confirmed")
+        self.assertEqual(candidate["review_note"], "verified")
+        self.assertTrue(candidate.get("reviewed_at"))
+        self.assertEqual(payload["statistics"]["person_tag_statistics"][0]["confirmed_count"], 1)
+
     def test_scholar_task_status_route_returns_counts(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
         (TEST_SESSION_DIR / "session.json").write_text(

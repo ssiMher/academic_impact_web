@@ -180,6 +180,30 @@ def rebuild_scholar_derived_outputs(
     )
 
 
+@app.post("/scholars/{session_id}/candidates/review")
+def review_scholar_candidate(
+    session_id: str,
+    candidate_id: str = Form(...),
+    action: str = Form(...),
+    note: str = Form(""),
+):
+    try:
+        scholar_core.review_person_candidate(
+            session_id,
+            candidate_id,
+            action=action,
+            note=note,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return RedirectResponse(
+        url=f"/scholars/{session_id}#person-candidates",
+        status_code=303,
+    )
+
+
 @app.post("/scholars/{session_id}/analyze-queue")
 async def analyze_scholar_queue(
     request: Request,

@@ -469,6 +469,56 @@ def rebuild_scholar_derived_outputs(
         return rebuilt
 
 
+def review_person_candidate(
+    session_id: str,
+    candidate_id: str,
+    *,
+    action: str,
+    note: str = "",
+) -> dict[str, Any]:
+    normalized_action = (action or "").strip().lower()
+    if normalized_action not in {"confirm", "reject", "reset"}:
+        raise ValueError(f"不支持的人物候选操作: {action}")
+
+    with _task_lock(session_id):
+        session = load_scholar_status(session_id)
+        matched = None
+        for candidate in session.get("person_candidates", []) or []:
+            if candidate.get("candidate_id") != candidate_id:
+                continue
+            matched = candidate
+            if normalized_action == "confirm":
+                candidate["status"] = "confirmed"
+            elif normalized_action == "reject":
+                candidate["status"] = "rejected"
+            else:
+                candidate["status"] = "pending"
+            candidate["review_note"] = (note or "").strip()
+            candidate["reviewed_at"] = datetime.now().isoformat(timespec="seconds")
+            break
+        if matched is None:
+            raise ValueError(f"未找到人物候选: {candidate_id}")
+
+        stats = scholar_pipeline().SCHOLAR_STATS
+        session["statistics"] = stats.build_scholar_statistics(
+            session.get("publications", []),
+            session.get("citation_edges", []),
+            session.get("person_candidates", []),
+            strong_evidence_count=len(session.get("strong_evidence", []) or []),
+        )
+        session["deep_analysis_queue"] = stats.build_deep_analysis_queue(
+            session.get("citation_edges", []),
+            session.get("person_candidates", []),
+            limit=len(session.get("deep_analysis_queue", []) or []) or 300,
+        )
+        write_scholar_status(session_id, session)
+        return {
+            "ok": True,
+            "candidate_id": candidate_id,
+            "status": matched.get("status"),
+        }
+
+
 def analyze_scholar_queue(
     session_id: str,
     *,

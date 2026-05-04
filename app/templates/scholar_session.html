@@ -17,6 +17,10 @@
     {% set expand_total = task_state.total_count or statistics.publication_count or 0 %}
     {% set expand_percent = (expand_processed * 100 / expand_total) | round(0, 'floor') if expand_total else 0 %}
     {% set analysis = analysis_summary or {} %}
+    {% set person_candidates = payload.person_candidates or [] %}
+    {% set pending_people = person_candidates | selectattr('status', 'equalto', 'pending') | list | length %}
+    {% set confirmed_people = person_candidates | selectattr('status', 'equalto', 'confirmed') | list | length %}
+    {% set rejected_people = person_candidates | selectattr('status', 'equalto', 'rejected') | list | length %}
     <main class="page">
       <section class="panel">
         <p><a href="/">← 返回首页</a></p>
@@ -262,10 +266,88 @@
         </div>
       </section>
 
-      <section class="panel" id="deep-analysis-queue">
+      <section class="panel" id="person-candidates">
         <div class="panel-header">
           <div>
             <p class="eyebrow">03</p>
+            <h2>人物标签候选区</h2>
+          </div>
+          <div class="status-chips">
+            <span class="chip">待处理：{{ pending_people }}</span>
+            <span class="chip">已确认：{{ confirmed_people }}</span>
+            <span class="chip">已拒绝：{{ rejected_people }}</span>
+          </div>
+        </div>
+        {% if person_candidates %}
+        <div class="cards">
+          {% for candidate in person_candidates %}
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <strong>{{ candidate.name or candidate.candidate_id }}</strong>
+                <p class="muted">{{ candidate.tag_label or candidate.tag_type }} · {{ candidate.status or 'pending' }}</p>
+              </div>
+              <span class="chip">{{ candidate.candidate_id }}</span>
+            </div>
+            <div class="card-metrics">
+              <span class="chip">命中论文：{{ (candidate.matched_paper_ids or []) | length }}</span>
+              <span class="chip">来源链接：{{ (candidate.source_links or []) | length }}</span>
+              {% if candidate.reviewed_at %}<span class="chip">审核：{{ candidate.reviewed_at }}</span>{% endif %}
+            </div>
+            {% if candidate.matched_paper_ids %}
+            <p class="muted">命中论文编号：{{ (candidate.matched_paper_ids or []) | join(', ') }}</p>
+            {% endif %}
+            {% if candidate.matched_paper_titles %}
+            <p class="muted">命中论文标题：{{ (candidate.matched_paper_titles or []) | join('；') }}</p>
+            {% endif %}
+            {% if candidate.matched_affiliations %}
+            <p class="muted">匹配机构：{{ (candidate.matched_affiliations or []) | join(' / ') }}</p>
+            {% endif %}
+            {% if candidate.note %}
+            <p>{{ candidate.note }}</p>
+            {% endif %}
+            {% if candidate.source_links %}
+            <details>
+              <summary>来源链接</summary>
+              <ul>
+                {% for link in candidate.source_links %}
+                <li><a href="{{ link }}" target="_blank" rel="noreferrer">{{ link }}</a></li>
+                {% endfor %}
+              </ul>
+            </details>
+            {% endif %}
+            {% if candidate.evidence %}
+            <details open>
+              <summary>查看命中证据</summary>
+              <ul>
+                {% for item in candidate.evidence %}
+                <li>{{ item.paper_id or '-' }} · {{ item.matched_author or candidate.name or '-' }} · {{ item.paper_title or '-' }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+            {% endif %}
+            <form action="/scholars/{{ session_id }}/candidates/review" method="post" class="inline-actions">
+              <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}" />
+              <label>
+                审核备注
+                <input type="text" name="note" value="{{ candidate.review_note or '' }}" />
+              </label>
+              <button type="submit" name="action" value="confirm" {% if task_active %}disabled{% endif %}>确认</button>
+              <button type="submit" name="action" value="reject" class="secondary" {% if task_active %}disabled{% endif %}>拒绝</button>
+              <button type="submit" name="action" value="reset" class="ghost" {% if task_active %}disabled{% endif %}>重置</button>
+            </form>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">当前没有命中任何人物候选。展开引用网络后，系统会按 Fellow、院士、国外高校作者等线索生成候选。</p>
+        {% endif %}
+      </section>
+
+      <section class="panel" id="deep-analysis-queue">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">04</p>
             <h2>高价值引用队列</h2>
           </div>
         </div>
@@ -365,7 +447,7 @@
       <section class="panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">04</p>
+            <p class="eyebrow">05</p>
             <h2>论文列表</h2>
           </div>
         </div>

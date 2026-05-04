@@ -1863,7 +1863,7 @@ git commit -m "Represent strong scholar citation evidence" \
 - Modify: `README.md`
 - Create: `docs/ops/scholar-impact.md`
 
-- [ ] **Step 1: Add ops documentation**
+- [x] **Step 1: Add ops documentation**
 
 Create `docs/ops/scholar-impact.md`:
 
@@ -1905,7 +1905,7 @@ Metadata-only statistics should finish in minutes for tens of publications.
 Deep fulltext analysis should be treated as a background batch. A queue of 100 citing papers may take 30 to 90 minutes depending on PDF availability and LLM latency.
 ```
 
-- [ ] **Step 2: Add README pointer**
+- [x] **Step 2: Add README pointer**
 
 Append to `README.md`:
 
@@ -1917,7 +1917,7 @@ Scholar impact mode extends the paper-level workflow from one target paper to on
 Operational notes: [docs/ops/scholar-impact.md](docs/ops/scholar-impact.md)
 ```
 
-- [ ] **Step 3: Run full test suite used by this repo**
+- [x] **Step 3: Run full test suite used by this repo**
 
 Run:
 
@@ -1940,7 +1940,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest \
 
 Expected: all tests pass.
 
-- [ ] **Step 4: Run compile and diff checks**
+- [x] **Step 4: Run compile and diff checks**
 
 Run:
 
@@ -1951,7 +1951,7 @@ git diff --check
 
 Expected: no errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add README.md docs/ops/scholar-impact.md

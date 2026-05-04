@@ -215,6 +215,12 @@ venue 等级不由模型判断，而是用本地白名单 [`data/reference/venue
 - `Download Selected`
 - `Analyze Selected`
 
+## Scholar Impact Mode
+
+Scholar impact mode extends the paper-level workflow from one target paper to one target researcher. It first builds metadata statistics for the researcher's publications and citation network, then performs fulltext semantic analysis on selected high-value citing papers.
+
+Operational notes: [docs/ops/scholar-impact.md](docs/ops/scholar-impact.md)
+
 ## Legacy / 调试入口（非主流程）
 
 以下入口仅用于调试或兼容历史能力层，不属于当前推荐主路径：

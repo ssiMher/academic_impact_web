@@ -235,6 +235,28 @@ class ScholarPipelineTestCase(unittest.TestCase):
             ],
         )
 
+    def test_normalize_deep_analysis_finding_marks_long_positive_fellow_citation(self):
+        edge = {
+            "source_publication_id": "S001",
+            "citing_title": "Fellow Citation",
+            "citing_authors": ["Alice Fellow"],
+        }
+        finding = {
+            "citation_text": "This influential system changed the way we build network simulators. " * 3,
+            "aspect": "method",
+            "stance": "positive",
+            "function": "引用者采用了目标工作的核心方法。",
+            "reason": "正文明确肯定并采用该方法。",
+            "confidence": 0.91,
+        }
+
+        evidence = self.pipeline.normalize_strong_evidence(edge, finding, person_tag_labels=["ACM Fellow"])
+
+        self.assertTrue(evidence["long_context_100_chars"])
+        self.assertTrue(evidence["positive_evaluation"])
+        self.assertTrue(evidence["fellow_strong_citation"])
+        self.assertEqual(evidence["aspect"], "method")
+
 
 if __name__ == "__main__":
     unittest.main()

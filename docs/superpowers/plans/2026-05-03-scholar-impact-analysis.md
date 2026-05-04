@@ -1737,7 +1737,7 @@ git commit -m "Rank scholar citations for deep analysis" \
 - Modify: `app/templates/scholar_session.html`
 - Test: `tests/test_scholar_pipeline.py`
 
-- [ ] **Step 1: Add tests for strong evidence normalization**
+- [x] **Step 1: Add tests for strong evidence normalization**
 
 Append to `ScholarPipelineTestCase`:
 
@@ -1765,7 +1765,7 @@ Append to `ScholarPipelineTestCase`:
         self.assertEqual(evidence["aspect"], "method")
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -1775,7 +1775,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_pipeline -q
 
 Expected: fails because `normalize_strong_evidence` is undefined.
 
-- [ ] **Step 3: Implement strong evidence normalization**
+- [x] **Step 3: Implement strong evidence normalization**
 
 Add to `scholar_pipeline.py`:
 
@@ -1801,7 +1801,7 @@ def normalize_strong_evidence(edge: dict[str, Any], finding: dict[str, Any], per
     }
 ```
 
-- [ ] **Step 4: Add scholar page strong evidence section**
+- [x] **Step 4: Add scholar page strong evidence section**
 
 Add to `app/templates/scholar_session.html` after citation stats:
 
@@ -1832,7 +1832,7 @@ Add to `app/templates/scholar_session.html` after citation stats:
 </section>
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -1842,7 +1842,7 @@ PYTHONPATH=.:${PYTHONPATH:-} python3 -m unittest tests.test_scholar_pipeline tes
 
 Expected: `OK`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/scholar_impact_analyzer/scholar_pipeline.py app/templates/scholar_session.html tests/test_scholar_pipeline.py

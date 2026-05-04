@@ -145,6 +145,37 @@ def normalize_citation_edge(
     }
 
 
+def normalize_strong_evidence(
+    edge: dict[str, Any],
+    finding: dict[str, Any],
+    person_tag_labels: list[str],
+) -> dict[str, Any]:
+    citation_text = finding.get("citation_text") or ""
+    positive = (finding.get("stance") or "").lower() == "positive"
+    fellow = any(
+        "Fellow" in label
+        or "院士" in label
+        or "Turing" in label
+        or "Prize" in label
+        for label in person_tag_labels
+    )
+    return {
+        "source_publication_id": edge.get("source_publication_id"),
+        "citing_title": edge.get("citing_title"),
+        "citing_authors": edge.get("citing_authors", []),
+        "person_tag_labels": person_tag_labels,
+        "citation_text": citation_text,
+        "citation_char_count": len(citation_text),
+        "long_context_100_chars": len(citation_text) >= 100,
+        "positive_evaluation": positive,
+        "fellow_strong_citation": fellow and len(citation_text) >= 100 and positive,
+        "aspect": finding.get("aspect") or "",
+        "function": finding.get("function") or "",
+        "reason": finding.get("reason") or "",
+        "confidence": finding.get("confidence"),
+    }
+
+
 def expand_publication_citations(
     session: dict[str, Any],
     limit_per_publication: int = 100,

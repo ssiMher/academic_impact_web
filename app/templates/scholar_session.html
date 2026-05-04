@@ -31,6 +31,31 @@
       </section>
 
       <section class="panel">
+        <h2>强引用证据</h2>
+        {% if payload.strong_evidence %}
+        <div class="cards">
+          {% for evidence in payload.strong_evidence %}
+          <article class="card">
+            <div class="card-header">
+              <strong>{{ evidence.citing_title }}</strong>
+              <span class="chip">{{ evidence.aspect or '-' }}</span>
+            </div>
+            <div class="card-metrics">
+              <span class="chip">字数：{{ evidence.citation_char_count }}</span>
+              <span class="chip">Fellow 强引用：{{ '是' if evidence.fellow_strong_citation else '否' }}</span>
+              <span class="chip">正向评价：{{ '是' if evidence.positive_evaluation else '否' }}</span>
+            </div>
+            <p>{{ evidence.function }}</p>
+            <p class="evidence-excerpt">{{ evidence.citation_text }}</p>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">当前还没有完成全文语义分析的强引用证据。</p>
+        {% endif %}
+      </section>
+
+      <section class="panel">
         <div class="panel-header">
           <div>
             <p class="eyebrow">01</p>

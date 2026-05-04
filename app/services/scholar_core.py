@@ -319,6 +319,31 @@ def build_scholar_analysis_summary(session: dict[str, Any]) -> dict[str, Any]:
         ),
         reverse=True,
     )
+    analyzed_queue_ids = {
+        result.get("queue_id")
+        for result in results
+        if result.get("queue_id")
+    }
+    queue_count = len(session.get("deep_analysis_queue", []) or [])
+    fellow_strong_count = sum(item["fellow_strong_count"] for item in target_summaries)
+    if failure_items:
+        next_action = "建议先重试失败项或补充 PDF。"
+    elif queue_count > len(analyzed_queue_ids):
+        next_action = "建议继续分析高价值引用队列。"
+    elif strong_evidence:
+        next_action = "可以整理强引用证据用于报告。"
+    else:
+        next_action = "建议先展开引用网络，再选择高价值引用论文做全文分析。"
+    overview = {
+        "analyzed_queue_count": len(analyzed_queue_ids),
+        "queue_count": queue_count,
+        "target_with_evidence_count": len(target_summaries),
+        "strong_evidence_count": len(strong_evidence),
+        "fellow_strong_count": fellow_strong_count,
+        "failure_count": len(failure_items),
+        "top_target_title": target_summaries[0]["title"] if target_summaries else "",
+        "next_action": next_action,
+    }
 
     return {
         "result_count": len(results),
@@ -331,6 +356,7 @@ def build_scholar_analysis_summary(session: dict[str, Any]) -> dict[str, Any]:
         "failure_items": failure_items,
         "retry_queue_ids": retry_queue_ids,
         "target_summaries": target_summaries,
+        "overview": overview,
     }
 
 

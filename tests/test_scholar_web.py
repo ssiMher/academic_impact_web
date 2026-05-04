@@ -601,6 +601,71 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("Fellow 强引用：1", response.text)
         self.assertIn("method / baseline", response.text)
 
+    def test_scholar_route_renders_impact_overview(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [{"id": "S001", "title": "Target Paper", "unique_ids": {}}],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {"queue_id": "Q001", "citing_title": "Queued Citing Paper"}
+                    ],
+                    "scholar_fulltext_results": [
+                        {
+                            "queue_id": "Q001",
+                            "status": "fulltext_analyzed",
+                            "cited_publication_title": "Target Paper",
+                            "citing_paper": {"title": "Fellow Citing Paper"},
+                            "analysis": {"ok": True},
+                        },
+                        {
+                            "queue_id": "Q002",
+                            "status": "context_only",
+                            "cited_publication_title": "Other Target",
+                            "citing_paper": {"title": "Missing PDF Paper"},
+                            "download": {"error": "未找到合法开源 PDF 链接。"},
+                            "analysis": {"ok": False},
+                        },
+                    ],
+                    "strong_evidence": [
+                        {
+                            "source_publication_id": "S001",
+                            "citing_title": "Fellow Citing Paper",
+                            "cited_publication_title": "Target Paper",
+                            "citation_text": "A long positive citation. " * 6,
+                            "citation_char_count": 150,
+                            "aspect": "method",
+                            "stance": "positive",
+                            "positive_evaluation": True,
+                            "fellow_strong_citation": True,
+                            "long_context_100_chars": True,
+                        }
+                    ],
+                    "statistics": {"publication_count": 1},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("学者影响力速览", response.text)
+        self.assertIn("有强证据论文", response.text)
+        self.assertIn("<strong>1</strong>", response.text)
+        self.assertIn("Fellow 强引用", response.text)
+        self.assertIn("待补全文", response.text)
+        self.assertIn("当前最强目标论文：Target Paper", response.text)
+        self.assertIn("建议先重试失败项或补充 PDF。", response.text)
+
     def test_scholar_task_status_route_returns_counts(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
         (TEST_SESSION_DIR / "session.json").write_text(

@@ -78,6 +78,31 @@
         </form>
       </section>
 
+      {% if analysis.overview %}
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>学者影响力速览</h2>
+            <p class="muted">{{ analysis.overview.next_action }}</p>
+          </div>
+        </div>
+        <div class="stats stats-dense">
+          <div class="stat"><span>已分析队列</span><strong>{{ analysis.overview.analyzed_queue_count }}</strong></div>
+          <div class="stat"><span>有强证据论文</span><strong>{{ analysis.overview.target_with_evidence_count }}</strong></div>
+          <div class="stat"><span>Fellow 强引用</span><strong>{{ analysis.overview.fellow_strong_count }}</strong></div>
+          <div class="stat"><span>待补全文</span><strong>{{ analysis.overview.failure_count }}</strong></div>
+        </div>
+        <div class="analysis-conclusion">
+          {% if analysis.overview.top_target_title %}
+          <p>当前最强目标论文：{{ analysis.overview.top_target_title }}</p>
+          {% else %}
+          <p>当前最强目标论文：暂无完成全文分析的强引用证据。</p>
+          {% endif %}
+          <p>高价值队列 {{ analysis.overview.queue_count }} 篇，已分析 {{ analysis.overview.analyzed_queue_count }} 篇，强引用证据 {{ analysis.overview.strong_evidence_count }} 条。</p>
+        </div>
+      </section>
+      {% endif %}
+
       <section class="panel">
         <h2>强引用证据</h2>
         {% if payload.strong_evidence %}

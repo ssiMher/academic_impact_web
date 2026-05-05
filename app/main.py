@@ -93,6 +93,11 @@ async def scholar_detail(
     queue_reason: str = "",
     queue_page: int = 1,
     queue_page_size: int = 20,
+    strong_aspect: str = "",
+    strong_stance: str = "",
+    strong_flag: str = "",
+    strong_page: int = 1,
+    strong_page_size: int = 10,
     person_status: str = "",
     person_tag_type: str = "",
     person_page: int = 1,
@@ -107,6 +112,14 @@ async def scholar_detail(
         active_reason=queue_reason,
         page=queue_page,
         page_size=queue_page_size,
+    )
+    strong_evidence_view = scholar_core.build_strong_evidence_view(
+        payload,
+        active_aspect=strong_aspect,
+        active_stance=strong_stance,
+        active_flag=strong_flag,
+        page=strong_page,
+        page_size=strong_page_size,
     )
     analysis_summary = scholar_core.build_scholar_analysis_summary(payload)
     person_view = scholar_core.build_person_candidate_view(
@@ -124,6 +137,7 @@ async def scholar_detail(
             "session_id": session_id,
             "payload": payload,
             "queue_view": queue_view,
+            "strong_evidence_view": strong_evidence_view,
             "person_view": person_view,
             "analysis_summary": analysis_summary,
             "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),

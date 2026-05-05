@@ -360,6 +360,51 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(fresh["download_source"], "点击分析时自动尝试下载 PDF")
         self.assertEqual(fresh["citing_identifier"], "OpenAlex: W123")
 
+    def test_build_strong_evidence_view_filters_and_paginates(self):
+        session = {
+            "strong_evidence": [
+                {
+                    "citing_title": "Fellow Method Paper",
+                    "aspect": "method",
+                    "stance": "positive",
+                    "fellow_strong_citation": True,
+                    "positive_evaluation": True,
+                    "long_context_100_chars": True,
+                },
+                {
+                    "citing_title": "Neutral Baseline Paper",
+                    "aspect": "baseline",
+                    "stance": "neutral",
+                    "fellow_strong_citation": False,
+                },
+                {
+                    "citing_title": "Second Method Paper",
+                    "aspect": "method",
+                    "stance": "positive",
+                    "positive_evaluation": True,
+                },
+            ]
+        }
+
+        view = scholar_core.build_strong_evidence_view(
+            session,
+            active_aspect="method",
+            active_stance="positive",
+            active_flag="positive",
+            page=2,
+            page_size=1,
+        )
+
+        self.assertEqual(view["total_count"], 2)
+        self.assertEqual(view["unfiltered_count"], 3)
+        self.assertEqual(view["items"][0]["citing_title"], "Second Method Paper")
+        self.assertEqual(view["aspect_counts"]["method"], 2)
+        self.assertEqual(view["stance_counts"]["positive"], 2)
+        self.assertEqual(view["flag_counts"]["positive"], 2)
+        self.assertTrue(view["pagination"]["has_previous"])
+        self.assertIn("strong_page=1", view["pagination"]["previous_url"])
+        self.assertIn("strong_aspect=method", view["pagination"]["previous_url"])
+
     def test_build_person_candidate_view_filters_and_paginates(self):
         session = {
             "person_candidates": [
@@ -694,6 +739,65 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("类型：explicit_citation", response.text)
         self.assertIn("置信度：0.92", response.text)
         self.assertIn("正文明确说明采用目标论文的方法组件。", response.text)
+
+    def test_scholar_route_filters_strong_evidence(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [],
+                    "strong_evidence": [
+                        {
+                            "citing_title": "Fellow Method Paper",
+                            "citation_text": "Long positive method citation. " * 5,
+                            "aspect": "method",
+                            "stance": "positive",
+                            "fellow_strong_citation": True,
+                            "positive_evaluation": True,
+                            "long_context_100_chars": True,
+                        },
+                        {
+                            "citing_title": "Neutral Baseline Paper",
+                            "citation_text": "Used as a baseline.",
+                            "aspect": "baseline",
+                            "stance": "neutral",
+                            "fellow_strong_citation": False,
+                        },
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(
+            f"/scholars/{TEST_SESSION_ID}",
+            params={
+                "strong_aspect": "method",
+                "strong_flag": "fellow_strong",
+                "strong_page_size": "1",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("筛选证据", response.text)
+        self.assertIn("当前显示 1 / 2 条强引用证据", response.text)
+        self.assertIn("method: 1", response.text)
+        self.assertIn("positive: 1", response.text)
+        self.assertIn("Fellow 强引用: 1", response.text)
+        self.assertIn("Fellow Method Paper", response.text)
+        self.assertNotIn("Neutral Baseline Paper</strong>", response.text)
+        self.assertIn('name="strong_aspect"', response.text)
+        self.assertIn('name="strong_flag"', response.text)
 
     def test_scholar_route_renders_failed_analysis_retry_form(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

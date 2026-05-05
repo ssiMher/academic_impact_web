@@ -17,6 +17,8 @@
     {% set expand_total = task_state.total_count or statistics.publication_count or 0 %}
     {% set expand_percent = (expand_processed * 100 / expand_total) | round(0, 'floor') if expand_total else 0 %}
     {% set analysis = analysis_summary or {} %}
+    {% set strong = strong_evidence_view or {} %}
+    {% set strong_pagination = strong.pagination or {} %}
     {% set person = person_view or {} %}
     {% set person_pagination = person.pagination or {} %}
     {% set person_status_counts = person.status_counts or {} %}
@@ -109,11 +111,59 @@
       </section>
       {% endif %}
 
-      <section class="panel">
+      <section class="panel" id="strong-evidence">
         <h2>强引用证据</h2>
         {% if payload.strong_evidence %}
+        <form action="/scholars/{{ session_id }}#strong-evidence" method="get" class="inline-actions">
+          <label>
+            引用类型
+            <select name="strong_aspect">
+              <option value="">全部类型</option>
+              {% for option in strong.aspect_options or [] %}
+              <option value="{{ option.aspect }}" {% if option.aspect == strong.active_aspect %}selected{% endif %}>{{ option.aspect }} ({{ option.count }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            态度
+            <select name="strong_stance">
+              <option value="">全部态度</option>
+              {% for option in strong.stance_options or [] %}
+              <option value="{{ option.stance }}" {% if option.stance == strong.active_stance %}selected{% endif %}>{{ option.stance }} ({{ option.count }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            证据标记
+            <select name="strong_flag">
+              <option value="">全部标记</option>
+              {% for option in strong.flag_options or [] %}
+              <option value="{{ option.flag }}" {% if option.flag == strong.active_flag %}selected{% endif %}>{{ option.label }} ({{ option.count }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            每页
+            <input type="number" name="strong_page_size" value="{{ strong_pagination.page_size or 10 }}" min="1" max="100" />
+          </label>
+          <button type="submit">筛选证据</button>
+        </form>
+        <div class="status-chips">
+          {% for option in strong.aspect_options or [] %}
+          <span class="chip">{{ option.aspect }}: {{ option.count }}</span>
+          {% endfor %}
+          {% for option in strong.stance_options or [] %}
+          <span class="chip">{{ option.stance }}: {{ option.count }}</span>
+          {% endfor %}
+          {% for option in strong.flag_options or [] %}
+          {% if option.count %}
+          <span class="chip">{{ option.label }}: {{ option.count }}</span>
+          {% endif %}
+          {% endfor %}
+        </div>
+        <p class="muted">当前显示 {{ strong.total_count or 0 }} / {{ strong.unfiltered_count or 0 }} 条强引用证据。</p>
         <div class="cards">
-          {% for evidence in payload.strong_evidence %}
+          {% for evidence in strong["items"] or [] %}
           <article class="card">
             <div class="card-header">
               <strong>{{ evidence.citing_title }}</strong>
@@ -144,8 +194,25 @@
             {% endif %}
             <p class="evidence-excerpt">{{ evidence.citation_text }}</p>
           </article>
+          {% else %}
+          <p class="muted">当前筛选条件下没有强引用证据。</p>
           {% endfor %}
         </div>
+        {% if strong_pagination.total_pages and strong_pagination.total_pages > 1 %}
+        <nav class="pager">
+          {% if strong_pagination.has_previous %}
+          <a href="{{ strong_pagination.previous_url }}">上一页</a>
+          {% else %}
+          <span class="disabled">上一页</span>
+          {% endif %}
+          <span>第 {{ strong_pagination.page }} / {{ strong_pagination.total_pages }} 页</span>
+          {% if strong_pagination.has_next %}
+          <a href="{{ strong_pagination.next_url }}">下一页</a>
+          {% else %}
+          <span class="disabled">下一页</span>
+          {% endif %}
+        </nav>
+        {% endif %}
         {% else %}
         <p class="muted">当前还没有完成全文语义分析的强引用证据。</p>
         {% endif %}

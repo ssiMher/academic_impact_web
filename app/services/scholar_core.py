@@ -260,6 +260,123 @@ def build_deep_analysis_queue_view(
     }
 
 
+def build_strong_evidence_view(
+    session: dict[str, Any],
+    *,
+    active_aspect: str = "",
+    active_stance: str = "",
+    active_flag: str = "",
+    page: int = 1,
+    page_size: int = 10,
+) -> dict[str, Any]:
+    evidence_items = session.get("strong_evidence", []) or []
+    aspect_counts: dict[str, int] = {}
+    stance_counts: dict[str, int] = {}
+    flag_counts = {
+        "fellow_strong": 0,
+        "positive": 0,
+        "long_context": 0,
+    }
+
+    def is_positive(item: dict[str, Any]) -> bool:
+        return bool(item.get("positive_evaluation")) or (
+            item.get("stance") or ""
+        ).lower() == "positive"
+
+    def is_long_context(item: dict[str, Any]) -> bool:
+        return bool(item.get("long_context_100_chars")) or (
+            item.get("citation_char_count") or 0
+        ) >= 100
+
+    def matches_flag(item: dict[str, Any], flag: str) -> bool:
+        if flag == "fellow_strong":
+            return bool(item.get("fellow_strong_citation"))
+        if flag == "positive":
+            return is_positive(item)
+        if flag == "long_context":
+            return is_long_context(item)
+        return True
+
+    for item in evidence_items:
+        aspect = item.get("aspect") or "-"
+        stance = item.get("stance") or "-"
+        aspect_counts[aspect] = aspect_counts.get(aspect, 0) + 1
+        stance_counts[stance] = stance_counts.get(stance, 0) + 1
+        if item.get("fellow_strong_citation"):
+            flag_counts["fellow_strong"] += 1
+        if is_positive(item):
+            flag_counts["positive"] += 1
+        if is_long_context(item):
+            flag_counts["long_context"] += 1
+
+    filtered = evidence_items
+    if active_aspect:
+        filtered = [item for item in filtered if (item.get("aspect") or "-") == active_aspect]
+    if active_stance:
+        filtered = [item for item in filtered if (item.get("stance") or "-") == active_stance]
+    if active_flag:
+        filtered = [item for item in filtered if matches_flag(item, active_flag)]
+
+    page_size = min(max(page_size, 1), 100)
+    total_count = len(filtered)
+    total_pages = max((total_count + page_size - 1) // page_size, 1)
+    page = min(max(page, 1), total_pages)
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    def page_url(target_page: int) -> str:
+        query = {
+            "strong_page": target_page,
+            "strong_page_size": page_size,
+        }
+        if active_aspect:
+            query["strong_aspect"] = active_aspect
+        if active_stance:
+            query["strong_stance"] = active_stance
+        if active_flag:
+            query["strong_flag"] = active_flag
+        return f"?{urlencode(query)}#strong-evidence"
+
+    return {
+        "items": filtered[start:end],
+        "total_count": total_count,
+        "unfiltered_count": len(evidence_items),
+        "active_aspect": active_aspect,
+        "active_stance": active_stance,
+        "active_flag": active_flag,
+        "aspect_counts": aspect_counts,
+        "stance_counts": stance_counts,
+        "flag_counts": flag_counts,
+        "aspect_options": [
+            {"aspect": aspect, "count": count}
+            for aspect, count in sorted(
+                aspect_counts.items(), key=lambda pair: (-pair[1], pair[0])
+            )
+        ],
+        "stance_options": [
+            {"stance": stance, "count": count}
+            for stance, count in sorted(
+                stance_counts.items(), key=lambda pair: (-pair[1], pair[0])
+            )
+        ],
+        "flag_options": [
+            {"flag": "fellow_strong", "label": "Fellow 强引用", "count": flag_counts["fellow_strong"]},
+            {"flag": "positive", "label": "正向评价", "count": flag_counts["positive"]},
+            {"flag": "long_context", "label": "长引用", "count": flag_counts["long_context"]},
+        ],
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "has_previous": page > 1,
+            "has_next": page < total_pages,
+            "previous_url": page_url(page - 1) if page > 1 else "",
+            "next_url": page_url(page + 1) if page < total_pages else "",
+            "start_index": start + 1 if total_count else 0,
+        },
+    }
+
+
 def build_person_candidate_view(
     session: dict[str, Any],
     *,

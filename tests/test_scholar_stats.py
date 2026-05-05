@@ -246,6 +246,43 @@ class ScholarStatsTestCase(unittest.TestCase):
 
         self.assertEqual(queue, [])
 
+    def test_build_deep_analysis_queue_prioritizes_confirmed_person_tags(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "citing_title": "Pending Fellow Citation",
+                "citing_venue": "Unknown Venue",
+                "citing_authors": ["Alice Fellow"],
+            },
+            {
+                "source_publication_id": "S002",
+                "citing_title": "Confirmed Fellow Citation",
+                "citing_venue": "Unknown Venue",
+                "citing_authors": ["Bob Fellow"],
+            },
+        ]
+        person_candidates = [
+            {
+                "name": "Alice Fellow",
+                "tag_type": "acm_fellow",
+                "tag_label": "ACM Fellow",
+                "status": "pending",
+            },
+            {
+                "name": "Bob Fellow",
+                "tag_type": "acm_fellow",
+                "tag_label": "ACM Fellow",
+                "status": "confirmed",
+            },
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges, person_candidates, limit=10
+        )
+
+        self.assertEqual(queue[0]["citing_title"], "Confirmed Fellow Citation")
+        self.assertGreater(queue[0]["priority_score"], queue[1]["priority_score"])
+
     def test_build_deep_analysis_queue_groups_duplicate_citing_papers(self):
         citation_edges = [
             {

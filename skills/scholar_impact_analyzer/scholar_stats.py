@@ -225,12 +225,26 @@ def person_tag_by_author(person_candidates: list[dict[str, Any]]) -> dict[str, s
     return result
 
 
+def person_tag_info_by_author(
+    person_candidates: list[dict[str, Any]]
+) -> dict[str, dict[str, str]]:
+    result = {}
+    for candidate in person_candidates:
+        if candidate.get("status") == "rejected":
+            continue
+        result[normalized_name(candidate.get("name") or "")] = {
+            "label": candidate.get("tag_label") or candidate.get("tag_type") or "",
+            "status": candidate.get("status") or "pending",
+        }
+    return result
+
+
 def build_deep_analysis_queue(
     citation_edges: list[dict[str, Any]],
     person_candidates: list[dict[str, Any]],
     limit: int = 100,
 ) -> list[dict[str, Any]]:
-    tag_map = person_tag_by_author(person_candidates)
+    tag_map = person_tag_info_by_author(person_candidates)
     tier_index = IMPACT_CLI.build_venue_tier_index()
     grouped: dict[str, dict[str, Any]] = {}
 
@@ -238,10 +252,10 @@ def build_deep_analysis_queue(
         score = 0
         reasons = []
         for author in edge.get("citing_authors") or []:
-            label = tag_map.get(normalized_name(author))
-            if label:
-                score += 50
-                reasons.append(f"person_tag:{label}")
+            tag = tag_map.get(normalized_name(author))
+            if tag:
+                score += 60 if tag.get("status") == "confirmed" else 40
+                reasons.append(f"person_tag:{tag.get('label')}")
 
         tier = IMPACT_CLI.classify_venue_tier(
             edge.get("citing_venue") or "", tier_index

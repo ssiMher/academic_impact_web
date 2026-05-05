@@ -204,6 +204,48 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertFalse(view["pagination"]["has_next"])
         self.assertTrue(view["pagination"]["has_previous"])
 
+    def test_build_person_candidate_view_filters_and_paginates(self):
+        session = {
+            "person_candidates": [
+                {
+                    "name": "Alice Fellow",
+                    "tag_type": "acm_fellow",
+                    "tag_label": "ACM Fellow",
+                    "status": "pending",
+                },
+                {
+                    "name": "Bob Fellow",
+                    "tag_type": "ieee_fellow",
+                    "tag_label": "IEEE Fellow",
+                    "status": "confirmed",
+                },
+                {
+                    "name": "Carol Fellow",
+                    "tag_type": "ieee_fellow",
+                    "tag_label": "IEEE Fellow",
+                    "status": "confirmed",
+                },
+            ]
+        }
+
+        view = scholar_core.build_person_candidate_view(
+            session,
+            active_status="confirmed",
+            active_tag_type="ieee_fellow",
+            page=2,
+            page_size=1,
+        )
+
+        self.assertEqual(view["total_count"], 2)
+        self.assertEqual(view["unfiltered_count"], 3)
+        self.assertEqual(view["items"][0]["name"], "Carol Fellow")
+        self.assertEqual(view["pagination"]["page"], 2)
+        self.assertTrue(view["pagination"]["has_previous"])
+        self.assertFalse(view["pagination"]["has_next"])
+        self.assertEqual(view["status_counts"]["pending"], 1)
+        self.assertEqual(view["status_counts"]["confirmed"], 2)
+        self.assertEqual(view["tag_options"][0]["tag_type"], "ieee_fellow")
+
     def test_create_scholar_session_from_author_payload(self):
         author = {
             "display_name": "Chen Tian",
@@ -734,6 +776,66 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("https://example.test/alice", response.text)
         self.assertIn("C001 · Alice Fellow · Fellow Citing Paper", response.text)
         self.assertIn('action="/scholars/test_scholar_session/candidates/review"', response.text)
+
+    def test_scholar_route_filters_person_candidates(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [],
+                    "person_candidates": [
+                        {
+                            "candidate_id": "acm_fellow::alice",
+                            "name": "Alice Fellow",
+                            "tag_type": "acm_fellow",
+                            "tag_label": "ACM Fellow",
+                            "status": "pending",
+                        },
+                        {
+                            "candidate_id": "ieee_fellow::bob",
+                            "name": "Bob Fellow",
+                            "tag_type": "ieee_fellow",
+                            "tag_label": "IEEE Fellow",
+                            "status": "confirmed",
+                            "evidence": [
+                                {
+                                    "paper_id": "C002",
+                                    "matched_author": "Bob Fellow",
+                                    "paper_title": "Confirmed Citation",
+                                    "match_type": "registry_exact",
+                                }
+                            ],
+                        },
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(
+            f"/scholars/{TEST_SESSION_ID}",
+            params={
+                "person_status": "confirmed",
+                "person_tag_type": "ieee_fellow",
+                "person_page_size": "1",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("当前显示 1 / 2 位人物候选", response.text)
+        self.assertIn("Bob Fellow", response.text)
+        self.assertIn("registry_exact", response.text)
+        self.assertNotIn("Alice Fellow</strong>", response.text)
 
     def test_scholar_candidate_review_route_updates_status(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

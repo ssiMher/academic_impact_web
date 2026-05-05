@@ -17,10 +17,12 @@
     {% set expand_total = task_state.total_count or statistics.publication_count or 0 %}
     {% set expand_percent = (expand_processed * 100 / expand_total) | round(0, 'floor') if expand_total else 0 %}
     {% set analysis = analysis_summary or {} %}
-    {% set person_candidates = payload.person_candidates or [] %}
-    {% set pending_people = person_candidates | selectattr('status', 'equalto', 'pending') | list | length %}
-    {% set confirmed_people = person_candidates | selectattr('status', 'equalto', 'confirmed') | list | length %}
-    {% set rejected_people = person_candidates | selectattr('status', 'equalto', 'rejected') | list | length %}
+    {% set person = person_view or {} %}
+    {% set person_pagination = person.pagination or {} %}
+    {% set person_status_counts = person.status_counts or {} %}
+    {% set pending_people = person_status_counts.pending or 0 %}
+    {% set confirmed_people = person_status_counts.confirmed or 0 %}
+    {% set rejected_people = person_status_counts.rejected or 0 %}
     <main class="page">
       <section class="panel">
         <p><a href="/">← 返回首页</a></p>
@@ -259,7 +261,7 @@
         </div>
         <div class="status-chips">
           {% for group in statistics.person_tag_statistics or [] %}
-          <span class="chip">{{ group.tag_label or group.tag_type }}: {{ group.count }}</span>
+          <span class="chip">{{ group.tag_label or group.tag_type }}: {{ group.count }}，已确认 {{ group.confirmed_count or 0 }}，待确认 {{ group.pending_count or 0 }}</span>
           {% else %}
           <span class="chip">暂无人物标签命中</span>
           {% endfor %}
@@ -278,9 +280,39 @@
             <span class="chip">已拒绝：{{ rejected_people }}</span>
           </div>
         </div>
-        {% if person_candidates %}
+        {% if person.unfiltered_count %}
+        <form action="/scholars/{{ session_id }}#person-candidates" method="get" class="inline-actions">
+          <label>
+            审核状态
+            <select name="person_status">
+              <option value="">全部状态</option>
+              <option value="pending" {% if person.active_status == 'pending' %}selected{% endif %}>待处理 ({{ pending_people }})</option>
+              <option value="confirmed" {% if person.active_status == 'confirmed' %}selected{% endif %}>已确认 ({{ confirmed_people }})</option>
+              <option value="rejected" {% if person.active_status == 'rejected' %}selected{% endif %}>已拒绝 ({{ rejected_people }})</option>
+            </select>
+          </label>
+          <label>
+            标签类型
+            <select name="person_tag_type">
+              <option value="">全部标签</option>
+              {% for option in person.tag_options or [] %}
+              <option value="{{ option.tag_type }}" {% if option.tag_type == person.active_tag_type %}selected{% endif %}>{{ option.tag_label }} ({{ option.count }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            每页
+            <input type="number" name="person_page_size" value="{{ person_pagination.page_size or 12 }}" min="1" max="100" />
+          </label>
+          <button type="submit">筛选人物</button>
+        </form>
+        <p class="muted">
+          当前显示 {{ person.total_count or 0 }} / {{ person.unfiltered_count or 0 }} 位人物候选；正式统计建议优先采用已确认候选，待处理候选保留为线索。
+        </p>
+        {% endif %}
+        {% if person["items"] %}
         <div class="cards">
-          {% for candidate in person_candidates %}
+          {% for candidate in person["items"] %}
           <article class="card">
             <div class="card-header">
               <div>
@@ -321,7 +353,7 @@
               <summary>查看命中证据</summary>
               <ul>
                 {% for item in candidate.evidence %}
-                <li>{{ item.paper_id or '-' }} · {{ item.matched_author or candidate.name or '-' }} · {{ item.paper_title or '-' }}</li>
+                <li>{{ item.paper_id or '-' }} · {{ item.matched_author or candidate.name or '-' }} · {{ item.paper_title or '-' }}{% if item.match_type %} · {{ item.match_type }}{% endif %}</li>
                 {% endfor %}
               </ul>
             </details>
@@ -339,6 +371,23 @@
           </article>
           {% endfor %}
         </div>
+        {% if person_pagination.total_pages and person_pagination.total_pages > 1 %}
+        <nav class="pager">
+          {% if person_pagination.has_previous %}
+          <a href="{{ person_pagination.previous_url }}">上一页</a>
+          {% else %}
+          <span class="disabled">上一页</span>
+          {% endif %}
+          <span>第 {{ person_pagination.page }} / {{ person_pagination.total_pages }} 页</span>
+          {% if person_pagination.has_next %}
+          <a href="{{ person_pagination.next_url }}">下一页</a>
+          {% else %}
+          <span class="disabled">下一页</span>
+          {% endif %}
+        </nav>
+        {% endif %}
+        {% elif person.unfiltered_count %}
+        <p class="muted">当前筛选条件下没有人物候选。</p>
         {% else %}
         <p class="muted">当前没有命中任何人物候选。展开引用网络后，系统会按 Fellow、院士、国外高校作者等线索生成候选。</p>
         {% endif %}

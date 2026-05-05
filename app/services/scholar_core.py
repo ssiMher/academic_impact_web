@@ -213,6 +213,91 @@ def build_deep_analysis_queue_view(
     }
 
 
+def build_person_candidate_view(
+    session: dict[str, Any],
+    *,
+    active_status: str = "",
+    active_tag_type: str = "",
+    page: int = 1,
+    page_size: int = 12,
+) -> dict[str, Any]:
+    candidates = session.get("person_candidates", []) or []
+    status_counts = {"pending": 0, "confirmed": 0, "rejected": 0}
+    tag_counts: dict[str, dict[str, Any]] = {}
+
+    for candidate in candidates:
+        status = candidate.get("status") or "pending"
+        if status not in status_counts:
+            status_counts[status] = 0
+        status_counts[status] += 1
+
+        tag_type = candidate.get("tag_type") or ""
+        if not tag_type:
+            continue
+        tag = tag_counts.setdefault(
+            tag_type,
+            {
+                "tag_type": tag_type,
+                "tag_label": candidate.get("tag_label") or tag_type,
+                "count": 0,
+            },
+        )
+        tag["count"] += 1
+
+    filtered = candidates
+    if active_status:
+        filtered = [
+            item for item in filtered
+            if (item.get("status") or "pending") == active_status
+        ]
+    if active_tag_type:
+        filtered = [
+            item for item in filtered
+            if (item.get("tag_type") or "") == active_tag_type
+        ]
+
+    page_size = min(max(page_size, 1), 100)
+    total_count = len(filtered)
+    total_pages = max((total_count + page_size - 1) // page_size, 1)
+    page = min(max(page, 1), total_pages)
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    def page_url(target_page: int) -> str:
+        query = {
+            "person_page": target_page,
+            "person_page_size": page_size,
+        }
+        if active_status:
+            query["person_status"] = active_status
+        if active_tag_type:
+            query["person_tag_type"] = active_tag_type
+        return f"?{urlencode(query)}#person-candidates"
+
+    return {
+        "items": filtered[start:end],
+        "total_count": total_count,
+        "unfiltered_count": len(candidates),
+        "active_status": active_status,
+        "active_tag_type": active_tag_type,
+        "status_counts": status_counts,
+        "tag_options": sorted(
+            tag_counts.values(),
+            key=lambda item: (-item["count"], item["tag_label"]),
+        ),
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "has_previous": page > 1,
+            "has_next": page < total_pages,
+            "previous_url": page_url(page - 1) if page > 1 else "",
+            "next_url": page_url(page + 1) if page < total_pages else "",
+            "start_index": start + 1 if total_count else 0,
+        },
+    }
+
+
 def _result_citing_title(result: dict[str, Any]) -> str:
     citing_paper = result.get("citing_paper") or {}
     return (

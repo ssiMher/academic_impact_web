@@ -93,6 +93,10 @@ async def scholar_detail(
     queue_reason: str = "",
     queue_page: int = 1,
     queue_page_size: int = 20,
+    person_status: str = "",
+    person_tag_type: str = "",
+    person_page: int = 1,
+    person_page_size: int = 12,
 ):
     try:
         payload = scholar_core.load_scholar_status(session_id)
@@ -105,6 +109,13 @@ async def scholar_detail(
         page_size=queue_page_size,
     )
     analysis_summary = scholar_core.build_scholar_analysis_summary(payload)
+    person_view = scholar_core.build_person_candidate_view(
+        payload,
+        active_status=person_status,
+        active_tag_type=person_tag_type,
+        page=person_page,
+        page_size=person_page_size,
+    )
     return templates.TemplateResponse(
         request,
         "scholar_session.html",
@@ -113,6 +124,7 @@ async def scholar_detail(
             "session_id": session_id,
             "payload": payload,
             "queue_view": queue_view,
+            "person_view": person_view,
             "analysis_summary": analysis_summary,
             "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),
         },

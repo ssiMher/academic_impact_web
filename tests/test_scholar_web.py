@@ -181,6 +181,60 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertNotIn("Venue Citing Paper</td>", response.text)
         self.assertIn("当前显示 1 / 2 篇高价值引用论文", response.text)
 
+    def test_scholar_route_renders_queue_analysis_readiness(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "Missing PDF Paper",
+                            "citing_doi": "10.1000/missing",
+                            "priority_score": 25,
+                            "reasons": ["venue:CCF A"],
+                        }
+                    ],
+                    "scholar_fulltext_results": [
+                        {
+                            "queue_id": "Q001",
+                            "status": "context_only",
+                            "download": {
+                                "source": "manual_required",
+                                "error": "未找到合法开源 PDF 链接。",
+                            },
+                            "analysis": {"error_type": "download_failed"},
+                        }
+                    ],
+                    "statistics": {
+                        "publication_count": 0,
+                        "citation_edge_count": 0,
+                        "person_tag_statistics": [],
+                    },
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("准备状态", response.text)
+        self.assertIn("DOI: 10.1000/missing", response.text)
+        self.assertIn("context_only", response.text)
+        self.assertIn("manual_required", response.text)
+        self.assertIn("未找到合法开源 PDF 链接。", response.text)
+        self.assertIn("分析会先尝试自动下载 PDF", response.text)
+
     def test_build_deep_analysis_queue_view_paginates(self):
         session = {
             "deep_analysis_queue": [
@@ -203,6 +257,48 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(view["pagination"]["page"], 2)
         self.assertFalse(view["pagination"]["has_next"])
         self.assertTrue(view["pagination"]["has_previous"])
+
+    def test_build_deep_analysis_queue_view_adds_analysis_readiness(self):
+        session = {
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q001",
+                    "citing_title": "Failed Citing Paper",
+                    "citing_doi": "10.1000/failed",
+                    "citing_scopus_id": "2-s2.0-123",
+                    "reasons": ["venue:CCF A"],
+                },
+                {
+                    "queue_id": "Q002",
+                    "citing_title": "Fresh Citing Paper",
+                    "citing_openalex_id": "W123",
+                    "reasons": ["venue:CCF A"],
+                },
+            ],
+            "scholar_fulltext_results": [
+                {
+                    "queue_id": "Q001",
+                    "status": "context_only",
+                    "download": {
+                        "source": "manual_required",
+                        "error": "未找到合法开源 PDF 链接。",
+                    },
+                    "analysis": {"error_type": "download_failed"},
+                }
+            ],
+        }
+
+        view = scholar_core.build_deep_analysis_queue_view(session)
+
+        failed = view["items"][0]
+        fresh = view["items"][1]
+        self.assertEqual(failed["analysis_status"], "context_only")
+        self.assertEqual(failed["analysis_failure_message"], "未找到合法开源 PDF 链接。")
+        self.assertEqual(failed["download_source"], "manual_required")
+        self.assertEqual(failed["citing_identifier"], "DOI: 10.1000/failed")
+        self.assertEqual(fresh["analysis_status"], "not_analyzed")
+        self.assertEqual(fresh["download_source"], "点击分析时自动尝试下载 PDF")
+        self.assertEqual(fresh["citing_identifier"], "OpenAlex: W123")
 
     def test_build_person_candidate_view_filters_and_paginates(self):
         session = {

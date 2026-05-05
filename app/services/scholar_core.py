@@ -173,6 +173,12 @@ def build_deep_analysis_queue_view(
             item for item in queue if active_reason in (item.get("reasons") or [])
         ]
 
+    result_by_queue_id = {
+        result.get("queue_id"): result
+        for result in session.get("scholar_fulltext_results", []) or []
+        if result.get("queue_id")
+    }
+
     page_size = min(max(page_size, 1), 100)
     total_count = len(filtered)
     total_pages = max((total_count + page_size - 1) // page_size, 1)
@@ -189,8 +195,41 @@ def build_deep_analysis_queue_view(
             query["queue_reason"] = active_reason
         return f"?{urlencode(query)}#deep-analysis-queue"
 
+    def citing_identifier(item: dict[str, Any]) -> str:
+        if item.get("citing_doi"):
+            return f"DOI: {item.get('citing_doi')}"
+        if item.get("citing_scopus_id"):
+            return f"Scopus: {item.get('citing_scopus_id')}"
+        if item.get("citing_openalex_id"):
+            return f"OpenAlex: {item.get('citing_openalex_id')}"
+        if item.get("citing_paper_id"):
+            return f"ID: {item.get('citing_paper_id')}"
+        return "-"
+
+    def decorate_queue_item(item: dict[str, Any]) -> dict[str, Any]:
+        result = result_by_queue_id.get(item.get("queue_id"))
+        decorated = dict(item)
+        decorated["citing_identifier"] = citing_identifier(item)
+        if result:
+            download = result.get("download") or {}
+            analysis = result.get("analysis") or {}
+            decorated["analysis_status"] = (
+                result.get("status")
+                or analysis.get("final_status")
+                or "unknown"
+            )
+            decorated["download_source"] = download.get("source") or "-"
+            decorated["analysis_failure_message"] = _result_failure_message(result)
+            decorated["analysis_error_type"] = analysis.get("error_type") or ""
+        else:
+            decorated["analysis_status"] = "not_analyzed"
+            decorated["download_source"] = "点击分析时自动尝试下载 PDF"
+            decorated["analysis_failure_message"] = ""
+            decorated["analysis_error_type"] = ""
+        return decorated
+
     return {
-        "items": filtered[start:end],
+        "items": [decorate_queue_item(item) for item in filtered[start:end]],
         "total_count": total_count,
         "unfiltered_count": len(queue),
         "active_reason": active_reason,

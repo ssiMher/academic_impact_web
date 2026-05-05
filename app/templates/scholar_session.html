@@ -419,6 +419,7 @@
         </form>
         <p class="muted">
           当前显示 {{ queue.total_count or 0 }} / {{ queue.unfiltered_count or 0 }} 篇高价值引用论文；同一引用论文命中多篇目标论文时会合并展示。
+          分析会先尝试自动下载 PDF；若无法获得全文，会在准备状态中保留失败原因，后续可补 PDF 后重试。
         </p>
         <form action="/scholars/{{ session_id }}/analyze-queue" method="post">
           <div class="inline-actions">
@@ -439,6 +440,8 @@
                 <th>原因</th>
                 <th>引用论文</th>
                 <th>命中目标论文</th>
+                <th>DOI / ID</th>
+                <th>准备状态</th>
                 <th>年份</th>
                 <th>会议/期刊</th>
                 <th>引用作者</th>
@@ -460,13 +463,19 @@
                   <br /><span class="muted">{{ (edge.cited_publication_titles or []) | join('；') }}</span>
                   {% endif %}
                 </td>
+                <td>{{ edge.citing_identifier or '-' }}</td>
+                <td>
+                  <span class="chip">{{ edge.analysis_status or 'not_analyzed' }}</span>
+                  {% if edge.download_source %}<br /><span class="muted">{{ edge.download_source }}</span>{% endif %}
+                  {% if edge.analysis_failure_message %}<br /><span class="muted">{{ edge.analysis_failure_message }}</span>{% endif %}
+                </td>
                 <td>{{ edge.citing_year or '-' }}</td>
                 <td>{{ edge.citing_venue or '-' }}</td>
                 <td>{{ (edge.citing_authors or []) | join(', ') }}</td>
               </tr>
               {% else %}
               <tr>
-                <td colspan="9">当前筛选条件下没有候选。</td>
+                <td colspan="11">当前筛选条件下没有候选。</td>
               </tr>
               {% endfor %}
             </tbody>

@@ -102,6 +102,22 @@
           <pre>{% for bullet in report.bullets or [] %}- {{ bullet }}
 {% endfor %}</pre>
         </div>
+        {% if report.narrative_bullets %}
+        <h3>证据解读</h3>
+        <ul>
+          {% for bullet in report.narrative_bullets %}
+          <li>{{ bullet }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% if report.limitations %}
+        <h3>当前不足</h3>
+        <ul>
+          {% for item in report.limitations %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
       </section>
       {% endif %}
 

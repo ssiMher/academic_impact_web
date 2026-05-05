@@ -645,6 +645,58 @@ def build_scholar_report_payload(
     failure_count = overview.get("failure_count", 0)
     top_target_title = overview.get("top_target_title") or "暂无"
     next_action = overview.get("next_action") or "建议继续完善引用网络和全文分析。"
+    strong_evidence = session.get("strong_evidence", []) or []
+    pending_person_count = sum(
+        1
+        for candidate in session.get("person_candidates", []) or []
+        if candidate.get("status") == "pending"
+    )
+    remaining_queue_count = max((queue_count or 0) - (analyzed_queue_count or 0), 0)
+
+    aspect_counts: dict[str, int] = {}
+    for evidence in strong_evidence:
+        aspect = evidence.get("aspect") or "other"
+        aspect_counts[aspect] = aspect_counts.get(aspect, 0) + 1
+
+    narrative_bullets: list[str] = []
+    method_count = aspect_counts.get("method", 0)
+    if method_count:
+        narrative_bullets.append(f"方法采用类证据 {method_count} 条，说明目标工作被后续论文直接使用或复现。")
+    baseline_count = aspect_counts.get("baseline", 0) + aspect_counts.get("comparison", 0)
+    if baseline_count:
+        narrative_bullets.append(f"基线/比较类证据 {baseline_count} 条，说明目标工作进入后续实验比较体系。")
+    extension_count = aspect_counts.get("extension", 0) + aspect_counts.get("application", 0)
+    if extension_count:
+        narrative_bullets.append(f"应用拓展类证据 {extension_count} 条，说明目标工作被迁移、扩展或用于新场景。")
+    background_count = aspect_counts.get("background", 0)
+    if background_count:
+        narrative_bullets.append(f"背景支撑类证据 {background_count} 条，说明目标工作被后续研究用于问题背景或领域脉络。")
+    if not narrative_bullets:
+        narrative_bullets.append("当前还缺少可归类的强引用证据，建议继续分析高价值引用队列。")
+
+    def evidence_score(evidence: dict[str, Any]) -> tuple[int, int, int, int]:
+        return (
+            1 if evidence.get("fellow_strong_citation") else 0,
+            1 if evidence.get("positive_evaluation") or (evidence.get("stance") or "").lower() == "positive" else 0,
+            1 if evidence.get("long_context_100_chars") or (evidence.get("citation_char_count") or 0) >= 100 else 0,
+            evidence.get("citation_char_count") or len(evidence.get("citation_text") or ""),
+        )
+
+    top_evidence = sorted(
+        strong_evidence,
+        key=evidence_score,
+        reverse=True,
+    )[:3]
+
+    limitations: list[str] = []
+    if remaining_queue_count:
+        limitations.append(f"待分析高价值引用 {remaining_queue_count} 篇")
+    if failure_count:
+        limitations.append(f"待补全文/失败项 {failure_count} 条")
+    if pending_person_count:
+        limitations.append(f"人物标签待确认 {pending_person_count} 人")
+    if not limitations:
+        limitations.append("当前暂无明显流程缺口，后续可继续扩展更多引用论文。")
 
     summary_text = (
         f"{name} 当前汇总 {publication_count} 篇论文，展开 "
@@ -684,6 +736,27 @@ def build_scholar_report_payload(
         "",
     ]
     markdown_lines.extend(f"- {bullet}" for bullet in bullets)
+    markdown_lines.extend(["", "## 证据解读", ""])
+    markdown_lines.extend(f"- {bullet}" for bullet in narrative_bullets)
+    markdown_lines.extend(["", "## Top 强引用证据", ""])
+    if top_evidence:
+        for index, evidence in enumerate(top_evidence, 1):
+            excerpt = str(evidence.get("citation_text") or "").strip()
+            if len(excerpt) > 420:
+                excerpt = f"{excerpt[:420]}..."
+            markdown_lines.extend(
+                [
+                    f"{index}. {evidence.get('citing_title') or '未知引用论文'}",
+                    f"   - 命中目标：{evidence.get('cited_publication_title') or '-'}",
+                    f"   - 类型/态度：{evidence.get('aspect') or '-'} / {evidence.get('stance') or '-'}",
+                    f"   - Fellow 强引用：{'是' if evidence.get('fellow_strong_citation') else '否'}",
+                    f"   - 摘录：{excerpt}",
+                ]
+            )
+    else:
+        markdown_lines.append("- 暂无强引用证据示例。")
+    markdown_lines.extend(["", "## 当前不足", ""])
+    markdown_lines.extend(f"- {item}" for item in limitations)
     markdown_lines.extend(
         [
             "",
@@ -724,6 +797,9 @@ def build_scholar_report_payload(
     return {
         "summary_text": summary_text,
         "bullets": bullets,
+        "narrative_bullets": narrative_bullets,
+        "top_evidence": top_evidence,
+        "limitations": limitations,
         "markdown": "\n".join(markdown_lines).rstrip() + "\n",
         "overview": {
             "publication_count": publication_count,

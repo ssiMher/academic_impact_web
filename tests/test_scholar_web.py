@@ -1183,7 +1183,11 @@ class ScholarWebTestCase(unittest.TestCase):
                 "citation_edge_count": 3450,
                 "first_author_publication_count": 18,
             },
-            "deep_analysis_queue": [{"queue_id": "Q001"}, {"queue_id": "Q002"}],
+            "deep_analysis_queue": [{"queue_id": "Q001"}, {"queue_id": "Q002"}, {"queue_id": "Q003"}],
+            "person_candidates": [
+                {"name": "Alice Fellow", "status": "pending"},
+                {"name": "Bob Fellow", "status": "pending"},
+            ],
             "scholar_fulltext_results": [
                 {"queue_id": "Q001", "status": "fulltext_analyzed", "analysis": {"ok": True}},
                 {"queue_id": "Q002", "status": "context_only", "analysis": {"ok": False}},
@@ -1198,6 +1202,22 @@ class ScholarWebTestCase(unittest.TestCase):
                     "fellow_strong_citation": True,
                     "positive_evaluation": True,
                     "long_context_100_chars": True,
+                    "citation_char_count": 150,
+                },
+                {
+                    "citing_title": "Baseline Paper",
+                    "cited_publication_title": "Target Paper",
+                    "citation_text": "Used as a baseline.",
+                    "aspect": "baseline",
+                    "stance": "neutral",
+                },
+                {
+                    "citing_title": "Application Paper",
+                    "cited_publication_title": "Applied Target",
+                    "citation_text": "Applied to a new scenario.",
+                    "aspect": "application",
+                    "stance": "positive",
+                    "positive_evaluation": True,
                 }
             ],
         }
@@ -1207,10 +1227,23 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("Chen Tian", payload["summary_text"])
         self.assertIn("189 篇论文", payload["summary_text"])
         self.assertIn("3450 条引用边", payload["summary_text"])
-        self.assertIn("强引用证据 1 条", payload["summary_text"])
+        self.assertIn("强引用证据 3 条", payload["summary_text"])
         self.assertIn("Fellow 强引用 1 条", payload["summary_text"])
         self.assertIn("当前最强目标论文：Target Paper", payload["bullets"])
+        self.assertTrue(
+            any("方法采用类证据 1 条" in item for item in payload["narrative_bullets"])
+        )
+        self.assertTrue(
+            any("应用拓展类证据 1 条" in item for item in payload["narrative_bullets"])
+        )
+        self.assertEqual(payload["top_evidence"][0]["citing_title"], "Fellow Method Paper")
+        self.assertIn("待分析高价值引用 1 篇", payload["limitations"])
+        self.assertIn("待补全文/失败项 1 条", payload["limitations"])
+        self.assertIn("人物标签待确认 2 人", payload["limitations"])
         self.assertIn("# Chen Tian 学者影响力报告", payload["markdown"])
+        self.assertIn("## 证据解读", payload["markdown"])
+        self.assertIn("## Top 强引用证据", payload["markdown"])
+        self.assertIn("## 当前不足", payload["markdown"])
 
     def test_scholar_route_renders_report_summary_and_export_link(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

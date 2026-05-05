@@ -848,6 +848,108 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("未找到合法开源 PDF 链接。", response.text)
         self.assertIn('name="queue_ids" value="Q003"', response.text)
         self.assertIn("重试失败项", response.text)
+        self.assertIn("建议动作", response.text)
+        self.assertIn("上传该引用论文 PDF", response.text)
+
+    def test_build_scholar_demo_guidance_recommends_next_actions(self):
+        session = {
+            "statistics": {"publication_count": 2, "citation_edge_count": 0},
+            "citation_edges": [],
+            "deep_analysis_queue": [
+                {"queue_id": "Q001", "citing_title": "Missing PDF Paper"},
+                {"queue_id": "Q002", "citing_title": "Fresh Paper"},
+            ],
+            "scholar_fulltext_results": [
+                {
+                    "queue_id": "Q001",
+                    "status": "context_only",
+                    "download": {"source": "manual_required"},
+                    "analysis": {"ok": False, "error_type": "download_failed"},
+                }
+            ],
+            "strong_evidence": [
+                {
+                    "citing_title": "Fellow Method Paper",
+                    "citation_text": "A strong citation.",
+                }
+            ],
+            "person_candidates": [
+                {"candidate_id": "P001", "status": "pending"},
+                {"candidate_id": "P002", "status": "pending"},
+                {"candidate_id": "P003", "status": "confirmed"},
+            ],
+        }
+
+        guidance = scholar_core.build_scholar_demo_guidance(session)
+
+        titles = [step["title"] for step in guidance["steps"]]
+        self.assertIn("先展开引用网络", titles)
+        self.assertIn("审核人物标签候选", titles)
+        self.assertIn("分析高价值引用队列", titles)
+        self.assertIn("补 PDF 并重试失败项", titles)
+        self.assertIn("下载报告并核对强引用证据", titles)
+        self.assertEqual(guidance["completeness"]["queue_count"], 2)
+        self.assertEqual(guidance["completeness"]["analyzed_queue_count"], 1)
+        self.assertEqual(guidance["completeness"]["remaining_queue_count"], 1)
+        self.assertEqual(guidance["completeness"]["failure_count"], 1)
+        self.assertEqual(guidance["completeness"]["pending_person_count"], 2)
+
+    def test_scholar_route_renders_demo_guidance(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {"queue_id": "Q001", "citing_title": "Missing PDF Paper"},
+                        {"queue_id": "Q002", "citing_title": "Fresh Paper"},
+                    ],
+                    "scholar_fulltext_results": [
+                        {
+                            "queue_id": "Q001",
+                            "status": "context_only",
+                            "citing_paper": {"title": "Missing PDF Paper"},
+                            "download": {"source": "manual_required"},
+                            "analysis": {"ok": False, "error_type": "download_failed"},
+                        }
+                    ],
+                    "strong_evidence": [
+                        {
+                            "citing_title": "Fellow Method Paper",
+                            "citation_text": "A strong citation.",
+                        }
+                    ],
+                    "person_candidates": [
+                        {"candidate_id": "P001", "status": "pending"},
+                        {"candidate_id": "P002", "status": "pending"},
+                    ],
+                    "statistics": {
+                        "publication_count": 2,
+                        "citation_edge_count": 0,
+                        "person_tag_statistics": [],
+                    },
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("下一步操作建议", response.text)
+        self.assertIn("高价值队列：已分析 1/2", response.text)
+        self.assertIn("待分析：1", response.text)
+        self.assertIn("待补全文/失败项：1", response.text)
+        self.assertIn("人物待确认：2", response.text)
+        self.assertIn("补 PDF 并重试失败项", response.text)
 
     def test_scholar_route_renders_target_impact_summary(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

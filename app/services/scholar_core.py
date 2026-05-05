@@ -487,6 +487,23 @@ def _result_failure_message(result: dict[str, Any]) -> str:
     )
 
 
+def _result_action_hint(result: dict[str, Any]) -> str:
+    status = result.get("status") or (result.get("analysis") or {}).get("final_status") or ""
+    analysis = result.get("analysis") or {}
+    download = result.get("download") or {}
+    error_type = analysis.get("error_type") or ""
+    download_source = download.get("source") or ""
+    if (
+        status in {"context_only", "fulltext_extract_failed"}
+        or error_type in {"download_failed", "fulltext_extract_failed"}
+        or download_source == "manual_required"
+    ):
+        return "未找到可用全文：请在高价值引用队列中上传该引用论文 PDF，然后重试失败项。"
+    if status == "analysis_failed" or error_type:
+        return "模型分析失败：可先重试；若持续失败，请减少单次选择数量并检查模型服务。"
+    return "检查失败原因后重试；如果仍失败，请补充 PDF 或缩小本次分析范围。"
+
+
 def build_scholar_analysis_summary(session: dict[str, Any]) -> dict[str, Any]:
     results = session.get("scholar_fulltext_results", []) or []
     strong_evidence = session.get("strong_evidence", []) or []
@@ -522,6 +539,7 @@ def build_scholar_analysis_summary(session: dict[str, Any]) -> dict[str, Any]:
                 "error_detail_type": analysis.get("error_detail_type") or "",
                 "download_source": download.get("source") or "",
                 "download_error": download.get("error") or "",
+                "action_hint": _result_action_hint(result),
             }
         )
 
@@ -606,6 +624,105 @@ def build_scholar_analysis_summary(session: dict[str, Any]) -> dict[str, Any]:
         "retry_queue_ids": retry_queue_ids,
         "target_summaries": target_summaries,
         "overview": overview,
+    }
+
+
+def build_scholar_demo_guidance(
+    session: dict[str, Any],
+    *,
+    analysis_summary: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    statistics = session.get("statistics") or {}
+    analysis = analysis_summary or build_scholar_analysis_summary(session)
+    overview = analysis.get("overview") or {}
+    queue_count = overview.get(
+        "queue_count",
+        len(session.get("deep_analysis_queue", []) or []),
+    )
+    analyzed_queue_count = overview.get("analyzed_queue_count", 0)
+    remaining_queue_count = max((queue_count or 0) - (analyzed_queue_count or 0), 0)
+    failure_count = overview.get("failure_count", analysis.get("failure_count", 0))
+    strong_evidence_count = overview.get(
+        "strong_evidence_count",
+        len(session.get("strong_evidence", []) or []),
+    )
+    citation_edge_count = statistics.get("citation_edge_count")
+    if citation_edge_count is None:
+        citation_edge_count = len(session.get("citation_edges", []) or [])
+    pending_person_count = sum(
+        1
+        for candidate in session.get("person_candidates", []) or []
+        if (candidate.get("status") or "pending") == "pending"
+    )
+    analysis_percent = round((analyzed_queue_count * 100 / queue_count), 1) if queue_count else 0.0
+
+    steps: list[dict[str, str]] = []
+
+    def add_step(kind: str, title: str, action: str, anchor: str) -> None:
+        steps.append(
+            {
+                "kind": kind,
+                "title": title,
+                "action": action,
+                "anchor": anchor,
+            }
+        )
+
+    if citation_edge_count == 0:
+        add_step(
+            "expand_citations",
+            "先展开引用网络",
+            "点击“展开引用论文”，让系统收集引用边、作者线索和高价值队列。",
+            "#scholar-actions",
+        )
+    if pending_person_count:
+        add_step(
+            "review_people",
+            "审核人物标签候选",
+            "确认 Fellow、院士、海外高校作者等候选，统计口径会更稳。",
+            "#person-candidates",
+        )
+    if queue_count and remaining_queue_count:
+        add_step(
+            "analyze_queue",
+            "分析高价值引用队列",
+            "优先勾选 Top 队列，点击“分析所选引用论文”生成强引用证据。",
+            "#deep-analysis-queue",
+        )
+    if failure_count:
+        add_step(
+            "recover_failures",
+            "补 PDF 并重试失败项",
+            "失败项通常是缺全文或模型调用失败；缺全文时在队列中上传 PDF 后重试。",
+            "#fulltext-status",
+        )
+    if strong_evidence_count:
+        add_step(
+            "export_report",
+            "下载报告并核对强引用证据",
+            "已有强引用证据时，可以下载 Markdown 报告，并检查证据摘录是否适合放进组会材料。",
+            "#report-summary",
+        )
+    if not steps:
+        add_step(
+            "continue_demo",
+            "继续扩展或导出报告",
+            "当前流程没有明显阻塞，可以继续扩大引用网络，或导出报告做人工核对。",
+            "#report-summary",
+        )
+
+    return {
+        "steps": steps,
+        "completeness": {
+            "citation_edge_count": citation_edge_count,
+            "queue_count": queue_count,
+            "analyzed_queue_count": analyzed_queue_count,
+            "remaining_queue_count": remaining_queue_count,
+            "failure_count": failure_count,
+            "strong_evidence_count": strong_evidence_count,
+            "pending_person_count": pending_person_count,
+            "analysis_percent": analysis_percent,
+        },
     }
 
 

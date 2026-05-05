@@ -20,6 +20,8 @@
     {% set strong = strong_evidence_view or {} %}
     {% set strong_pagination = strong.pagination or {} %}
     {% set report = report_payload or {} %}
+    {% set guidance = demo_guidance or {} %}
+    {% set guide_complete = guidance.completeness or {} %}
     {% set person = person_view or {} %}
     {% set person_pagination = person.pagination or {} %}
     {% set person_status_counts = person.status_counts or {} %}
@@ -27,7 +29,7 @@
     {% set confirmed_people = person_status_counts.confirmed or 0 %}
     {% set rejected_people = person_status_counts.rejected or 0 %}
     <main class="page">
-      <section class="panel">
+      <section class="panel" id="scholar-actions">
         <p><a href="/">← 返回首页</a></p>
         <div class="panel-header">
           <div>
@@ -87,8 +89,38 @@
         </form>
       </section>
 
+      {% if guidance.steps %}
+      <section class="panel" id="demo-guidance">
+        <div class="panel-header">
+          <div>
+            <h2>下一步操作建议</h2>
+            <p class="muted">按当前会话状态自动生成，适合真实 demo 时顺着做。</p>
+          </div>
+          <span class="chip">全文进度：{{ guide_complete.analysis_percent or 0 }}%</span>
+        </div>
+        <div class="status-chips">
+          <span class="chip">高价值队列：已分析 {{ guide_complete.analyzed_queue_count or 0 }}/{{ guide_complete.queue_count or 0 }}</span>
+          <span class="chip">待分析：{{ guide_complete.remaining_queue_count or 0 }}</span>
+          <span class="chip">待补全文/失败项：{{ guide_complete.failure_count or 0 }}</span>
+          <span class="chip">人物待确认：{{ guide_complete.pending_person_count or 0 }}</span>
+          <span class="chip">强引用证据：{{ guide_complete.strong_evidence_count or 0 }}</span>
+        </div>
+        <div class="cards">
+          {% for step in guidance.steps %}
+          <article class="card">
+            <div class="card-header">
+              <strong>{{ loop.index }}. {{ step.title }}</strong>
+              <a href="{{ step.anchor }}">跳转</a>
+            </div>
+            <p>{{ step.action }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
       {% if report.summary_text %}
-      <section class="panel">
+      <section class="panel" id="report-summary">
         <div class="panel-header">
           <div>
             <h2>报告摘要</h2>
@@ -122,7 +154,7 @@
       {% endif %}
 
       {% if analysis.overview %}
-      <section class="panel">
+      <section class="panel" id="impact-overview">
         <div class="panel-header">
           <div>
             <h2>学者影响力速览</h2>
@@ -288,7 +320,7 @@
       {% endif %}
 
       {% if analysis.result_count %}
-      <section class="panel">
+      <section class="panel" id="fulltext-status">
         <div class="panel-header">
           <div>
             <h2>全文分析状态</h2>
@@ -320,6 +352,9 @@
             </div>
             {% if item.download_error %}
             <p class="muted">下载信息：{{ item.download_error }}</p>
+            {% endif %}
+            {% if item.action_hint %}
+            <p><strong>建议动作：</strong>{{ item.action_hint }}</p>
             {% endif %}
           </article>
           {% endfor %}

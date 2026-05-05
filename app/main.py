@@ -122,6 +122,10 @@ async def scholar_detail(
         page_size=strong_page_size,
     )
     analysis_summary = scholar_core.build_scholar_analysis_summary(payload)
+    demo_guidance = scholar_core.build_scholar_demo_guidance(
+        payload,
+        analysis_summary=analysis_summary,
+    )
     report_payload = scholar_core.build_scholar_report_payload(
         payload,
         analysis_summary=analysis_summary,
@@ -145,6 +149,7 @@ async def scholar_detail(
             "strong_evidence_view": strong_evidence_view,
             "person_view": person_view,
             "analysis_summary": analysis_summary,
+            "demo_guidance": demo_guidance,
             "report_payload": report_payload,
             "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),
         },

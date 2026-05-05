@@ -577,6 +577,71 @@ class ScholarPipelineTestCase(unittest.TestCase):
         self.assertEqual(progress_events[0]["current_title"], "Citing Paper")
         self.assertEqual(progress_events[0]["current_index"], 1)
 
+    def test_analyze_scholar_queue_deduplicates_same_evidence_for_duplicate_targets(self):
+        session = {
+            "publications": [
+                {"id": "S001", "title": "Trust: Triangle Counting Reloaded on GPUs."},
+                {"id": "S002", "title": "TRUST: Triangle Counting Reloaded on GPUs."},
+            ],
+            "citation_edges": [],
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q001",
+                    "source_publication_ids": ["S001", "S002"],
+                    "citing_paper_id": "C001",
+                    "citing_title": "A Survey of Distributed Graph Algorithms on Massive Graphs",
+                }
+            ],
+            "person_candidates": [],
+            "statistics": {},
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            session_dir = Path(tmpdir)
+
+            def fake_process_citing_paper(**kwargs):
+                item_dir = kwargs["item_dir"]
+                item_dir.mkdir(parents=True, exist_ok=True)
+                analysis_path = item_dir / "fulltext_analysis.json"
+                analysis_path.write_text(
+                    json.dumps(
+                        {
+                            "ok": True,
+                            "findings": [
+                                {
+                                    "citation_text": "Partition-based methods cite several target papers together.",
+                                    "aspect": "background",
+                                    "stance": "neutral",
+                                    "mention_type": "grouped_literature_mention",
+                                    "page": 10,
+                                    "span_index": 6,
+                                }
+                            ],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                return {
+                    "status": "fulltext_analyzed",
+                    "paths": {"analysis": str(analysis_path)},
+                    "analysis": {"findings_count": 1},
+                }
+
+            with mock.patch.object(
+                self.pipeline.RUN_PIPELINE,
+                "process_citing_paper",
+                side_effect=fake_process_citing_paper,
+            ):
+                analyzed = self.pipeline.analyze_scholar_queue(
+                    session,
+                    session_dir,
+                    queue_ids=["Q001"],
+                )
+
+        self.assertEqual(len(analyzed["scholar_fulltext_results"]), 2)
+        self.assertEqual(len(analyzed["strong_evidence"]), 1)
+        self.assertEqual(analyzed["statistics"]["strong_evidence_count"], 1)
+
     def test_expand_publication_citations_records_provider_errors_and_continues(self):
         session = {
             "publications": [

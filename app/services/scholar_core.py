@@ -290,7 +290,7 @@ def build_strong_evidence_view(
     page: int = 1,
     page_size: int = 10,
 ) -> dict[str, Any]:
-    evidence_items = session.get("strong_evidence", []) or []
+    evidence_items = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
     aspect_counts: dict[str, int] = {}
     stance_counts: dict[str, int] = {}
     flag_counts = {
@@ -396,6 +396,41 @@ def build_strong_evidence_view(
             "start_index": start + 1 if total_count else 0,
         },
     }
+
+
+def _compact_evidence_text(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    return re.sub(r"\W+", "", text)
+
+
+def _normalize_evidence_excerpt(value: Any) -> str:
+    return re.sub(r"\s+", " ", str(value or "").strip().lower())
+
+
+def _strong_evidence_key(item: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        item.get("queue_id") or "",
+        _compact_evidence_text(item.get("citing_title")),
+        _compact_evidence_text(item.get("cited_publication_title")),
+        _normalize_evidence_excerpt(item.get("citation_text")),
+        item.get("page"),
+        item.get("span_index"),
+        item.get("aspect") or "",
+        item.get("stance") or "",
+        item.get("mention_type") or "",
+    )
+
+
+def _deduplicate_strong_evidence(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    deduped = []
+    seen = set()
+    for item in items:
+        key = _strong_evidence_key(item)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+    return deduped
 
 
 def build_person_candidate_view(
@@ -527,7 +562,7 @@ def _result_action_hint(result: dict[str, Any]) -> str:
 
 def build_scholar_analysis_summary(session: dict[str, Any]) -> dict[str, Any]:
     results = session.get("scholar_fulltext_results", []) or []
-    strong_evidence = session.get("strong_evidence", []) or []
+    strong_evidence = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
     status_counts: dict[str, int] = {}
     failed_statuses = {
         "context_only",
@@ -665,7 +700,7 @@ def build_scholar_demo_guidance(
     failure_count = overview.get("failure_count", analysis.get("failure_count", 0))
     strong_evidence_count = overview.get(
         "strong_evidence_count",
-        len(session.get("strong_evidence", []) or []),
+        len(_deduplicate_strong_evidence(session.get("strong_evidence", []) or [])),
     )
     citation_edge_count = statistics.get("citation_edge_count")
     if citation_edge_count is None:
@@ -775,7 +810,7 @@ def build_scholar_report_payload(
     analyzed_queue_count = overview.get("analyzed_queue_count", 0)
     strong_evidence_count = overview.get(
         "strong_evidence_count",
-        len(session.get("strong_evidence", []) or []),
+        len(_deduplicate_strong_evidence(session.get("strong_evidence", []) or [])),
     )
     fellow_strong_count = overview.get("fellow_strong_count", 0)
     positive_count = flag_counts.get("positive", 0)
@@ -783,7 +818,7 @@ def build_scholar_report_payload(
     failure_count = overview.get("failure_count", 0)
     top_target_title = overview.get("top_target_title") or "暂无"
     next_action = overview.get("next_action") or "建议继续完善引用网络和全文分析。"
-    strong_evidence = session.get("strong_evidence", []) or []
+    strong_evidence = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
     pending_person_count = sum(
         1
         for candidate in session.get("person_candidates", []) or []
@@ -912,7 +947,7 @@ def build_scholar_report_payload(
         ]
     )
 
-    examples = session.get("strong_evidence", []) or []
+    examples = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
     if examples:
         markdown_lines.extend(["", "## 强引用证据示例", ""])
     for evidence in examples[:5]:
@@ -1113,7 +1148,9 @@ def review_person_candidate(
             session.get("publications", []),
             session.get("citation_edges", []),
             session.get("person_candidates", []),
-            strong_evidence_count=len(session.get("strong_evidence", []) or []),
+            strong_evidence_count=len(
+                _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+            ),
         )
         session["deep_analysis_queue"] = stats.build_deep_analysis_queue(
             session.get("citation_edges", []),

@@ -419,6 +419,40 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("strong_page=1", view["pagination"]["previous_url"])
         self.assertIn("strong_aspect=method", view["pagination"]["previous_url"])
 
+    def test_build_strong_evidence_view_deduplicates_same_citation(self):
+        citation_text = "Partition-based methods cite several target papers together."
+        session = {
+            "strong_evidence": [
+                {
+                    "queue_id": "Q001",
+                    "citing_title": "A Survey of Distributed Graph Algorithms on Massive Graphs",
+                    "cited_publication_title": "Trust: Triangle Counting Reloaded on GPUs.",
+                    "citation_text": citation_text,
+                    "aspect": "background",
+                    "stance": "neutral",
+                    "page": 10,
+                    "span_index": 6,
+                },
+                {
+                    "queue_id": "Q001",
+                    "citing_title": "A Survey of Distributed Graph Algorithms on Massive Graphs",
+                    "cited_publication_title": "TRUST: Triangle Counting Reloaded on GPUs.",
+                    "citation_text": citation_text,
+                    "aspect": "background",
+                    "stance": "neutral",
+                    "page": 10,
+                    "span_index": 6,
+                },
+            ]
+        }
+
+        view = scholar_core.build_strong_evidence_view(session)
+
+        self.assertEqual(view["total_count"], 1)
+        self.assertEqual(view["unfiltered_count"], 1)
+        self.assertEqual(view["aspect_counts"]["background"], 1)
+        self.assertEqual(view["items"][0]["cited_publication_title"], "Trust: Triangle Counting Reloaded on GPUs.")
+
     def test_build_person_candidate_view_filters_and_paginates(self):
         session = {
             "person_candidates": [
@@ -687,6 +721,30 @@ class ScholarWebTestCase(unittest.TestCase):
         start_task.assert_called_once_with(
             TEST_SESSION_ID,
             queue_ids=["Q001", "Q002"],
+            top_k_spans=8,
+            analysis_scope="fulltext_direct",
+        )
+
+    def test_analyze_scholar_queue_route_uses_default_span_count_when_hidden(self):
+        client = TestClient(app)
+        with mock.patch.object(
+            scholar_core,
+            "start_analyze_queue_task",
+            return_value=(True, {}),
+        ) as start_task:
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/analyze-queue",
+                data={
+                    "queue_ids": ["Q001"],
+                    "analysis_scope": "fulltext_direct",
+                },
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 303)
+        start_task.assert_called_once_with(
+            TEST_SESSION_ID,
+            queue_ids=["Q001"],
             top_k_spans=8,
             analysis_scope="fulltext_direct",
         )
@@ -1473,6 +1531,39 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("Chen Tian", response.text)
         self.assertIn("强引用证据 1 条", response.text)
         self.assertIn(f"/scholars/{TEST_SESSION_ID}/exports/report.md", response.text)
+
+    def test_scholar_route_hides_candidate_span_control_for_fulltext_analysis(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "Citing Paper",
+                            "citing_doi": "10.1000/citing",
+                        }
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("候选段落数", response.text)
+        self.assertIn('type="hidden" name="top_k_spans" value="8"', response.text)
 
     def test_scholar_report_markdown_export_route(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

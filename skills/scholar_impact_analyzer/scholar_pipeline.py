@@ -183,6 +183,42 @@ def normalize_strong_evidence(
     }
 
 
+def compact_evidence_text(value: Any) -> str:
+    return "".join(ch for ch in str(value or "").lower() if ch.isalnum())
+
+
+def normalize_evidence_excerpt(value: Any) -> str:
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def strong_evidence_key(item: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        item.get("queue_id") or "",
+        compact_evidence_text(item.get("citing_title")),
+        compact_evidence_text(item.get("cited_publication_title")),
+        normalize_evidence_excerpt(item.get("citation_text")),
+        item.get("page"),
+        item.get("span_index"),
+        item.get("aspect") or "",
+        item.get("stance") or "",
+        item.get("mention_type") or "",
+    )
+
+
+def deduplicate_strong_evidence(
+    items: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    deduped = []
+    seen = set()
+    for item in items:
+        key = strong_evidence_key(item)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+    return deduped
+
+
 def publication_to_target(publication: dict[str, Any]) -> dict[str, Any]:
     unique_ids = publication.get("unique_ids") or {}
     external_ids = {
@@ -485,8 +521,11 @@ def analyze_scholar_queue(
                 completed_count=processed,
             )
 
+    new_evidence = deduplicate_strong_evidence(new_evidence)
     session["scholar_fulltext_results"] = existing_results + new_results
-    session["strong_evidence"] = existing_evidence + new_evidence
+    session["strong_evidence"] = deduplicate_strong_evidence(
+        existing_evidence + new_evidence
+    )
     session["statistics"] = SCHOLAR_STATS.build_scholar_statistics(
         session.get("publications", []),
         session.get("citation_edges", []),

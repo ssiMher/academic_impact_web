@@ -568,12 +568,9 @@
         </p>
         <form id="scholar-analyze-queue-form" action="/scholars/{{ session_id }}/analyze-queue" method="post">
           <input type="hidden" name="analysis_scope" value="fulltext_direct" />
+          <input type="hidden" name="top_k_spans" value="8" />
         </form>
           <div class="inline-actions">
-            <label>
-              候选段落数
-              <input type="number" name="top_k_spans" value="8" min="1" max="20" form="scholar-analyze-queue-form" {% if task_active %}disabled{% endif %} data-scholar-task-control />
-            </label>
             <button type="submit" form="scholar-analyze-queue-form" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>分析所选引用论文</button>
           </div>
         <div class="table-shell">

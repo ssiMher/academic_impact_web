@@ -298,6 +298,55 @@ class ScholarPipelineTestCase(unittest.TestCase):
             rebuilt["deep_analysis_queue"][0]["reasons"],
         )
 
+    def test_rebuild_scholar_derived_outputs_preserves_manual_queue_pdf(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "citation_count": 12,
+                }
+            ],
+            "citation_edges": [
+                {
+                    "source_publication_id": "S001",
+                    "cited_publication_title": "Target Paper",
+                    "citing_paper_id": "C001",
+                    "citing_title": "Top Venue Citation",
+                    "citing_year": 2025,
+                    "citing_venue": "ACM MobiCom",
+                    "citing_authors": ["Regular Author"],
+                }
+            ],
+            "person_candidates": [],
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q009",
+                    "source_publication_ids": ["S001"],
+                    "citing_paper_id": "C001",
+                    "citing_title": "Top Venue Citation",
+                    "citing_year": 2025,
+                    "citing_venue": "ACM MobiCom",
+                    "citing_authors": ["Regular Author"],
+                    "manual_pdf": {
+                        "status": "manual_pdf_attached",
+                        "local_file_path": "/tmp/top-venue.pdf",
+                    },
+                }
+            ],
+            "statistics": {},
+        }
+
+        rebuilt = self.pipeline.rebuild_scholar_derived_outputs(
+            session,
+            queue_limit=10,
+        )
+
+        self.assertEqual(
+            rebuilt["deep_analysis_queue"][0]["manual_pdf"]["local_file_path"],
+            "/tmp/top-venue.pdf",
+        )
+
     def test_analyze_scholar_queue_records_strong_evidence_for_selected_items(self):
         session = {
             "publications": [
@@ -392,6 +441,66 @@ class ScholarPipelineTestCase(unittest.TestCase):
         self.assertEqual(len(analyzed["strong_evidence"]), 1)
         self.assertTrue(analyzed["strong_evidence"][0]["fellow_strong_citation"])
         self.assertEqual(analyzed["statistics"]["strong_evidence_count"], 1)
+
+    def test_analyze_scholar_queue_passes_attached_pdf_path(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "year": 2024,
+                    "venue": "ACM MobiCom",
+                    "doi": "10.1000/target",
+                }
+            ],
+            "citation_edges": [],
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q001",
+                    "source_publication_ids": ["S001"],
+                    "citing_paper_id": "C001",
+                    "citing_title": "Manual PDF Citing Paper",
+                    "manual_pdf": {
+                        "status": "manual_pdf_attached",
+                        "local_file_path": "/tmp/manual-citing.pdf",
+                    },
+                }
+            ],
+            "statistics": {},
+        }
+        observed_paths = []
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            session_dir = Path(tmpdir)
+
+            def fake_process_citing_paper(**kwargs):
+                observed_paths.append(kwargs.get("local_pdf_path"))
+                item_dir = kwargs["item_dir"]
+                item_dir.mkdir(parents=True, exist_ok=True)
+                analysis_path = item_dir / "fulltext_analysis.json"
+                analysis_path.write_text(
+                    json.dumps({"ok": True, "findings": []}),
+                    encoding="utf-8",
+                )
+                return {
+                    "status": "fulltext_analyzed",
+                    "paths": {"analysis": str(analysis_path)},
+                    "analysis": {"findings_count": 0},
+                }
+
+            with mock.patch.object(
+                self.pipeline.RUN_PIPELINE,
+                "process_citing_paper",
+                side_effect=fake_process_citing_paper,
+            ):
+                self.pipeline.analyze_scholar_queue(
+                    session,
+                    session_dir,
+                    queue_ids=["Q001"],
+                    analysis_scope="fulltext_direct",
+                )
+
+        self.assertEqual(observed_paths, ["/tmp/manual-citing.pdf"])
 
     def test_expand_publication_citations_records_provider_errors_and_continues(self):
         session = {

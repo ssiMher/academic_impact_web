@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import shutil
 import threading
 import time
 from datetime import datetime
@@ -209,6 +210,7 @@ def build_deep_analysis_queue_view(
     def decorate_queue_item(item: dict[str, Any]) -> dict[str, Any]:
         result = result_by_queue_id.get(item.get("queue_id"))
         decorated = dict(item)
+        manual_pdf = item.get("manual_pdf") or {}
         decorated["citing_identifier"] = citing_identifier(item)
         if result:
             download = result.get("download") or {}
@@ -226,6 +228,12 @@ def build_deep_analysis_queue_view(
             decorated["download_source"] = "点击分析时自动尝试下载 PDF"
             decorated["analysis_failure_message"] = ""
             decorated["analysis_error_type"] = ""
+        decorated["manual_pdf_status"] = manual_pdf.get("status") or ""
+        decorated["manual_pdf_path"] = manual_pdf.get("local_file_path") or ""
+        if decorated["manual_pdf_status"]:
+            decorated["download_source"] = decorated["manual_pdf_status"]
+            if decorated["analysis_status"] == "not_analyzed":
+                decorated["analysis_status"] = decorated["manual_pdf_status"]
         return decorated
 
     return {
@@ -641,6 +649,66 @@ def review_person_candidate(
             "candidate_id": candidate_id,
             "status": matched.get("status"),
         }
+
+
+def attach_scholar_queue_pdf(
+    session_id: str,
+    queue_id: str,
+    filename: str,
+    content: bytes,
+) -> dict[str, Any]:
+    if not queue_id.strip():
+        raise ValueError("绑定 PDF 需要 queue_id。")
+    if not filename.lower().endswith(".pdf"):
+        raise ValueError("当前只支持上传 PDF 文件。")
+    if not content:
+        raise ValueError("上传的 PDF 文件为空。")
+
+    session = load_scholar_status(session_id)
+    queue_item = None
+    for item in session.get("deep_analysis_queue", []) or []:
+        if item.get("queue_id") == queue_id:
+            queue_item = item
+            break
+    if queue_item is None:
+        raise ValueError(f"未找到高价值引用队列项: {queue_id}")
+
+    pipeline = scholar_pipeline()
+    download_pdf = pipeline.RUN_PIPELINE.DOWNLOAD_PDF
+    session_dir = resolve_scholar_session_dir(session_id)
+    upload_dir = session_dir / "uploads" / "scholar_queue"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    temp_path = upload_dir / f".{queue_id}.{uuid4().hex}.pdf"
+    temp_path.write_bytes(content)
+    inspection = download_pdf.inspect_pdf_file(str(temp_path))
+    if not inspection.get("ok"):
+        temp_path.unlink(missing_ok=True)
+        error_type = inspection.get("error_type") or "pdf_invalid"
+        error = inspection.get("error") or "PDF 文件校验失败。"
+        raise ValueError(f"绑定失败：{error_type}。{error}")
+
+    safe_title = download_pdf.sanitize_filename(
+        queue_item.get("citing_title") or queue_id
+    )
+    target_path = upload_dir / f"{queue_id}_{safe_title}.pdf"
+    if target_path.exists():
+        target_path.unlink()
+    shutil.move(str(temp_path), str(target_path))
+    queue_item["manual_pdf"] = {
+        "status": "manual_pdf_attached",
+        "source": "manual_upload",
+        "file_name": filename,
+        "local_file_path": str(target_path),
+        "size_bytes": inspection.get("size_bytes"),
+        "attached_at": datetime.now().isoformat(timespec="seconds"),
+    }
+    write_scholar_status(session_id, session)
+    return {
+        "ok": True,
+        "queue_id": queue_id,
+        "local_file_path": str(target_path),
+        "status": "manual_pdf_attached",
+    }
 
 
 def analyze_scholar_queue(

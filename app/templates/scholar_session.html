@@ -421,14 +421,15 @@
           当前显示 {{ queue.total_count or 0 }} / {{ queue.unfiltered_count or 0 }} 篇高价值引用论文；同一引用论文命中多篇目标论文时会合并展示。
           分析会先尝试自动下载 PDF；若无法获得全文，会在准备状态中保留失败原因，后续可补 PDF 后重试。
         </p>
-        <form action="/scholars/{{ session_id }}/analyze-queue" method="post">
+        <form id="scholar-analyze-queue-form" action="/scholars/{{ session_id }}/analyze-queue" method="post">
+          <input type="hidden" name="analysis_scope" value="fulltext_direct" />
+        </form>
           <div class="inline-actions">
             <label>
               候选段落数
-              <input type="number" name="top_k_spans" value="8" min="1" max="20" {% if task_active %}disabled{% endif %} data-scholar-task-control />
+              <input type="number" name="top_k_spans" value="8" min="1" max="20" form="scholar-analyze-queue-form" {% if task_active %}disabled{% endif %} data-scholar-task-control />
             </label>
-            <input type="hidden" name="analysis_scope" value="fulltext_direct" />
-            <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>分析所选引用论文</button>
+            <button type="submit" form="scholar-analyze-queue-form" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>分析所选引用论文</button>
           </div>
         <div class="table-shell">
           <table>
@@ -451,7 +452,7 @@
               {% for edge in queue["items"] or [] %}
               <tr>
                 <td>
-                  <input type="checkbox" name="queue_ids" value="{{ edge.queue_id }}" {% if not edge.queue_id or task_active %}disabled{% endif %} data-scholar-task-control />
+                  <input type="checkbox" name="queue_ids" value="{{ edge.queue_id }}" form="scholar-analyze-queue-form" {% if not edge.queue_id or task_active %}disabled{% endif %} data-scholar-task-control />
                 </td>
                 <td>{{ (queue_pagination.start_index or 1) + loop.index0 }}</td>
                 <td>{{ edge.priority_score }}</td>
@@ -468,6 +469,13 @@
                   <span class="chip">{{ edge.analysis_status or 'not_analyzed' }}</span>
                   {% if edge.download_source %}<br /><span class="muted">{{ edge.download_source }}</span>{% endif %}
                   {% if edge.analysis_failure_message %}<br /><span class="muted">{{ edge.analysis_failure_message }}</span>{% endif %}
+                  {% if edge.queue_id %}
+                  <form action="/scholars/{{ session_id }}/attach-queue-pdf" method="post" enctype="multipart/form-data" class="inline-actions compact-form">
+                    <input type="hidden" name="queue_id" value="{{ edge.queue_id }}" />
+                    <input type="file" name="pdf_file" accept="application/pdf,.pdf" required {% if task_active %}disabled{% endif %} data-scholar-task-control />
+                    <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>上传 PDF</button>
+                  </form>
+                  {% endif %}
                 </td>
                 <td>{{ edge.citing_year or '-' }}</td>
                 <td>{{ edge.citing_venue or '-' }}</td>
@@ -481,7 +489,6 @@
             </tbody>
           </table>
         </div>
-        </form>
         {% if queue_pagination.total_pages and queue_pagination.total_pages > 1 %}
         <nav class="pager">
           {% if queue_pagination.has_previous %}

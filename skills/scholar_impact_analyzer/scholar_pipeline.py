@@ -312,6 +312,11 @@ def rebuild_scholar_derived_outputs(
     session: dict[str, Any],
     queue_limit: int = DEFAULT_DEEP_ANALYSIS_QUEUE_LIMIT,
 ) -> dict[str, Any]:
+    manual_pdf_by_key = {}
+    for item in session.get("deep_analysis_queue", []) or []:
+        manual_pdf = item.get("manual_pdf")
+        if manual_pdf:
+            manual_pdf_by_key[SCHOLAR_STATS.citation_group_key(item)] = manual_pdf
     session["person_candidates"] = SCHOLAR_STATS.build_person_candidates_from_citation_edges(
         session.get("citation_edges", []),
         existing=session.get("person_candidates", []),
@@ -328,6 +333,10 @@ def rebuild_scholar_derived_outputs(
         session.get("person_candidates", []),
         limit=queue_limit,
     )
+    for item in session["deep_analysis_queue"]:
+        manual_pdf = manual_pdf_by_key.get(SCHOLAR_STATS.citation_group_key(item))
+        if manual_pdf:
+            item["manual_pdf"] = manual_pdf
     return session
 
 
@@ -368,6 +377,8 @@ def analyze_scholar_queue(
         if not source_ids and queue_item.get("source_publication_id"):
             source_ids = [queue_item.get("source_publication_id")]
         citing_paper = queue_item_to_citing_paper(queue_item)
+        manual_pdf = queue_item.get("manual_pdf") or {}
+        local_pdf_path = manual_pdf.get("local_file_path") or ""
         person_tag_labels = finding_person_tag_labels(
             queue_item.get("citing_authors") or [],
             session.get("person_candidates", []) or [],
@@ -390,6 +401,7 @@ def analyze_scholar_queue(
                 item_dir=item_dir,
                 top_k_spans=top_k_spans,
                 analysis_scope=analysis_scope,
+                local_pdf_path=local_pdf_path,
             )
             result["queue_id"] = queue_item.get("queue_id")
             result["source_publication_id"] = source_id

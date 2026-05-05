@@ -4,6 +4,7 @@ import json
 import shutil
 import time
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from fastapi.testclient import TestClient
@@ -234,6 +235,60 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("manual_required", response.text)
         self.assertIn("未找到合法开源 PDF 链接。", response.text)
         self.assertIn("分析会先尝试自动下载 PDF", response.text)
+        self.assertIn(
+            f'action="/scholars/{TEST_SESSION_ID}/attach-queue-pdf"',
+            response.text,
+        )
+        self.assertIn('name="pdf_file"', response.text)
+
+    def test_scholar_attach_queue_pdf_route_updates_queue_item(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "Missing PDF Paper",
+                            "priority_score": 25,
+                            "reasons": ["venue:CCF A"],
+                        }
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.post(
+            f"/scholars/{TEST_SESSION_ID}/attach-queue-pdf",
+            data={"queue_id": "Q001"},
+            files={"pdf_file": ("manual.pdf", b"%PDF-1.4\n% test pdf\n", "application/pdf")},
+            follow_redirects=False,
+        )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(
+            response.headers["location"],
+            f"/scholars/{TEST_SESSION_ID}#deep-analysis-queue",
+        )
+        payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
+        manual_pdf = payload["deep_analysis_queue"][0]["manual_pdf"]
+        self.assertEqual(manual_pdf["status"], "manual_pdf_attached")
+        self.assertEqual(manual_pdf["source"], "manual_upload")
+        self.assertTrue(Path(manual_pdf["local_file_path"]).exists())
+
+        page = client.get(f"/scholars/{TEST_SESSION_ID}")
+        self.assertIn("manual_pdf_attached", page.text)
 
     def test_build_deep_analysis_queue_view_paginates(self):
         session = {
@@ -267,6 +322,10 @@ class ScholarWebTestCase(unittest.TestCase):
                     "citing_doi": "10.1000/failed",
                     "citing_scopus_id": "2-s2.0-123",
                     "reasons": ["venue:CCF A"],
+                    "manual_pdf": {
+                        "status": "manual_pdf_attached",
+                        "local_file_path": "/tmp/manual.pdf",
+                    },
                 },
                 {
                     "queue_id": "Q002",
@@ -294,7 +353,8 @@ class ScholarWebTestCase(unittest.TestCase):
         fresh = view["items"][1]
         self.assertEqual(failed["analysis_status"], "context_only")
         self.assertEqual(failed["analysis_failure_message"], "未找到合法开源 PDF 链接。")
-        self.assertEqual(failed["download_source"], "manual_required")
+        self.assertEqual(failed["download_source"], "manual_pdf_attached")
+        self.assertEqual(failed["manual_pdf_path"], "/tmp/manual.pdf")
         self.assertEqual(failed["citing_identifier"], "DOI: 10.1000/failed")
         self.assertEqual(fresh["analysis_status"], "not_analyzed")
         self.assertEqual(fresh["download_source"], "点击分析时自动尝试下载 PDF")

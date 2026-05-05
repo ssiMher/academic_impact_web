@@ -245,6 +245,35 @@ async def analyze_scholar_queue(
     return RedirectResponse(url=f"/scholars/{session_id}", status_code=303)
 
 
+@app.post("/scholars/{session_id}/attach-queue-pdf")
+async def attach_scholar_queue_pdf(
+    session_id: str,
+    queue_id: str = Form(...),
+    pdf_file: UploadFile = File(...),
+):
+    filename = pdf_file.filename or ""
+    if not filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="当前只支持上传 PDF 文件。")
+    content = await pdf_file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="上传的 PDF 文件为空。")
+    try:
+        scholar_core.attach_scholar_queue_pdf(
+            session_id,
+            queue_id,
+            filename,
+            content,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return RedirectResponse(
+        url=f"/scholars/{session_id}#deep-analysis-queue",
+        status_code=303,
+    )
+
+
 @app.get("/scholars/{session_id}/task-status")
 def scholar_task_status(session_id: str):
     try:

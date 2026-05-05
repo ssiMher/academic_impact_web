@@ -306,6 +306,7 @@ def process_citing_paper(
     top_k_spans: int,
     local_pdf_path: str = "",
     analysis_scope: str = "fulltext_direct",
+    progress_callback=None,
 ):
     analysis_scope = normalize_analysis_scope(analysis_scope)
     result = {
@@ -313,6 +314,10 @@ def process_citing_paper(
         "analysis_scope": analysis_scope,
         "paths": {},
     }
+
+    def report_stage(stage: str, stage_message: str) -> None:
+        if progress_callback:
+            progress_callback({"stage": stage, "stage_message": stage_message})
 
     download_queries = choose_download_queries(citing_paper)
     result["download_query"] = download_queries[0]
@@ -335,6 +340,7 @@ def process_citing_paper(
     for download_query in download_queries:
         if download_result is not None:
             break
+        report_stage("downloading_pdf", "正在下载 PDF")
         attempt_result = DOWNLOAD_PDF.download_paper(download_query)
         attempt_result = dict(attempt_result)
         attempt_result["requested_via"] = download_query
@@ -386,6 +392,7 @@ def process_citing_paper(
         return result
 
     try:
+        report_stage("extracting_fulltext", "正在抽取 PDF 全文")
         fulltext_result = EXTRACT_TEXT.extract_pdf_text(download_result["file_path"])
     except Exception as exc:
         fulltext_result = {
@@ -446,6 +453,7 @@ def process_citing_paper(
         return result
 
     try:
+        report_stage("finding_candidate_spans", "正在定位候选引用片段")
         candidate_result = FIND_SPANS.find_candidate_spans(
             fulltext_result,
             target_title=target.get("title", ""),
@@ -541,6 +549,7 @@ def process_citing_paper(
     result["paths"]["analyze_payload"] = str(payload_path)
 
     analysis_started = monotonic()
+    report_stage("analyzing_fulltext", "正在调用模型分析全文")
     analysis_result = ANALYZE_FULLTEXT.analyze_payload(payload)
     analysis_duration_seconds = round(monotonic() - analysis_started, 2)
     analysis_path = item_dir / "fulltext_analysis.json"

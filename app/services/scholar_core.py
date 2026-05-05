@@ -73,6 +73,11 @@ def default_task_state() -> dict[str, Any]:
         "deep_analysis_queue_count": 0,
         "limit_per_publication": None,
         "selected_queue_ids": [],
+        "stage": "",
+        "stage_message": "",
+        "current_queue_id": "",
+        "current_title": "",
+        "current_index": 0,
     }
 
 
@@ -234,6 +239,22 @@ def build_deep_analysis_queue_view(
             decorated["download_source"] = decorated["manual_pdf_status"]
             if decorated["analysis_status"] == "not_analyzed":
                 decorated["analysis_status"] = decorated["manual_pdf_status"]
+        if decorated["manual_pdf_status"]:
+            decorated["readiness_status"] = "manual_pdf_ready"
+            decorated["readiness_label"] = "已上传 PDF，可重试"
+        elif (
+            decorated["analysis_status"] in {"context_only", "fulltext_extract_failed"}
+            or decorated["download_source"] == "manual_required"
+            or decorated["analysis_error_type"] in {"download_failed", "fulltext_extract_failed"}
+        ):
+            decorated["readiness_status"] = "manual_pdf_recommended"
+            decorated["readiness_label"] = "建议先上传 PDF"
+        elif decorated["citing_identifier"] == "-":
+            decorated["readiness_status"] = "missing_identifier"
+            decorated["readiness_label"] = "缺少 DOI/ID，可能失败"
+        else:
+            decorated["readiness_status"] = "auto_try"
+            decorated["readiness_label"] = "可自动尝试"
         return decorated
 
     return {
@@ -982,6 +1003,11 @@ def mark_task_running(
                 "citation_edge_count": len(session.get("citation_edges", []) or []),
                 "deep_analysis_queue_count": len(session.get("deep_analysis_queue", []) or []),
                 "limit_per_publication": limit_per_publication,
+                "stage": "",
+                "stage_message": "",
+                "current_queue_id": "",
+                "current_title": "",
+                "current_index": 0,
             }
         )
         session["task_state"] = task_state
@@ -1174,11 +1200,22 @@ def analyze_scholar_queue(
     total = len(queue_ids)
 
     def progress_callback(progress: dict[str, Any]) -> None:
+        stage = progress.get("stage") or ""
+        stage_message = progress.get("stage_message") or ""
+        current_title = progress.get("current_title") or ""
+        base_message = f"正在分析高价值引用 {progress.get('processed_count', 0)}/{progress.get('total_count', total)}"
+        if stage_message:
+            base_message = f"{base_message}：{stage_message}"
         update_task_state(
             session_id,
             processed_count=progress.get("processed_count", 0),
             total_count=progress.get("total_count", total),
-            message=f"正在分析高价值引用 {progress.get('processed_count', 0)}/{progress.get('total_count', total)}",
+            message=base_message,
+            stage=stage,
+            stage_message=stage_message,
+            current_queue_id=progress.get("queue_id") or "",
+            current_title=current_title,
+            current_index=progress.get("current_index", 0),
         )
 
     analyzed = scholar_pipeline().analyze_scholar_queue(

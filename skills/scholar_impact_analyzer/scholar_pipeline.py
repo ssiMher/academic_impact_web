@@ -372,6 +372,30 @@ def analyze_scholar_queue(
     total = sum(len(item.get("source_publication_ids") or []) for item in queue_items)
     processed = 0
 
+    def emit_progress(
+        *,
+        queue_item: dict[str, Any],
+        source_id: str,
+        current_index: int,
+        stage: str,
+        stage_message: str,
+        completed_count: int,
+    ) -> None:
+        if not progress_callback:
+            return
+        progress_callback(
+            {
+                "processed_count": completed_count,
+                "total_count": total,
+                "queue_id": queue_item.get("queue_id"),
+                "source_publication_id": source_id,
+                "current_title": queue_item.get("citing_title") or "",
+                "current_index": current_index,
+                "stage": stage,
+                "stage_message": stage_message,
+            }
+        )
+
     for queue_item in queue_items:
         source_ids = queue_item.get("source_publication_ids") or []
         if not source_ids and queue_item.get("source_publication_id"):
@@ -387,13 +411,32 @@ def analyze_scholar_queue(
             publication = publications.get(source_id)
             if not publication:
                 continue
-            processed += 1
+            current_index = processed + 1
+            emit_progress(
+                queue_item=queue_item,
+                source_id=source_id,
+                current_index=current_index,
+                stage="preparing_item",
+                stage_message="正在准备引用论文分析",
+                completed_count=processed,
+            )
             item_dir = (
                 session_dir
                 / "scholar_fulltext_analysis"
                 / str(queue_item.get("queue_id") or "queue")
                 / str(source_id)
             )
+
+            def item_progress(stage_progress: dict[str, Any]) -> None:
+                emit_progress(
+                    queue_item=queue_item,
+                    source_id=source_id,
+                    current_index=current_index,
+                    stage=stage_progress.get("stage") or "",
+                    stage_message=stage_progress.get("stage_message") or "",
+                    completed_count=processed,
+                )
+
             result = RUN_PIPELINE.process_citing_paper(
                 target=publication_to_target(publication),
                 citing_paper=citing_paper,
@@ -402,6 +445,7 @@ def analyze_scholar_queue(
                 top_k_spans=top_k_spans,
                 analysis_scope=analysis_scope,
                 local_pdf_path=local_pdf_path,
+                progress_callback=item_progress,
             )
             result["queue_id"] = queue_item.get("queue_id")
             result["source_publication_id"] = source_id
@@ -431,14 +475,15 @@ def analyze_scholar_queue(
                 evidence["cited_publication_title"] = publication.get("title") or ""
                 evidence["analysis_status"] = result.get("status")
                 new_evidence.append(evidence)
-            if progress_callback:
-                progress_callback(
-                    {
-                        "processed_count": processed,
-                        "total_count": total,
-                        "queue_id": queue_item.get("queue_id"),
-                    }
-                )
+            processed += 1
+            emit_progress(
+                queue_item=queue_item,
+                source_id=source_id,
+                current_index=current_index,
+                stage="writing_results",
+                stage_message="正在写入分析结果",
+                completed_count=processed,
+            )
 
     session["scholar_fulltext_results"] = existing_results + new_results
     session["strong_evidence"] = existing_evidence + new_evidence

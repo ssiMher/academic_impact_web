@@ -233,6 +233,7 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("DOI: 10.1000/missing", response.text)
         self.assertIn("context_only", response.text)
         self.assertIn("manual_required", response.text)
+        self.assertIn("建议先上传 PDF", response.text)
         self.assertIn("未找到合法开源 PDF 链接。", response.text)
         self.assertIn("分析会先尝试自动下载 PDF", response.text)
         self.assertIn(
@@ -333,6 +334,11 @@ class ScholarWebTestCase(unittest.TestCase):
                     "citing_openalex_id": "W123",
                     "reasons": ["venue:CCF A"],
                 },
+                {
+                    "queue_id": "Q003",
+                    "citing_title": "No Identifier Paper",
+                    "reasons": ["venue:CCF A"],
+                },
             ],
             "scholar_fulltext_results": [
                 {
@@ -351,14 +357,22 @@ class ScholarWebTestCase(unittest.TestCase):
 
         failed = view["items"][0]
         fresh = view["items"][1]
+        missing_id = view["items"][2]
         self.assertEqual(failed["analysis_status"], "context_only")
         self.assertEqual(failed["analysis_failure_message"], "未找到合法开源 PDF 链接。")
         self.assertEqual(failed["download_source"], "manual_pdf_attached")
         self.assertEqual(failed["manual_pdf_path"], "/tmp/manual.pdf")
         self.assertEqual(failed["citing_identifier"], "DOI: 10.1000/failed")
+        self.assertEqual(failed["readiness_label"], "已上传 PDF，可重试")
+        self.assertEqual(failed["readiness_status"], "manual_pdf_ready")
         self.assertEqual(fresh["analysis_status"], "not_analyzed")
         self.assertEqual(fresh["download_source"], "点击分析时自动尝试下载 PDF")
         self.assertEqual(fresh["citing_identifier"], "OpenAlex: W123")
+        self.assertEqual(fresh["readiness_label"], "可自动尝试")
+        self.assertEqual(fresh["readiness_status"], "auto_try")
+        self.assertEqual(missing_id["citing_identifier"], "-")
+        self.assertEqual(missing_id["readiness_label"], "缺少 DOI/ID，可能失败")
+        self.assertEqual(missing_id["readiness_status"], "missing_identifier")
 
     def test_build_strong_evidence_view_filters_and_paginates(self):
         session = {
@@ -1276,6 +1290,77 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(payload["publication_count"], 1)
         self.assertEqual(payload["citation_edge_count"], 1)
         self.assertEqual(payload["deep_analysis_queue_count"], 1)
+
+    def test_analyze_scholar_queue_progress_records_stage_details(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [{"id": "S001", "title": "Target Paper"}],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q001",
+                            "source_publication_ids": ["S001"],
+                            "citing_title": "Citing Paper",
+                        }
+                    ],
+                    "statistics": {"publication_count": 1},
+                    "task_state": scholar_core.default_task_state(),
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        real_scholar_stats = scholar_core.scholar_pipeline().SCHOLAR_STATS
+
+        class FakePipeline:
+            SCHOLAR_STATS = real_scholar_stats
+
+            @staticmethod
+            def analyze_scholar_queue(
+                session,
+                session_dir,
+                queue_ids,
+                top_k_spans=8,
+                analysis_scope="fulltext_direct",
+                progress_callback=None,
+            ):
+                if progress_callback:
+                    progress_callback(
+                        {
+                            "processed_count": 0,
+                            "total_count": 1,
+                            "queue_id": "Q001",
+                            "current_title": "Citing Paper",
+                            "current_index": 1,
+                            "stage": "downloading_pdf",
+                            "stage_message": "正在下载 PDF",
+                        }
+                    )
+                session["scholar_fulltext_results"] = []
+                session["strong_evidence"] = []
+                return session
+
+        with mock.patch.object(scholar_core, "scholar_pipeline", return_value=FakePipeline()):
+            scholar_core.analyze_scholar_queue(
+                TEST_SESSION_ID,
+                queue_ids=["Q001"],
+                top_k_spans=8,
+                analysis_scope="fulltext_direct",
+            )
+
+        task_state = scholar_core.load_scholar_status(TEST_SESSION_ID)["task_state"]
+        self.assertEqual(task_state["stage"], "downloading_pdf")
+        self.assertEqual(task_state["stage_message"], "正在下载 PDF")
+        self.assertEqual(task_state["current_queue_id"], "Q001")
+        self.assertEqual(task_state["current_title"], "Citing Paper")
+        self.assertEqual(task_state["current_index"], 1)
 
     def test_build_scholar_report_payload_summarizes_session(self):
         session = {

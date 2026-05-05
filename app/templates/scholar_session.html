@@ -62,13 +62,21 @@
           <div class="task-progress-grid" aria-label="学者会话进度">
             <div class="progress-card">
               <div class="progress-meta">
-                <span>引用展开</span>
+                <span>{{ '全文分析' if task_state.task_type == 'analyze_queue' else '引用展开' }}</span>
                 <strong><span data-scholar-progress-value>{{ expand_percent }}</span>%</strong>
               </div>
-              <div class="progress-track {% if task_active and task_state.task_type == 'expand_citations' %}is-active{% endif %}">
+              <div class="progress-track {% if task_active %}is-active{% endif %}">
                 <span data-scholar-progress-bar style="width: {{ expand_percent }}%"></span>
               </div>
               <p class="muted"><span data-scholar-progress-count>{{ expand_processed }}</span> / <span data-scholar-progress-total>{{ expand_total }}</span> 篇论文已处理</p>
+              <p class="muted" data-scholar-stage>
+                {% if task_state.current_title %}
+                当前论文：{{ task_state.current_title }}
+                {% endif %}
+                {% if task_state.stage_message %}
+                {% if task_state.current_title %} · {% endif %}阶段：{{ task_state.stage_message }}
+                {% endif %}
+              </p>
             </div>
           </div>
         </div>
@@ -604,6 +612,7 @@
                 <td>{{ edge.citing_identifier or '-' }}</td>
                 <td>
                   <span class="chip">{{ edge.analysis_status or 'not_analyzed' }}</span>
+                  {% if edge.readiness_label %}<br /><span class="chip">{{ edge.readiness_label }}</span>{% endif %}
                   {% if edge.download_source %}<br /><span class="muted">{{ edge.download_source }}</span>{% endif %}
                   {% if edge.analysis_failure_message %}<br /><span class="muted">{{ edge.analysis_failure_message }}</span>{% endif %}
                   {% if edge.queue_id %}
@@ -701,6 +710,7 @@
         const taskActive = {{ 'true' if task_active else 'false' }};
         const controls = Array.from(document.querySelectorAll('[data-scholar-task-control]'));
         const message = document.getElementById('scholar-task-status-message');
+        const stageNode = document.querySelector('[data-scholar-stage]');
         let reloadScheduled = false;
 
         const setControlsDisabled = (disabled) => {
@@ -746,6 +756,11 @@
             if (taskState.active && taskState.status === 'running') {
               if (message) {
                 message.textContent = `${taskState.message || '正在展开引用网络'}。当前引用边：${payload.citation_edge_count || 0}，高价值队列：${payload.deep_analysis_queue_count || 0}。`;
+              }
+              if (stageNode) {
+                const title = taskState.current_title ? `当前论文：${taskState.current_title}` : '';
+                const stage = taskState.stage_message ? `阶段：${taskState.stage_message}` : '';
+                stageNode.textContent = [title, stage].filter(Boolean).join(' · ');
               }
               return;
             }

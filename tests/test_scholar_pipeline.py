@@ -502,6 +502,81 @@ class ScholarPipelineTestCase(unittest.TestCase):
 
         self.assertEqual(observed_paths, ["/tmp/manual-citing.pdf"])
 
+    def test_analyze_scholar_queue_emits_stage_progress(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "doi": "10.1000/target",
+                }
+            ],
+            "citation_edges": [],
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q001",
+                    "source_publication_ids": ["S001"],
+                    "citing_paper_id": "C001",
+                    "citing_title": "Citing Paper",
+                    "citing_doi": "10.1000/citing",
+                }
+            ],
+            "person_candidates": [],
+            "statistics": {},
+        }
+        progress_events = []
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            session_dir = Path(tmpdir)
+
+            def fake_process_citing_paper(**kwargs):
+                progress_callback = kwargs.get("progress_callback")
+                if progress_callback:
+                    progress_callback(
+                        {
+                            "stage": "downloading_pdf",
+                            "stage_message": "正在下载 PDF",
+                        }
+                    )
+                    progress_callback(
+                        {
+                            "stage": "analyzing_fulltext",
+                            "stage_message": "正在调用模型分析全文",
+                        }
+                    )
+                item_dir = kwargs["item_dir"]
+                item_dir.mkdir(parents=True, exist_ok=True)
+                analysis_path = item_dir / "fulltext_analysis.json"
+                analysis_path.write_text(
+                    json.dumps({"ok": True, "findings": []}),
+                    encoding="utf-8",
+                )
+                return {
+                    "status": "fulltext_analyzed",
+                    "paths": {"analysis": str(analysis_path)},
+                    "analysis": {"findings_count": 0},
+                }
+
+            with mock.patch.object(
+                self.pipeline.RUN_PIPELINE,
+                "process_citing_paper",
+                side_effect=fake_process_citing_paper,
+            ):
+                self.pipeline.analyze_scholar_queue(
+                    session,
+                    session_dir,
+                    queue_ids=["Q001"],
+                    progress_callback=progress_events.append,
+                )
+
+        stages = [event.get("stage") for event in progress_events]
+        self.assertIn("preparing_item", stages)
+        self.assertIn("downloading_pdf", stages)
+        self.assertIn("analyzing_fulltext", stages)
+        self.assertIn("writing_results", stages)
+        self.assertEqual(progress_events[0]["current_title"], "Citing Paper")
+        self.assertEqual(progress_events[0]["current_index"], 1)
+
     def test_expand_publication_citations_records_provider_errors_and_continues(self):
         session = {
             "publications": [

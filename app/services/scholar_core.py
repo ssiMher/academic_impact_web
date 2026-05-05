@@ -609,6 +609,147 @@ def build_scholar_analysis_summary(session: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def build_scholar_report_payload(
+    session: dict[str, Any],
+    *,
+    analysis_summary: dict[str, Any] | None = None,
+    strong_evidence_view: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    author = session.get("selected_author") or {}
+    name = author.get("display_name") or session.get("query") or "该学者"
+    statistics = session.get("statistics") or {}
+    analysis = analysis_summary or build_scholar_analysis_summary(session)
+    strong_view = strong_evidence_view or build_strong_evidence_view(session)
+    overview = analysis.get("overview") or {}
+    flag_counts = strong_view.get("flag_counts") or {}
+
+    publication_count = statistics.get("publication_count") or len(
+        session.get("publications", []) or []
+    )
+    citation_edge_count = statistics.get("citation_edge_count") or len(
+        session.get("citation_edges", []) or []
+    )
+    first_author_count = statistics.get("first_author_publication_count") or 0
+    queue_count = overview.get(
+        "queue_count",
+        len(session.get("deep_analysis_queue", []) or []),
+    )
+    analyzed_queue_count = overview.get("analyzed_queue_count", 0)
+    strong_evidence_count = overview.get(
+        "strong_evidence_count",
+        len(session.get("strong_evidence", []) or []),
+    )
+    fellow_strong_count = overview.get("fellow_strong_count", 0)
+    positive_count = flag_counts.get("positive", 0)
+    long_context_count = flag_counts.get("long_context", 0)
+    failure_count = overview.get("failure_count", 0)
+    top_target_title = overview.get("top_target_title") or "暂无"
+    next_action = overview.get("next_action") or "建议继续完善引用网络和全文分析。"
+
+    summary_text = (
+        f"{name} 当前汇总 {publication_count} 篇论文，展开 "
+        f"{citation_edge_count} 条引用边，高价值引用队列 {queue_count} 篇，"
+        f"已分析 {analyzed_queue_count} 篇。目前发现强引用证据 "
+        f"{strong_evidence_count} 条，其中 Fellow 强引用 {fellow_strong_count} 条、"
+        f"正向评价 {positive_count} 条、长引用 {long_context_count} 条；"
+        f"待补全文/失败项 {failure_count} 条。"
+    )
+
+    bullets = [
+        (
+            f"{name}：论文 {publication_count} 篇，引用边 {citation_edge_count} 条，"
+            f"一作论文 {first_author_count} 篇。"
+        ),
+        (
+            f"高价值引用队列 {queue_count} 篇，已完成全文语义分析 "
+            f"{analyzed_queue_count} 篇。"
+        ),
+        (
+            f"强引用证据 {strong_evidence_count} 条，其中 Fellow 强引用 "
+            f"{fellow_strong_count} 条、正向评价 {positive_count} 条、"
+            f"长引用 {long_context_count} 条。"
+        ),
+        f"当前最强目标论文：{top_target_title}",
+        f"下一步建议：{next_action}",
+    ]
+
+    markdown_lines = [
+        f"# {name} 学者影响力报告",
+        "",
+        "## 摘要",
+        "",
+        summary_text,
+        "",
+        "## 可复制结论",
+        "",
+    ]
+    markdown_lines.extend(f"- {bullet}" for bullet in bullets)
+    markdown_lines.extend(
+        [
+            "",
+            "## 关键统计",
+            "",
+            f"- 论文数：{publication_count}",
+            f"- 引用边：{citation_edge_count}",
+            f"- 高价值引用队列：{queue_count}",
+            f"- 已分析队列：{analyzed_queue_count}",
+            f"- 强引用证据：{strong_evidence_count}",
+            f"- Fellow 强引用：{fellow_strong_count}",
+            f"- 正向评价：{positive_count}",
+            f"- 长引用：{long_context_count}",
+            f"- 待补全文/失败项：{failure_count}",
+        ]
+    )
+
+    examples = session.get("strong_evidence", []) or []
+    if examples:
+        markdown_lines.extend(["", "## 强引用证据示例", ""])
+    for evidence in examples[:5]:
+        markdown_lines.extend(
+            [
+                f"### {evidence.get('citing_title') or '未知引用论文'}",
+                "",
+                f"- 命中目标：{evidence.get('cited_publication_title') or '-'}",
+                (
+                    f"- 类型/态度：{evidence.get('aspect') or '-'} / "
+                    f"{evidence.get('stance') or '-'}"
+                ),
+                f"- Fellow 强引用：{'是' if evidence.get('fellow_strong_citation') else '否'}",
+                "",
+                str(evidence.get("citation_text") or "").strip(),
+                "",
+            ]
+        )
+
+    return {
+        "summary_text": summary_text,
+        "bullets": bullets,
+        "markdown": "\n".join(markdown_lines).rstrip() + "\n",
+        "overview": {
+            "publication_count": publication_count,
+            "citation_edge_count": citation_edge_count,
+            "queue_count": queue_count,
+            "analyzed_queue_count": analyzed_queue_count,
+            "strong_evidence_count": strong_evidence_count,
+            "fellow_strong_count": fellow_strong_count,
+            "positive_count": positive_count,
+            "long_context_count": long_context_count,
+            "failure_count": failure_count,
+            "top_target_title": top_target_title,
+        },
+    }
+
+
+def write_scholar_report_markdown(session_id: str) -> Path:
+    session = load_scholar_status(session_id)
+    payload = build_scholar_report_payload(session)
+    export_dir = resolve_scholar_session_dir(session_id) / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    path = export_dir / "report.md"
+    path.write_text(payload["markdown"], encoding="utf-8")
+    return path
+
+
 def update_task_state(session_id: str, **updates) -> dict[str, Any]:
     with _task_lock(session_id):
         session = load_scholar_status(session_id)

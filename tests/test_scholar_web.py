@@ -1175,6 +1175,114 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(payload["citation_edge_count"], 1)
         self.assertEqual(payload["deep_analysis_queue_count"], 1)
 
+    def test_build_scholar_report_payload_summarizes_session(self):
+        session = {
+            "selected_author": {"display_name": "Chen Tian"},
+            "statistics": {
+                "publication_count": 189,
+                "citation_edge_count": 3450,
+                "first_author_publication_count": 18,
+            },
+            "deep_analysis_queue": [{"queue_id": "Q001"}, {"queue_id": "Q002"}],
+            "scholar_fulltext_results": [
+                {"queue_id": "Q001", "status": "fulltext_analyzed", "analysis": {"ok": True}},
+                {"queue_id": "Q002", "status": "context_only", "analysis": {"ok": False}},
+            ],
+            "strong_evidence": [
+                {
+                    "citing_title": "Fellow Method Paper",
+                    "cited_publication_title": "Target Paper",
+                    "citation_text": "Long positive method citation. " * 5,
+                    "aspect": "method",
+                    "stance": "positive",
+                    "fellow_strong_citation": True,
+                    "positive_evaluation": True,
+                    "long_context_100_chars": True,
+                }
+            ],
+        }
+
+        payload = scholar_core.build_scholar_report_payload(session)
+
+        self.assertIn("Chen Tian", payload["summary_text"])
+        self.assertIn("189 篇论文", payload["summary_text"])
+        self.assertIn("3450 条引用边", payload["summary_text"])
+        self.assertIn("强引用证据 1 条", payload["summary_text"])
+        self.assertIn("Fellow 强引用 1 条", payload["summary_text"])
+        self.assertIn("当前最强目标论文：Target Paper", payload["bullets"])
+        self.assertIn("# Chen Tian 学者影响力报告", payload["markdown"])
+
+    def test_scholar_route_renders_report_summary_and_export_link(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [{"queue_id": "Q001"}],
+                    "strong_evidence": [
+                        {
+                            "citing_title": "Fellow Method Paper",
+                            "cited_publication_title": "Target Paper",
+                            "citation_text": "Long positive method citation. " * 5,
+                            "aspect": "method",
+                            "stance": "positive",
+                            "fellow_strong_citation": True,
+                            "positive_evaluation": True,
+                            "long_context_100_chars": True,
+                        }
+                    ],
+                    "statistics": {"publication_count": 1, "citation_edge_count": 2},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("报告摘要", response.text)
+        self.assertIn("可复制结论", response.text)
+        self.assertIn("Chen Tian", response.text)
+        self.assertIn("强引用证据 1 条", response.text)
+        self.assertIn(f"/scholars/{TEST_SESSION_ID}/exports/report.md", response.text)
+
+    def test_scholar_report_markdown_export_route(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [],
+                    "strong_evidence": [],
+                    "statistics": {"publication_count": 1, "citation_edge_count": 2},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}/exports/report.md")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/markdown", response.headers["content-type"])
+        self.assertIn("# Chen Tian 学者影响力报告", response.text)
+        self.assertIn("## 可复制结论", response.text)
+
 
 if __name__ == "__main__":
     unittest.main()

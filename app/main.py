@@ -122,6 +122,11 @@ async def scholar_detail(
         page_size=strong_page_size,
     )
     analysis_summary = scholar_core.build_scholar_analysis_summary(payload)
+    report_payload = scholar_core.build_scholar_report_payload(
+        payload,
+        analysis_summary=analysis_summary,
+        strong_evidence_view=strong_evidence_view,
+    )
     person_view = scholar_core.build_person_candidate_view(
         payload,
         active_status=person_status,
@@ -140,6 +145,7 @@ async def scholar_detail(
             "strong_evidence_view": strong_evidence_view,
             "person_view": person_view,
             "analysis_summary": analysis_summary,
+            "report_payload": report_payload,
             "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),
         },
     )
@@ -294,6 +300,15 @@ def scholar_task_status(session_id: str):
         return scholar_core.get_scholar_task_status(session_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/scholars/{session_id}/exports/report.md")
+def download_scholar_report(session_id: str):
+    try:
+        path = scholar_core.write_scholar_report_markdown(session_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return FileResponse(path, media_type="text/markdown", filename=path.name)
 
 
 @app.post("/sessions/{session_id}/refresh")

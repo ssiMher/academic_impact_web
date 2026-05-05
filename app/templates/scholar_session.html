@@ -19,6 +19,7 @@
     {% set analysis = analysis_summary or {} %}
     {% set strong = strong_evidence_view or {} %}
     {% set strong_pagination = strong.pagination or {} %}
+    {% set report = report_payload or {} %}
     {% set person = person_view or {} %}
     {% set person_pagination = person.pagination or {} %}
     {% set person_status_counts = person.status_counts or {} %}
@@ -85,6 +86,24 @@
           <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>重建统计和队列</button>
         </form>
       </section>
+
+      {% if report.summary_text %}
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>报告摘要</h2>
+            <p class="muted">适合直接放入周报或组会 PPT 的简版结论。</p>
+          </div>
+          <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/report.md">下载 Markdown 报告</a>
+        </div>
+        <p>{{ report.summary_text }}</p>
+        <h3>可复制结论</h3>
+        <div class="report-block">
+          <pre>{% for bullet in report.bullets or [] %}- {{ bullet }}
+{% endfor %}</pre>
+        </div>
+      </section>
+      {% endif %}
 
       {% if analysis.overview %}
       <section class="panel">

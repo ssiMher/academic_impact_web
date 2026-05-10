@@ -345,6 +345,11 @@ button.ghost,
   border-radius: 8px;
 }
 
+.callout.info {
+  background: #eef6f4;
+  border: 1px solid rgba(31, 92, 77, 0.14);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

@@ -186,6 +186,74 @@
         <div class="panel-header">
           <div>
             <p class="eyebrow">02</p>
+            <h2>快速统计层</h2>
+            <p class="muted">Publication Statistics 与 Citation Statistics 仅基于元数据、本地 venue tier 表和人物 registry 生成，通常几秒内可得。</p>
+          </div>
+        </div>
+        {% set quick_stats = detail_payload.quick_stats or {} %}
+        {% set publication_stats = quick_stats.publication_statistics or {} %}
+        {% set citation_stats = quick_stats.citation_statistics or {} %}
+        <div class="callout info">
+          <strong>说明</strong>
+          <p>{{ quick_stats.disclaimer or '快速统计基于元数据和本地 registry，可能存在同名或 venue alias 误差；深度分析才是全文语义判断。' }}</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <strong>Publication Statistics</strong>
+                <p class="muted">面向引用论文元数据的快速统计。</p>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat"><span>候选论文数</span><strong>{{ publication_stats.paper_count or 0 }}</strong></div>
+              <div class="stat"><span>venue 已匹配等级</span><strong>{{ publication_stats.matched_venue_count or 0 }}</strong></div>
+              <div class="stat"><span>venue 未匹配等级</span><strong>{{ publication_stats.unmatched_venue_count or 0 }}</strong></div>
+              <div class="stat"><span>年份范围</span><strong>{{ publication_stats.year_range.min or '-' }} - {{ publication_stats.year_range.max or '-' }}</strong></div>
+            </div>
+            <div class="status-chips">
+              {% for tier, count in publication_stats.venue_tier_counts.items() %}
+              <span class="chip">{{ tier }}: {{ count }}</span>
+              {% endfor %}
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <strong>Citation Statistics</strong>
+                <p class="muted">面向引用总量、上下文信号和人物候选状态的快速统计。</p>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat"><span>元数据引用总数</span><strong>{{ citation_stats.total_citation_count or '-' }}</strong></div>
+              <div class="stat"><span>当前展示引用数</span><strong>{{ citation_stats.displayed_citation_count or 0 }}</strong></div>
+              <div class="stat"><span>高置信上下文</span><strong>{{ citation_stats.context_confidence_counts.high or 0 }}</strong></div>
+              <div class="stat"><span>命中人物候选</span><strong>{{ citation_stats.matched_person_candidate_count or 0 }}</strong></div>
+            </div>
+            <div class="status-chips">
+              <span class="chip">Pending: {{ citation_stats.person_status_counts.pending or 0 }}</span>
+              <span class="chip">Confirmed: {{ citation_stats.person_status_counts.confirmed or 0 }}</span>
+              <span class="chip">Rejected: {{ citation_stats.person_status_counts.rejected or 0 }}</span>
+              <span class="chip">Top / CCF-A: {{ citation_stats.top_tier_citation_count or 0 }}</span>
+            </div>
+          </article>
+        </div>
+        {% if publication_stats.top_venues %}
+        <details>
+          <summary>查看高频 venue</summary>
+          <ul>
+            {% for item in publication_stats.top_venues %}
+            <li>{{ item.venue }} · {{ item.tier }} · {{ item.paper_count }} 篇</li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">03</p>
             <h2>引用论文列表与状态</h2>
             <p class="muted">
               当前显示第 {{ pagination.start or 0 }} - {{ pagination.end or 0 }} 篇；
@@ -214,10 +282,12 @@
               分析状态筛选
               <select name="analysis_status">
                 <option value="">全部</option>
-                <option value="fulltext_analyzed" {% if detail_payload.paper_filters.active.analysis_status == 'fulltext_analyzed' %}selected{% endif %}>fulltext_analyzed</option>
-                <option value="mention_only" {% if detail_payload.paper_filters.active.analysis_status == 'mention_only' %}selected{% endif %}>mention_only</option>
-                <option value="context_only" {% if detail_payload.paper_filters.active.analysis_status == 'context_only' %}selected{% endif %}>context_only</option>
-                <option value="analysis_failed" {% if detail_payload.paper_filters.active.analysis_status == 'analysis_failed' %}selected{% endif %}>analysis_failed</option>
+                <option value="fulltext_analyzed" {% if detail_payload.paper_filters.active.analysis_status == 'fulltext_analyzed' %}selected{% endif %}>全文分析完成</option>
+                <option value="mention_only" {% if detail_payload.paper_filters.active.analysis_status == 'mention_only' %}selected{% endif %}>弱提及</option>
+                <option value="context_only" {% if detail_payload.paper_filters.active.analysis_status == 'context_only' %}selected{% endif %}>仅上下文分析</option>
+                <option value="fulltext_extract_failed" {% if detail_payload.paper_filters.active.analysis_status == 'fulltext_extract_failed' %}selected{% endif %}>全文提取失败</option>
+                <option value="analysis_failed" {% if detail_payload.paper_filters.active.analysis_status == 'analysis_failed' %}selected{% endif %}>语义分析失败</option>
+                <option value="write_output_failed" {% if detail_payload.paper_filters.active.analysis_status == 'write_output_failed' %}selected{% endif %}>结果写出失败</option>
               </select>
             </label>
             <label class="checkbox">
@@ -287,8 +357,8 @@
                 <td class="title-cell">{{ item.title }}</td>
                 <td>{{ item.year or '-' }} / {{ item.venue or '-' }}</td>
                 <td>{{ item.venue_tier.tier_label or '-' }}</td>
-                <td>{{ item.download_status or '-' }}</td>
-                <td>{{ item.analysis_status or '-' }}</td>
+                <td>{{ item.download_status_label or item.download_status or '-' }}</td>
+                <td>{{ item.analysis_status_label or item.analysis_status or '-' }}</td>
                 <td>{{ item.context_confidence or '-' }}</td>
                 <td>{{ item.candidate_count }}</td>
               </tr>
@@ -306,7 +376,7 @@
                 <strong>{{ item.id }} {{ item.title }}</strong>
                 <p class="muted">上传本地 PDF 后即可直接点击“分析所选论文”，无需 CLI attach-pdf。</p>
               </div>
-              <span class="chip">{{ item.download_status or 'not_probed' }}</span>
+              <span class="chip">{{ item.download_status_label or '待探测' }}</span>
             </div>
             <form action="/sessions/{{ session_id }}/attach-pdf" method="post" enctype="multipart/form-data" class="stack compact-form">
               <input type="hidden" name="paper_id" value="{{ item.id }}" />
@@ -324,8 +394,9 @@
       <section class="panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">03</p>
-            <h2>单篇引用方式分析结果</h2>
+            <p class="eyebrow">04</p>
+            <h2>深度语义分析结果</h2>
+            <p class="muted">这里只展示 PDF 下载、`fulltext_direct` 提取与全文语义分析产物。深度分析才是全文语义判断。</p>
           </div>
         </div>
         <div class="cards">
@@ -422,7 +493,7 @@
         {% set person_stats = detail_payload.person_tag_statistics %}
         <div class="panel-header">
           <div>
-            <p class="eyebrow">04</p>
+            <p class="eyebrow">05</p>
             <h2>统计信息</h2>
             <p class="muted">基于已发现的引用论文作者、人物标签 registry 和全文引用方式分析生成。</p>
           </div>
@@ -460,7 +531,7 @@
       <section class="panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">05</p>
+            <p class="eyebrow">06</p>
             <h2>人物标签候选区</h2>
           </div>
           <div class="status-chips">
@@ -480,6 +551,9 @@
               </div>
             </div>
             <p class="muted">命中论文：{{ candidate.matched_paper_ids | join(', ') or '-' }}</p>
+            {% if candidate.homonym_risk %}
+            <p class="muted">该候选当前仅基于姓名或 alias 命中，已标记为待人工复核。</p>
+            {% endif %}
             {% if candidate.note %}<p>{{ candidate.note }}</p>{% endif %}
             {% if candidate.source_links %}
             <ul>
@@ -522,7 +596,7 @@
       <section class="panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">06</p>
+            <p class="eyebrow">07</p>
             <h2>导出与汇总</h2>
           </div>
           <div class="actions">

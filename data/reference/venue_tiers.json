@@ -561,6 +561,15 @@
       "source": "CCF recommended international academic conferences and journals catalog 2026; official entry: https://www.ccf.org.cn/Academic_Evaluation/By_category"
     },
     {
+      "name": "IEEE/ACM Transactions on Networking",
+      "aliases": ["TON", "IEEE/ACM TON", "IEEE Transactions on Networking", "IEEE Trans. Netw.", "IEEE/ACM Trans. Netw."],
+      "tier": "tracked",
+      "tier_label": "Tracked venue seed",
+      "tier_system": "project_seed",
+      "venue_type": "journal",
+      "source": "manual_seed; alias added for common DBLP/OpenAlex abbreviated journal names"
+    },
+    {
       "name": "IEEE Transactions on Instrumentation and Measurement",
       "aliases": ["TIM", "IEEE TIM"],
       "tier": "tracked",

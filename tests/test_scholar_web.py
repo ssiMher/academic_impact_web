@@ -129,6 +129,49 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("person_tag:ACM Fellow", response.text)
         self.assertIn("CCF A", response.text)
 
+    def test_scholar_route_separates_publication_and_citation_statistics(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [{"citing_title": "Citing Paper"}],
+                    "deep_analysis_queue": [],
+                    "person_candidates": [],
+                    "statistics": {
+                        "publication_count": 190,
+                        "citation_edge_count": 3450,
+                        "publication_tiers": [
+                            {"tier_label": "未匹配等级", "count": 175},
+                            {"tier_label": "Top venue seed", "count": 15},
+                        ],
+                        "citing_venue_tiers": [
+                            {"tier_label": "CCF A", "count": 211},
+                            {"tier_label": "未匹配等级", "count": 3239},
+                        ],
+                        "person_tag_statistics": [],
+                    },
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("本人论文 venue 分级", response.text)
+        self.assertIn("引用论文 venue 分级", response.text)
+        self.assertIn("已展开 3450 条引用边", response.text)
+        self.assertIn("CCF A: 211", response.text)
+        self.assertIn("本地人物 registry 暂未命中", response.text)
+
     def test_scholar_route_filters_high_value_queue_by_reason(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
         (TEST_SESSION_DIR / "session.json").write_text(

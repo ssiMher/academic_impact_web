@@ -386,13 +386,26 @@
           <div>
             <p class="eyebrow">01</p>
             <h2>论文统计</h2>
+            <p class="muted">
+              快速统计基于 DBLP / OpenAlex / Scopus 元数据和本地 venue registry；可能受同名、缩写和 venue alias 影响。全文语义判断请看后面的深度分析结果。
+            </p>
           </div>
         </div>
+        <h3>本人论文 venue 分级</h3>
         <div class="status-chips">
           {% for group in statistics.publication_tiers or [] %}
           <span class="chip">{{ group.tier_label or "未分级" }}: {{ group.count }}</span>
           {% else %}
           <span class="chip">暂无分级统计</span>
+          {% endfor %}
+        </div>
+        <h3>引用论文 venue 分级</h3>
+        <p class="muted">已展开 {{ statistics.citation_edge_count or 0 }} 条引用边；这里统计的是引用论文的 venue，不会触发 PDF 下载或大模型分析。</p>
+        <div class="status-chips">
+          {% for group in statistics.citing_venue_tiers or [] %}
+          <span class="chip">{{ group.tier_label or "未分级" }}: {{ group.count }}</span>
+          {% else %}
+          <span class="chip">暂无引用 venue 统计</span>
           {% endfor %}
         </div>
       </section>
@@ -408,9 +421,10 @@
           {% for group in statistics.person_tag_statistics or [] %}
           <span class="chip">{{ group.tag_label or group.tag_type }}: {{ group.count }}，已确认 {{ group.confirmed_count or 0 }}，待确认 {{ group.pending_count or 0 }}</span>
           {% else %}
-          <span class="chip">暂无人物标签命中</span>
+          <span class="chip">本地人物 registry 暂未命中</span>
           {% endfor %}
         </div>
+        <p class="muted">人物标签只来自本地 registry 的可靠 seed，自动命中默认 pending，避免同名误判直接计为 confirmed。</p>
       </section>
 
       <section class="panel" id="person-candidates">

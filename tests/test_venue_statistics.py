@@ -96,6 +96,11 @@ class VenueStatisticsTestCase(unittest.TestCase):
                 "journal",
             ),
             (
+                "IEEE Trans. Netw.",
+                "IEEE/ACM Transactions on Networking",
+                "journal",
+            ),
+            (
                 "IEEE Transactions on Instrumentation and Measurement",
                 "IEEE Transactions on Instrumentation and Measurement",
                 "journal",
@@ -120,6 +125,7 @@ class VenueStatisticsTestCase(unittest.TestCase):
             ("ACM SenSys", "CCF B", "CCF"),
             ("IEEE Journal on Selected Areas in Communications", "CCF A", "CCF"),
             ("IEEE Transactions on Mobile Computing", "CCF A", "CCF"),
+            ("IEEE Trans. Netw.", "Tracked venue seed", "project_seed"),
             ("IEEE Transactions on Instrumentation and Measurement", "Tracked venue seed", "project_seed"),
         ]
         for venue, expected_label, expected_system in cases:

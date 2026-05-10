@@ -133,6 +133,10 @@ PERSON_CANDIDATES = load_module(
     "impact_cli_person_candidates",
     SKILLS_ROOT / "academic_impact_analyzer" / "person_candidates.py"
 )
+SCHOLAR_STATS = load_module(
+    "impact_cli_scholar_stats",
+    SKILLS_ROOT / "academic_impact_analyzer" / "scholar_stats.py"
+)
 
 
 def sanitize_json_value(value):
@@ -328,6 +332,10 @@ def default_overview_stats():
         "candidate_people_count": 0,
         "confirmed_people_count": 0,
     }
+
+
+def default_quick_stats(session: dict = None):
+    return SCHOLAR_STATS.default_quick_stats(session)
 
 
 def default_exports():
@@ -1055,10 +1063,6 @@ def apply_qa_flags(session: dict):
 
 def sync_session_derivatives(session_dir: Path, session: dict, update_quick: bool = False, update_evidence: bool = False):
     session["paper_aliases"] = build_session_paper_aliases(session.get("papers", []))
-    if update_quick:
-        session["quick_analysis"] = build_quick_analysis(session_dir, session)
-    else:
-        session.setdefault("quick_analysis", default_quick_analysis(session))
     if update_evidence or (
         session.get("analysis", {}).get("processed_papers")
         and session.get("evidence_index", {}).get("status") != "ready"
@@ -1069,6 +1073,12 @@ def sync_session_derivatives(session_dir: Path, session: dict, update_quick: boo
     apply_qa_flags(session)
     rebuild_person_candidates(session)
     enrich_papers_with_candidate_hits(session)
+    session["quick_stats"] = SCHOLAR_STATS.build_quick_stats(session)
+    if update_quick:
+        session["quick_analysis"] = build_quick_analysis(session_dir, session)
+    else:
+        session.setdefault("quick_analysis", default_quick_analysis(session))
+    session.setdefault("quick_stats", default_quick_stats(session))
     return session
 
 
@@ -1428,6 +1438,7 @@ def load_session(session_dir: Path):
     session.setdefault("papers", [])
     session.setdefault("paper_aliases", build_session_paper_aliases(session.get("papers", [])))
     session.setdefault("quick_analysis", default_quick_analysis(session))
+    session.setdefault("quick_stats", default_quick_stats(session))
     session.setdefault("evidence_index", default_evidence_index())
     session.setdefault("person_candidates", [])
     session.setdefault("overview_stats", default_overview_stats())
@@ -1457,6 +1468,7 @@ def save_session(session_dir: Path, session: dict):
     session["session_dir"] = str(session_dir)
     session["paper_count"] = len(session.get("papers", []))
     session["paper_aliases"] = build_session_paper_aliases(session.get("papers", []))
+    session["quick_stats"] = SCHOLAR_STATS.build_quick_stats(session)
     session.setdefault("exports", default_exports())
     apply_qa_flags(session)
     write_json(session_dir / "session.json", session)
@@ -1571,6 +1583,7 @@ def build_discover_session(
         "papers": entries,
         "paper_aliases": build_session_paper_aliases(entries),
         "quick_analysis": default_quick_analysis({"query": query}),
+        "quick_stats": default_quick_stats({"query": query, "target": target}),
         "evidence_index": default_evidence_index(),
         "analysis_mode_last": "list",
         "warnings": warnings,
@@ -1871,6 +1884,9 @@ def review_person_candidate(session_dir: Path, candidate_id: str, action: str, n
 def render_phase1_export_markdown(detail_payload: dict):
     overview = detail_payload.get("target_overview", {})
     person_summary = detail_payload.get("person_summary", {})
+    quick_stats = detail_payload.get("quick_stats", default_quick_stats())
+    publication_stats = quick_stats.get("publication_statistics", {})
+    citation_stats = quick_stats.get("citation_statistics", {})
     lines = [
         "# 单篇论文引用分析报告",
         "",
@@ -1886,6 +1902,22 @@ def render_phase1_export_markdown(detail_payload: dict):
         f"- 已分析：{(overview.get('overview_stats') or {}).get('analyzed_count', 0)}",
         f"- 人物候选：{(overview.get('overview_stats') or {}).get('candidate_people_count', 0)}",
         f"- 已确认人物：{(overview.get('overview_stats') or {}).get('confirmed_people_count', 0)}",
+        "",
+        "## 快速统计层",
+        "",
+        "- Publication Statistics",
+        f"- 候选论文数：{publication_stats.get('paper_count', 0)}",
+        f"- venue 已匹配等级：{publication_stats.get('matched_venue_count', 0)}",
+        f"- venue 未匹配等级：{publication_stats.get('unmatched_venue_count', 0)}",
+        f"- venue tier 分布：{json.dumps(publication_stats.get('venue_tier_counts', {}), ensure_ascii=False)}",
+        "",
+        "- Citation Statistics",
+        f"- 元数据引用总数：{citation_stats.get('total_citation_count') or '-'}",
+        f"- 当前展示引用数：{citation_stats.get('displayed_citation_count', 0)}",
+        f"- 上下文置信度分布：{json.dumps(citation_stats.get('context_confidence_counts', {}), ensure_ascii=False)}",
+        f"- 人物候选状态分布：{json.dumps(citation_stats.get('person_status_counts', {}), ensure_ascii=False)}",
+        "",
+        f"- 说明：{quick_stats.get('disclaimer', '')}",
         "",
         "## 人物候选统计",
         "",
@@ -1920,7 +1952,7 @@ def render_phase1_export_markdown(detail_payload: dict):
             lines.append(f"  - {cited_item.get('id')} {cited_item.get('title')}")
     lines.extend([
         "",
-        "## 引用论文分析",
+        "## 深度语义分析结果",
         "",
     ])
     for item in detail_payload.get("papers", []):
@@ -2066,6 +2098,7 @@ def run_full_analysis_workflow(session_dir: Path, refresh_top_n: int = 5, top_k_
         "download": download_result,
         "analysis": analyze_result,
         "quick_analysis": session.get("quick_analysis", {}),
+        "quick_stats": session.get("quick_stats", {}),
         "evidence_index": session.get("evidence_index", {}),
         "manual_required_titles": manual_required_titles,
     }
@@ -2138,6 +2171,7 @@ def build_status_payload(session: dict):
         "download_status_counts": counts,
         "analysis": session.get("analysis", {}),
         "quick_analysis": session.get("quick_analysis", default_quick_analysis(session)),
+        "quick_stats": session.get("quick_stats", default_quick_stats(session)),
         "evidence_index": session.get("evidence_index", default_evidence_index()),
         "overview_stats": session.get("overview_stats", default_overview_stats()),
         "person_candidates": session.get("person_candidates", []),
@@ -2149,17 +2183,26 @@ def build_status_payload(session: dict):
 def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
     filters = filters or {}
     status_payload = build_status_payload(session)
+    quick_stats = status_payload.get("quick_stats", default_quick_stats(session))
+    venue_match_map = {
+        item.get("paper_id"): item
+        for item in quick_stats.get("venue_matches", [])
+        if isinstance(item, dict) and item.get("paper_id")
+    }
     target = status_payload.get("target", {})
     paper_lookup = {item.get("id"): item for item in session.get("papers", [])}
     detail_papers = []
     for item in status_payload.get("papers", []):
         raw_item = paper_lookup.get(item.get("id"), {})
         citation_summary = summarize_citation_method(raw_item)
+        venue_match = venue_match_map.get(item.get("id"), {})
         paper_payload = {
             "id": item.get("id"),
             "title": item.get("title"),
             "year": raw_item.get("year"),
             "venue": raw_item.get("venue"),
+            "venue_tier": venue_match.get("tier", "Unmatched"),
+            "venue_tier_matched": venue_match.get("matched", False),
             "download_status": item.get("download_status"),
             "download_status_label": _status_label(item.get("download_status")),
             "analysis_status": item.get("analysis_status"),
@@ -2215,6 +2258,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
                 "candidate_only": str(filters.get("candidate_only") or "").strip().lower() in {"1", "true", "on", "yes"},
             },
         },
+        "quick_stats": quick_stats,
         "papers": detail_papers,
         "impact_statistics": impact_statistics,
         "person_candidates": status_payload.get("person_candidates", []),
@@ -2272,6 +2316,7 @@ def build_card_state_payload(session: dict):
         "warnings": status_payload.get("warnings", []),
         "list_preferences": status_payload.get("list_preferences", {}),
         "quick_analysis": status_payload.get("quick_analysis", {}),
+        "quick_stats": status_payload.get("quick_stats", default_quick_stats(session)),
         "qa_ready_count": status_payload.get("evidence_index", {}).get("qa_ready_count", 0),
         "next_actions": [
             "下载第2篇、第3篇",

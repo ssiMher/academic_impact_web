@@ -212,6 +212,11 @@ button.ghost {
   border: 1px solid rgba(154, 91, 32, 0.18);
 }
 
+.callout.info {
+  background: #eef6f4;
+  border: 1px solid rgba(31, 92, 77, 0.14);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

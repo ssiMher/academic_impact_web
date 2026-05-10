@@ -285,6 +285,9 @@ class Phase1DetailTestCase(unittest.TestCase):
 
         self.assertEqual(status_payload['overview_stats']['candidate_people_count'], 3)
         self.assertEqual(detail_payload['person_summary']['pending_count'], 3)
+        self.assertEqual(detail_payload['quick_stats']['status'], 'ready')
+        self.assertIn('publication_statistics', detail_payload['quick_stats'])
+        self.assertIn('citation_statistics', detail_payload['quick_stats'])
         self.assertEqual(len(detail_payload['papers']), 2)
         first_paper = detail_payload['papers'][0]
         self.assertIn('extension', first_paper['citation_method_summary']['labels'])
@@ -376,8 +379,13 @@ class Phase1DetailTestCase(unittest.TestCase):
         response = asyncio.run(session_detail(request, TEST_SESSION_ID))
         body = response.body.decode('utf-8')
         self.assertIn('目标论文基本信息与总览统计', body)
+        self.assertIn('快速统计层', body)
+        self.assertIn('Publication Statistics', body)
+        self.assertIn('Citation Statistics', body)
+        self.assertIn('快速统计基于元数据和本地 registry', body)
         self.assertIn('引用论文列表与状态', body)
-        self.assertIn('单篇引用方式分析结果', body)
+        self.assertIn('深度语义分析结果', body)
+        self.assertIn('深度分析才是全文语义判断', body)
         self.assertIn('人物标签候选区', body)
         self.assertIn('统计信息', body)
         self.assertIn('引用作者身份统计', body)
@@ -398,6 +406,8 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('分析所选论文', body)
         self.assertIn('fulltext_direct', body)
         self.assertIn('上传并绑定 PDF', body)
+        self.assertIn('全文分析完成', body)
+        self.assertIn('仅上下文分析', body)
 
     def test_session_detail_page_renders_citation_trace_details(self):
         request = Request({'type': 'http', 'method': 'GET', 'path': f'/sessions/{TEST_SESSION_ID}', 'headers': []})

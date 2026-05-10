@@ -1,0 +1,144 @@
+{
+  "_comment": "Venue 等级映射表。运行时维持轻量 seed；后续可基于 CCF 官方名单离线导入并回写到 items。",
+  "schema_version": "1.0",
+  "ccf_import_plan": {
+    "status": "planned",
+    "upstream": "CCF official conference/journal list",
+    "notes": [
+      "保留现有 items 运行时格式，不在分析时联网抓取。",
+      "后续可增加离线 importer，将官方简称、全称、年份范围与 alias 预归一化后写入本文件。"
+    ]
+  },
+  "items": [
+    {
+      "name": "Advances in Neural Information Processing Systems",
+      "tier": "Top",
+      "category": "conference",
+      "source": "top_seed",
+      "aliases": [
+        "NeurIPS",
+        "NIPS"
+      ]
+    },
+    {
+      "name": "International Conference on Machine Learning",
+      "tier": "Top",
+      "category": "conference",
+      "source": "top_seed",
+      "aliases": [
+        "ICML"
+      ]
+    },
+    {
+      "name": "International Conference on Learning Representations",
+      "tier": "Top",
+      "category": "conference",
+      "source": "top_seed",
+      "aliases": [
+        "ICLR"
+      ]
+    },
+    {
+      "name": "IEEE Conference on Computer Vision and Pattern Recognition",
+      "tier": "Top",
+      "category": "conference",
+      "source": "top_seed",
+      "aliases": [
+        "CVPR"
+      ]
+    },
+    {
+      "name": "IEEE/CVF International Conference on Computer Vision",
+      "tier": "Top",
+      "category": "conference",
+      "source": "top_seed",
+      "aliases": [
+        "ICCV"
+      ]
+    },
+    {
+      "name": "Annual Meeting of the Association for Computational Linguistics",
+      "tier": "Top",
+      "category": "conference",
+      "source": "top_seed",
+      "aliases": [
+        "ACL"
+      ]
+    },
+    {
+      "name": "International Conference on Software Engineering",
+      "tier": "CCF-A",
+      "category": "conference",
+      "source": "ccf_seed",
+      "aliases": [
+        "ICSE"
+      ]
+    },
+    {
+      "name": "ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering",
+      "tier": "CCF-A",
+      "category": "conference",
+      "source": "ccf_seed",
+      "aliases": [
+        "ESEC/FSE",
+        "FSE",
+        "SIGSOFT FSE"
+      ]
+    },
+    {
+      "name": "International Symposium on Software Testing and Analysis",
+      "tier": "CCF-A",
+      "category": "conference",
+      "source": "ccf_seed",
+      "aliases": [
+        "ISSTA",
+        "Proceedings of the ACM SIGSOFT International Symposium on Software Testing and Analysis"
+      ]
+    },
+    {
+      "name": "ACM Transactions on Software Engineering and Methodology",
+      "tier": "CCF-A",
+      "category": "journal",
+      "source": "ccf_seed",
+      "aliases": [
+        "TOSEM"
+      ]
+    },
+    {
+      "name": "IEEE International Conference on Software Maintenance and Evolution",
+      "tier": "CCF-B",
+      "category": "conference",
+      "source": "ccf_seed",
+      "aliases": [
+        "ICSME"
+      ]
+    },
+    {
+      "name": "Journal of Systems and Software",
+      "tier": "CCF-B",
+      "category": "journal",
+      "source": "ccf_seed",
+      "aliases": [
+        "JSS"
+      ]
+    },
+    {
+      "name": "International Conference on Web Engineering",
+      "tier": "CCF-C",
+      "category": "conference",
+      "source": "ccf_seed",
+      "aliases": [
+        "ICWE"
+      ]
+    },
+    {
+      "name": "Science of Computer Programming",
+      "tier": "CCF-C",
+      "category": "journal",
+      "source": "ccf_seed",
+      "aliases": [
+        "SCP"
+      ]
+    }
+  ]
+}

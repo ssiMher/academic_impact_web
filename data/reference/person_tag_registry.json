@@ -1,4 +1,73 @@
 {
-  "_comment": "组内可维护的人物标签来源。每项至少包含 name、tag_type、source_links。",
-  "items": []
+  "_comment": "组内可维护的人物标签来源。默认只放少量可靠 seed，所有自动命中默认 pending，需人工复核。",
+  "schema_version": "1.0",
+  "items": [
+    {
+      "name": "Geoffrey Hinton",
+      "aliases": [
+        "Geoff Hinton"
+      ],
+      "matched_affiliations": [
+        "university of toronto",
+        "google"
+      ],
+      "tags": [
+        {
+          "type": "acm_fellow",
+          "source_links": [
+            "https://awards.acm.org/fellows"
+          ]
+        }
+      ],
+      "note": "Seed only. Name matches remain pending until manually confirmed."
+    },
+    {
+      "name": "Andrew Yao",
+      "aliases": [
+        "Andrew Chi-Chih Yao",
+        "姚期智"
+      ],
+      "matched_affiliations": [
+        "tsinghua university",
+        "清华大学"
+      ],
+      "tags": [
+        {
+          "type": "acm_fellow",
+          "source_links": [
+            "https://awards.acm.org/fellows"
+          ]
+        },
+        {
+          "type": "cas_academician",
+          "source_links": [
+            "https://www.casad.cas.cn/aca/"
+          ]
+        },
+        {
+          "type": "godel_prize",
+          "source_links": [
+            "https://sigact.org/prizes/godel/"
+          ]
+        }
+      ],
+      "note": "Multi-tag seed used to validate pending-first disambiguation."
+    },
+    {
+      "name": "John Hopcroft",
+      "aliases": [],
+      "matched_affiliations": [
+        "cornell university"
+      ],
+      "tags": [
+        {
+          "type": "ieee_fellow",
+          "source_links": [
+            "https://awards.acm.org/fellows"
+          ]
+        }
+      ],
+      "note": "Seed only. Extend cautiously to avoid name collisions."
+    }
+  ]
 }

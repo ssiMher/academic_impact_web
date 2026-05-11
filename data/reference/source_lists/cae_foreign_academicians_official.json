@@ -1,0 +1,2050 @@
+{
+  "_comment": "中国工程院外籍院士官方来源快照。name 使用英文名以匹配 DBLP/OpenAlex/Scopus 作者，aliases 保留官网中文名。",
+  "source": "https://www.cae.cn/cae/html/main/col50/column_50_1.html",
+  "items": [
+    {
+      "name": "Ponisseril Somasundaran",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "萨马桑达兰"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00296066.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "V. N. Pochukaev",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "弗·尼·巴丘卡耶夫"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75604502.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Bernard Roizman, Sc. D.",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "伯纳德·罗依兹曼"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00942421.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Man-Chung Tang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "邓文中"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03245979.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "William Geraint Price",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "威廉·杰兰特·普赖斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93203445.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Yu-Chi Ho",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "何毓琦"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06277406.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Jacques P. Caen",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "雅克·刚"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15154482.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "K. S. E. Forssberg",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "弗斯贝格"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03644258.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Akira Fujishima",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "藤岛昭"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09671080.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "David D. Ho",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "何大一"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21839864.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Alec Broers",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "亚历克·布鲁斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15897552.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Chain-Tsuan Liu",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "刘锦川"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37251091.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Satoshi Omura, Ph.D.",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "大村智"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34331210.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Yuri V. Gulyaey",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "尤里·古里亚耶夫"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25860449.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Norden E Huang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "黄锷"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40761933.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Odd Magnus Faltinsen",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "奥德马格努斯·福尔廷森"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31721567.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Way Kuo",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "郭位"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28411167.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Henry T.Yang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "杨祖佑"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37583793.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Liang-Shih Fan",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "范良士"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43780361.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Raj Reddy",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "罗杰·瑞迪"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46324135.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Surendra P.Shah",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "夏苏鲁"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40472265.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Barry J. Marshall",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "巴里·J·马歇尔"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34294778.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Edward F. Crawley",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "爱德华·F·克劳利"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87104077.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Frieder Seible",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "弗雷德·塞泊"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96517404.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Harvey Vernon Fineberg",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "霍宁博"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/92139142.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Jeffrey Wadsworth",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "杰夫里·华兹华斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/42569550.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Koizumi Hideaki",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "小泉英明"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50492817.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Ching-Ping Wong",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "汪正平"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/38953968.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Cun-Yu Wang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "王存玉"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/38954586.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Fred C. Lee",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "李泽元"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/38954295.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "John Charles Crittenden",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "约翰·查尔斯·科瑞谭登"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/38954447.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Preben Terndrup Pedersen",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "培莱彬·特恩卓普·彼德森"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/38953520.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Robin Batterham",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "罗宾·巴特哈姆"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/38954133.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Arogyaswami J. Paulraj",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "埃罗斯瓦米·波尔拉"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/66044993.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "C. D. Mote, Jr",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "牟德"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/30816008.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Cato T. Laurencin",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "加图·洛朗森"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/19305138.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Ching-Hon Pui",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "裴正康"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/85797937.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Herbert A. Mang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "赫伯特·芒"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/95997369.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Ian David Cluckie",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "伊恩·大卫·克拉吉"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84861303.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Wenyuan Li",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "李文沅"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78868211.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Ahsan Kareem",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "哈桑·卡雷姆"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/98821851.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Aibing Yu",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "余艾冰"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25909903.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Bill Gates",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "比尔·盖茨"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/91691504.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Dame Ann Dowling",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "安道琳"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/48011493.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Donald Grierson",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "唐纳德·格里尔逊"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/07387581.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Kai Li",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "李凯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15961242.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Leo Rafael Reif",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "雷欧·拉斐尔·莱夫"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/80762769.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Menachem Elimelech",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "梅纳赫姆·埃利梅莱赫"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81709503.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Michael R. Hoffmann",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "迈克尔·霍夫曼"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09336978.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Min Gu",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "顾敏"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/26910923.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Nicholas A. Peppas",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "尼古拉斯·佩帕斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/30022869.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Nicholas Robert Lemoine",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "尼古拉斯·罗伯特·莱蒙"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/11034065.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Shixin Jack Hu",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "胡仕新"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/63289931.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Solntsev Konstantin Aleksandrovich",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "松采夫·康斯坦丁·亚历山德罗维奇"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/69274898.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Stephen P. Boyd",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "史提芬·博伊德"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56992602.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Tamura Yukio",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "田村幸雄"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/74102088.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Webster Cavenee",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "韦伯斯特·卡维尼"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/47594334.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Yiu-Wing Mai",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "米耀荣"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/17164676.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Anjan Bose",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "安詹·博斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56207783.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Brent Euan Clothier",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "布伦特·尤安·克洛西尔"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/72386818.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Bruce Ernest Logan",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "布鲁斯·欧内斯特·罗根"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/89672496.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Daniel René Couturier",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "高缇耶·丹尼尔·勒内"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/89221752.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "David Allan Weitz",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "大卫·阿兰·韦茨"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06586667.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Enrique Jose Lavernia",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "恩里克·何塞·拉瓦涅"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/17965143.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Felix Dapare Dakora",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "菲利克斯·达帕雷·达科拉"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/64168465.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Glen T. Daigger",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "格伦·托马斯·戴格尔"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/47169564.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Henning Kagermann",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "孔翰宁"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/91427514.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Hiroshi Amano",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "天野浩"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/33166903.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Jens Nielsen",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "延斯·尼尔森"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/98477782.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Jingsheng Jason Cong",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "丛京生"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37241561.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "John Loughhead",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "约翰·劳赫德"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/45509096.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Junuthula Narasimha Reddy",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "吉恩·雷迪"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/99183335.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Leif Andersson",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "雷夫·安德森"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09299138.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Marinus Cornelis Maria van Loosdrecht",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "马克·梵·洛斯德莱特"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/29374594.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Michael Hood",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "迈克尔·胡德"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/17870134.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Petr Glybochko",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "彼得·格雷鲍奇卡"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/13343239.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Philip Withers",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "菲利普·威瑟斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71898312.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Pys'menny Volofymyr",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "毕思敏·弗拉基米尔"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56407892.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Roger Falconer",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "罗杰·亚历山大·福尔克纳"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/79813217.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Sébastien Candel",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "塞巴斯蒂安·坎德尔"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/92257884.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Torgeir Moan",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "托盖尔·蒙恩"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59779202.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Vigor Yang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "杨威迦"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34496473.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Vitor J Dzau",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "曹文凯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/66281218.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Xuemin Shen",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "沈学民"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84350440.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Yahya Rahmat-Samii",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "叶海亚·拉赫玛特·萨米"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/77335805.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Yihai Cao",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "曹义海"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/91027569.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Antonios G. Mikos",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "安东尼奥·米克斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09282304.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Billie Floyd Spencer, Jr.",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "苏磐石"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/23654945.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Chen Zhangxing",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "陈掌星"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/54865375.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Chul B Caleb Park",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "朴哲范"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/67588137.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Dimitri E. Beskos",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "贝斯科斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/24531945.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Fatih Birol",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "法蒂·比罗尔"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71034016.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Guido Kroemer",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "吉多·科罗默"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/45562440.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Hua Zhao",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "赵华"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/13129278.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Kaushik Rajashekara",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "拉贾"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31175324.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Otto Heinrich Herzog",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "奥泰因·赫尔佐格"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/13448923.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Pedro Jose Alvarez",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "佩德罗·约瑟·阿尔瓦雷斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/45191232.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Robert Samuel Langer",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "罗伯特·萨缪尔·兰格"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/36441171.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Shu Chien",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "钱煦"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/17340494.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Sun Xueliang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "孙学良"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/26240929.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Tom Luo",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "罗智泉"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/97087411.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Ton Bisseling",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "安东尼·比斯利"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62187911.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Ya-Qin Zhang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "张亚勤"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03416509.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Yu Sun",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "孙钰"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43573035.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Zhanfeng Cui",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "崔占峰"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28098328.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Zhenghe Xu",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "徐政和"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65155019.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Abbas Firoozabadi",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "阿巴斯·费若扎巴迪"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31750869.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Constance J. Chang-Hasnain",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "常瑞华"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/02245247.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Derek Elsworth",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "德里克·埃尔斯沃斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37803384.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Eric Daniel Jacques Gilson",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "埃里克·丹尼尔·雅克·吉尔森"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/63111613.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Hao Hong",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "郝洪"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/42209726.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Jian Kang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "康健"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56683212.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Jiujun Zhang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "张久俊"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/30544082.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Ki Nam Kim",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "金奇南"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/05556074.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Norbert Claude Gorin",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "高汉"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68078075.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Ranjith Pathegama Gamage",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "兰吉特·帕伽玛·加米奇"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40342391.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "S. Ravi Pradip Silva",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "拉维·席尔瓦"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18956446.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Sang Yup Lee",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "李相燁"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/22173351.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Seeram Ramakrishna",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "拉马克瑞斯纳·西拉姆"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/57917682.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Wang Jiangzhou",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "王江舟"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/13093403.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Wang Yanghua",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "王仰华"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/41382132.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Zhang Jianwei",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "张建伟"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00545824.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Benoît Dubuis",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "贝努瓦·杜比"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/48175863.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Bernhard Mueller",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "伯恩哈德·沐乐"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/23035015.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Bikash C Pal",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "毕凯晟"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/13067938.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Birol Dindoruk",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "比罗尔·丹德若克"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03770037.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Caijun Shi",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "史才军"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/26127758.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Carlos Guedes Soares",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "卡洛斯·格德斯·苏亚雷斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/29648984.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Constantinos Soutis",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "康斯坦丁诺斯·苏蒂斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/88900858.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Jie Huang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "黄捷"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/60888924.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Joan Bray Rose",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "琼·B·罗斯"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/36200312.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Li Erping",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "李尔平"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/67402038.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Lin Li",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "李琳"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/17218249.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Martinus Abraham Cohen Stuart",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "马丁 亚伯拉翰·科恩斯图尔特"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31357585.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Pavel Talalay",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "帕维尔 达拉拉伊"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18068713.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Peter David Lund",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "彼得·大卫·路德"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/10520796.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Peter Louis Andresen",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "彼得·路易斯·安德瑞森"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/83391412.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Shigeo Maruyama",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "丸山茂夫"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21039356.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Shiping Zhu",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "朱世平"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/02684030.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Song Yong Duan",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "宋永端"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75384568.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Stelmakh Oleksandr",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "斯杰里马赫·亚历山大"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25549162.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Xie Yi Min",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "谢亿民"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/29969819.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Xin Lu",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "卢欣"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/58231447.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Yike Guo",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "郭毅可"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56257408.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Zhang Youming",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "张友明"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/47745360.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    },
+    {
+      "name": "Zuojun Shen",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "申作军"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/69614923.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院外籍院士"
+      ],
+      "note": "中国工程院外籍院士；source: 中国工程院官网；English name from CAE foreign member list supplied for registry matching"
+    }
+  ]
+}

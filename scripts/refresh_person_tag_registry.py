@@ -144,17 +144,31 @@ def build_acm_entry(name: str, year: str = "", source_url: str = ACM_FELLOWS_URL
     name = (name or "").strip()
     if not name or normalize_name(name) in {"name", "award", "year", "region", "dl"}:
         return None
+    display_name, aliases = acm_display_name_and_aliases(name)
     note = "ACM Fellow"
     if year:
         note += f", elected {year}"
     return {
-        "name": name,
+        "name": display_name,
         "tag_type": "acm_fellow",
-        "aliases": [],
+        "aliases": aliases,
         "source_links": [source_url],
         "matched_affiliations": [],
         "note": note,
     }
+
+
+def acm_display_name_and_aliases(name: str) -> tuple[str, list[str]]:
+    name = re.sub(r"\s+", " ", (name or "").strip())
+    aliases = []
+    if "," not in name:
+        return name, aliases
+    last, rest = [part.strip() for part in name.split(",", 1)]
+    if not last or not rest:
+        return name, aliases
+    display_name = f"{rest} {last}"
+    aliases.append(name)
+    return display_name, aliases
 
 
 def build_ieee_cs_entry(

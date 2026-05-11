@@ -1,0 +1,483 @@
+{
+  "_comment": "中国工程院已故外籍院士官方来源快照；中文译名和详情链接来自 CAE 中文官网，英文名来自 CAE 已故外籍院士英文名单；当前应为 24 人。",
+  "source": "https://www.cae.cn/cae/html/main/col57/column_57_1.html",
+  "official_count": 24,
+  "items": [
+    {
+      "name": "Thomas H. Lee",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "李天和",
+        "Li Tian He",
+        "LiTianHe",
+        "Li TianHe",
+        "TianHe Li",
+        "He LiTian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50338199.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2000；field: 电机工程与系统工程；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Chang-Lin Tien",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "田长霖",
+        "Tian Zhang Lin",
+        "TianZhangLin",
+        "Tian ZhangLin",
+        "ZhangLin Tian",
+        "Lin TianZhang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46717045.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2000；field: 传热学（机械）；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Michel T. Halbouty",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "哈尔布特",
+        "Ha Er Bu Te",
+        "HaErBuTe",
+        "Ha ErBuTe",
+        "ErBuTe Ha",
+        "Te HaErBu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43924456.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1996；field: 石油地质；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Nikolay P. Lyakishev",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "梁基谢夫",
+        "Liang Ji Xie Fu",
+        "LiangJiXieFu",
+        "Liang JiXieFu",
+        "JiXieFu Liang",
+        "Fu LiangJiXie"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56626864.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "俄罗斯"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2003；field: 金属材料与冶金工程；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Ray Wu",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "吴瑞",
+        "Wu Rui",
+        "WuRui",
+        "Rui Wu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53156767.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2001；field: 生物化学与分子生物学；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Thomas Bell",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "贝尔",
+        "Bei Er",
+        "BeiEr",
+        "Er Bei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50392334.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "英国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2001；field: 机械工程；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Michael Denis Gale",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "盖尔",
+        "Gai Er",
+        "GaiEr",
+        "Er Gai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46283099.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "英国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1998；field: 植物基因组及分子生物学；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Norman E. Borlaug",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "勃劳格",
+        "Bo Lao Ge",
+        "BoLaoGe",
+        "Bo LaoGe",
+        "LaoGe Bo",
+        "Ge BoLao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59446944.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1996；field: 遗传育种；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Miomir K. Vukobratovic",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "乌克布拉托维奇",
+        "Wu Ke Bu La Tuo Wei Qi",
+        "WuKeBuLaTuoWeiQi",
+        "Wu KeBuLaTuoWeiQi",
+        "KeBuLaTuoWeiQi Wu",
+        "Qi WuKeBuLaTuoWei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12689297.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "塞尔维亚"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2003；field: 自动化；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Tingye Li",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "厉鼎毅",
+        "Li Ding Yi",
+        "LiDingYi",
+        "Li DingYi",
+        "DingYi Li",
+        "Yi LiDing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81691238.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1996；field: 光纤通信；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Georgy C. Boushgens",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "比施根斯",
+        "Bi Shi Gen Si",
+        "BiShiGenSi",
+        "Bi ShiGenSi",
+        "ShiGenSi Bi",
+        "Si BiShiGen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59680550.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "俄罗斯"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1996；field: 飞行器空气动力学和飞机力学；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Günter Spur",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "施普尔",
+        "Gunter Spur",
+        "Shi Pu Er",
+        "ShiPuEr",
+        "Shi PuEr",
+        "PuEr Shi",
+        "Er ShiPu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96101259.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "德国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2001；field: 机械制造；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Tasuku Fuwa",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "不破祐",
+        "Bu Po You",
+        "BuPoYou",
+        "Bu PoYou",
+        "PoYou Bu",
+        "You BuPo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78229409.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "日本"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1996；field: 冶金工程；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Charles M. Vest",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "查理斯·维斯特",
+        "Charles M.Vest",
+        "Cha Li Si Wei Si Te",
+        "ChaLiSiWeiSiTe",
+        "Cha LiSiWeiSiTe",
+        "LiSiWeiSiTe Cha",
+        "Te ChaLiSiWeiSi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34883267.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2009；field: 应用光学、信息；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Adolf W. Lohmann",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "罗曼",
+        "Luo Man",
+        "LuoMan",
+        "Man Luo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09958210.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "德国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2001；field: 应用光学；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Ray W. Clough",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "克劳夫",
+        "Ke Lao Fu",
+        "KeLaoFu",
+        "Ke LaoFu",
+        "LaoFu Ke",
+        "Fu KeLao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71844912.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1996；field: 结构工程、地震工程；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Wladyslaw Karol Wlosinski",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "霍信斯基",
+        "Huo Xin Si Ji",
+        "HuoXinSiJi",
+        "Huo XinSiJi",
+        "XinSiJi Huo",
+        "Ji HuoXinSi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18148137.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "波兰"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2005；field: 机械工程；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Leoh Ming Pei",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "贝聿铭",
+        "Ieoh Ming Pei",
+        "I. M. Pei",
+        "I.M. Pei",
+        "Bei Yu Ming",
+        "BeiYuMing",
+        "Bei YuMing",
+        "YuMing Bei",
+        "Ming BeiYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84724571.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1996；field: 建筑设计、城市设计；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Thomas S. Huang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "黄煦涛",
+        "Huang Xu Tao",
+        "HuangXuTao",
+        "Huang XuTao",
+        "XuTao Huang",
+        "Tao HuangXu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06941576.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2001；field: 计算机（图象处理）；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Colin Blakemore",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "科林·布莱克默",
+        "Ke Lin Bu Lai Ke Mo",
+        "KeLinBuLaiKeMo",
+        "Ke LinBuLaiKeMo",
+        "LinBuLaiKeMo Ke",
+        "Mo KeLinBuLaiKe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37796373.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "英国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2009；field: 神经科学；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Wm. A. Wulf",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "威廉·沃尔夫",
+        "William A. Wulf",
+        "Wei Lian Wo Er Fu",
+        "WeiLianWoErFu",
+        "Wei LianWoErFu",
+        "LianWoErFu Wei",
+        "Fu WeiLianWoEr"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12775763.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2005；field: 计算机；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Simon M. Sze",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "施敏",
+        "Shi Min",
+        "ShiMin",
+        "Min Shi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87476508.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1998；field: 微电子、半导体器件物理；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Pierre Tiollais",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "比·蒂奥莱",
+        "Bi Di Ao Lai",
+        "BiDiAoLai",
+        "Bi DiAoLai",
+        "DiAoLai Bi",
+        "Lai BiDiAo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96898676.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "法国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 1998；field: 基因的分子生物学、乙型肝炎；English name supplied from CAE deceased foreign member English list for registry matching"
+    },
+    {
+      "name": "Ralph T. Yang",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "杨祖保",
+        "Yang Zu Bao",
+        "YangZuBao",
+        "Yang ZuBao",
+        "ZuBao Yang",
+        "Bao YangZu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/55787588.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故外籍院士",
+        "美国"
+      ],
+      "note": "中国工程院已故外籍院士；source: 中国工程院官网；official deceased foreign academician list；elected 2015；field: 环境工程；English name supplied from CAE deceased foreign member English list for registry matching"
+    }
+  ]
+}

@@ -135,6 +135,57 @@ class ScholarPipelineTestCase(unittest.TestCase):
         self.assertEqual(edge["source_url"], "https://example.test/citing")
         self.assertEqual(expanded["statistics"]["citation_edge_count"], 1)
 
+    def test_expand_publication_citations_preserves_author_details(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "doi": "10.1000/target",
+                    "unique_ids": {"DOI": "10.1000/target"},
+                }
+            ],
+            "citation_edges": [],
+            "statistics": {},
+        }
+        citation_result = {
+            "ok": True,
+            "data_provider": "OpenAlex",
+            "papers": [
+                {
+                    "paperId": "openalex-citing-001",
+                    "title": "Citing Paper",
+                    "year": 2025,
+                    "venue": "ACM MobiCom",
+                    "externalIds": {"DOI": "10.1000/citing"},
+                    "authors": ["Meng L."],
+                    "author_details": [
+                        {
+                            "name": "Lingkai Meng",
+                            "author_id": "https://openalex.org/A123",
+                            "source_url": "https://openalex.org/A123",
+                            "institutions": ["Nanjing University"],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        with mock.patch.object(
+            self.pipeline.LIST_PAPERS,
+            "list_all_citations",
+            return_value=citation_result,
+        ):
+            expanded = self.pipeline.expand_publication_citations(
+                session,
+                limit_per_publication=10,
+            )
+
+        edge = expanded["citation_edges"][0]
+        self.assertEqual(edge["citing_authors"], ["Lingkai Meng"])
+        self.assertEqual(edge["citing_author_details"][0]["name"], "Lingkai Meng")
+        self.assertEqual(edge["citing_author_details"][0]["institutions"], ["Nanjing University"])
+
     def test_expand_publication_citations_builds_person_candidates_from_citing_authors(self):
         session = {
             "publications": [

@@ -126,11 +126,23 @@ def build_person_candidates_from_citation_edges(
         if paper_id in seen_ids:
             continue
         seen_ids.add(paper_id)
+        author_details = edge.get("citing_author_details") or []
+        authors = []
+        for detail in author_details:
+            if not isinstance(detail, dict):
+                continue
+            name = detail.get("name")
+            if name and name not in authors:
+                authors.append(name)
+        for author in edge.get("citing_authors") or []:
+            if author and author not in authors:
+                authors.append(author)
         papers.append(
             {
                 "id": paper_id,
                 "title": edge.get("citing_title") or "",
-                "authors": edge.get("citing_authors") or [],
+                "authors": authors,
+                "author_details": author_details,
             }
         )
     return PERSON_CANDIDATES.build_candidates(

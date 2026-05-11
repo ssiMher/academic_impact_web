@@ -1,0 +1,7169 @@
+{
+  "_comment": "中国工程院已故院士官方来源快照；按官网表格详情页 URL 去重，当前应为 380 人；aliases 为自动生成拼音别名。",
+  "source": "https://www.cae.cn/cae/html/main/col56/column_56_1.html",
+  "official_count": 380,
+  "items": [
+    {
+      "name": "戚元靖",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qi Yuan Jing",
+        "QiYuanJing",
+        "Qi YuanJing",
+        "YuanJing Qi",
+        "Jing QiYuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21907143.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1994.11.04"
+    },
+    {
+      "name": "楼之岑",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lou Zhi Cen",
+        "LouZhiCen",
+        "Lou ZhiCen",
+        "ZhiCen Lou",
+        "Cen LouZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90435776.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1995.03.23"
+    },
+    {
+      "name": "江绍基",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Jiang Shao Ji",
+        "JiangShaoJi",
+        "Jiang ShaoJi",
+        "ShaoJi Jiang",
+        "Ji JiangShao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87310474.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1995.05.16"
+    },
+    {
+      "name": "章基嘉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Ji Jia",
+        "ZhangJiJia",
+        "Zhang JiJia",
+        "JiJia Zhang",
+        "Jia ZhangJi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25439287.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1995.10.05"
+    },
+    {
+      "name": "汪菊渊",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Ju Yuan",
+        "WangJuYuan",
+        "Wang JuYuan",
+        "JuYuan Wang",
+        "Yuan WangJu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96430233.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1996.01.28"
+    },
+    {
+      "name": "顾懋祥",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gu Mao Xiang",
+        "GuMaoXiang",
+        "Gu MaoXiang",
+        "MaoXiang Gu",
+        "Xiang GuMao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68528254.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1996.05.21"
+    },
+    {
+      "name": "李光博",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Guang Bo",
+        "LiGuangBo",
+        "Li GuangBo",
+        "GuangBo Li",
+        "Bo LiGuang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65801803.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1996.07.20"
+    },
+    {
+      "name": "林华",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lin Hua",
+        "LinHua",
+        "Hua Lin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62302187.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1997.03.11"
+    },
+    {
+      "name": "蒋新松",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Jiang Xin Song",
+        "JiangXinSong",
+        "Jiang XinSong",
+        "XinSong Jiang",
+        "Song JiangXin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03680338.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1997.03.30"
+    },
+    {
+      "name": "佘畯南",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "She Jun Nan",
+        "SheJunNan",
+        "She JunNan",
+        "JunNan She",
+        "Nan SheJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21912986.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1998.07.29"
+    },
+    {
+      "name": "胡海涛",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Hu Hai Tao",
+        "HuHaiTao",
+        "Hu HaiTao",
+        "HaiTao Hu",
+        "Tao HuHai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62309760.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1998.10.31"
+    },
+    {
+      "name": "辛德惠",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xin De Hui",
+        "XinDeHui",
+        "Xin DeHui",
+        "DeHui Xin",
+        "Hui XinDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06189941.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1999.05.27"
+    },
+    {
+      "name": "黎鳌",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Ao",
+        "LiAo",
+        "Ao Li"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00138520.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1999.08.21"
+    },
+    {
+      "name": "戚颖敏",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qi Ying Min",
+        "QiYingMin",
+        "Qi YingMin",
+        "YingMin Qi",
+        "Min QiYing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68534875.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 1999.09.28"
+    },
+    {
+      "name": "吴中伟",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wu Zhong Wei",
+        "WuZhongWei",
+        "Wu ZhongWei",
+        "ZhongWei Wu",
+        "Wei WuZhong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18158138.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2000.02.04"
+    },
+    {
+      "name": "宋鸿钊",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Song Hong Zhao",
+        "SongHongZhao",
+        "Song HongZhao",
+        "HongZhao Song",
+        "Zhao SongHong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96869445.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2000.02.17"
+    },
+    {
+      "name": "刘天泉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Tian Quan",
+        "LiuTianQuan",
+        "Liu TianQuan",
+        "TianQuan Liu",
+        "Quan LiuTian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65973894.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2000.03.28"
+    },
+    {
+      "name": "殷震",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yin Zhen",
+        "YinZhen",
+        "Zhen Yin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87991336.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2000.07.18"
+    },
+    {
+      "name": "陆孝彭",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lu Xiao Peng",
+        "LuXiaoPeng",
+        "Lu XiaoPeng",
+        "XiaoPeng Lu",
+        "Peng LuXiao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93916786.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2000.10.16"
+    },
+    {
+      "name": "董建华",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Dong Jian Hua",
+        "DongJianHua",
+        "Dong JianHua",
+        "JianHua Dong",
+        "Hua DongJian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93647419.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.01.26"
+    },
+    {
+      "name": "李绍珍",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Shao Zhen",
+        "LiShaoZhen",
+        "Li ShaoZhen",
+        "ShaoZhen Li",
+        "Zhen LiShao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90704572.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.03.14"
+    },
+    {
+      "name": "孙俊人",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Jun Ren",
+        "SunJunRen",
+        "Sun JunRen",
+        "JunRen Sun",
+        "Ren SunJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59559917.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.06.19"
+    },
+    {
+      "name": "于文虎",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yu Wen Hu",
+        "YuWenHu",
+        "Yu WenHu",
+        "WenHu Yu",
+        "Hu YuWen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15425757.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.08.28"
+    },
+    {
+      "name": "姜泗长",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Jiang Si Zhang",
+        "JiangSiZhang",
+        "Jiang SiZhang",
+        "SiZhang Jiang",
+        "Zhang JiangSi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03428514.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.09.09"
+    },
+    {
+      "name": "张维",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Wei",
+        "ZhangWei",
+        "Wei Zhang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03390306.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.10.04"
+    },
+    {
+      "name": "姚绍福",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yao Shao Fu",
+        "YaoShaoFu",
+        "Yao ShaoFu",
+        "ShaoFu Yao",
+        "Fu YaoShao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34132711.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.11.17"
+    },
+    {
+      "name": "许国志",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Guo Zhi",
+        "XuGuoZhi",
+        "Xu GuoZhi",
+        "GuoZhi Xu",
+        "Zhi XuGuo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15184615.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.12.15"
+    },
+    {
+      "name": "陈力为",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Li Wei",
+        "ChenLiWei",
+        "Chen LiWei",
+        "LiWei Chen",
+        "Wei ChenLi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56101939.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.12.26"
+    },
+    {
+      "name": "李鹗鼎",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li E Ding",
+        "LiEDing",
+        "Li EDing",
+        "EDing Li",
+        "Ding LiE"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28218483.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2001.12.30"
+    },
+    {
+      "name": "张启先",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Qi Xian",
+        "ZhangQiXian",
+        "Zhang QiXian",
+        "QiXian Zhang",
+        "Xian ZhangQi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90828831.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2002.05.25"
+    },
+    {
+      "name": "高鼎三",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gao Ding San",
+        "GaoDingSan",
+        "Gao DingSan",
+        "DingSan Gao",
+        "San GaoDing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12454052.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2002.06.13"
+    },
+    {
+      "name": "林华宝",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lin Hua Bao",
+        "LinHuaBao",
+        "Lin HuaBao",
+        "HuaBao Lin",
+        "Bao LinHua"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46753105.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2003.01.01"
+    },
+    {
+      "name": "黄宗道",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Zong Dao",
+        "HuangZongDao",
+        "Huang ZongDao",
+        "ZongDao Huang",
+        "Dao HuangZong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84906280.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2003.04.26"
+    },
+    {
+      "name": "梁春广",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liang Chun Guang",
+        "LiangChunGuang",
+        "Liang ChunGuang",
+        "ChunGuang Liang",
+        "Guang LiangChun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53245301.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2003.05.27"
+    },
+    {
+      "name": "王三一",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang San Yi",
+        "WangSanYi",
+        "Wang SanYi",
+        "SanYi Wang",
+        "Yi WangSan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28192841.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2003.08.05"
+    },
+    {
+      "name": "莫伯治",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Mo Bo Zhi",
+        "MoBoZhi",
+        "Mo BoZhi",
+        "BoZhi Mo",
+        "Zhi MoBo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84189603.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2003.09.30"
+    },
+    {
+      "name": "侯德原",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Hou De Yuan",
+        "HouDeYuan",
+        "Hou DeYuan",
+        "DeYuan Hou",
+        "Yuan HouDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09243995.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2003.10.17"
+    },
+    {
+      "name": "黄耀祥",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Yao Xiang",
+        "HuangYaoXiang",
+        "Huang YaoXiang",
+        "YaoXiang Huang",
+        "Xiang HuangYao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81578660.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2004.02.22"
+    },
+    {
+      "name": "陈太一",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Tai Yi",
+        "ChenTaiYi",
+        "Chen TaiYi",
+        "TaiYi Chen",
+        "Yi ChenTai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65687601.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2004.05.06"
+    },
+    {
+      "name": "马福邦",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ma Fu Bang",
+        "MaFuBang",
+        "Ma FuBang",
+        "FuBang Ma",
+        "Bang MaFu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56726915.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2004.05.30"
+    },
+    {
+      "name": "许文思",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Wen Si",
+        "XuWenSi",
+        "Xu WenSi",
+        "WenSi Xu",
+        "Si XuWen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93132094.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2004.08.18"
+    },
+    {
+      "name": "何凤生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "He Feng Sheng",
+        "HeFengSheng",
+        "He FengSheng",
+        "FengSheng He",
+        "Sheng HeFeng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53247766.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2004.11.16"
+    },
+    {
+      "name": "朱之悌",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhu Zhi Ti",
+        "ZhuZhiTi",
+        "Zhu ZhiTi",
+        "ZhiTi Zhu",
+        "Ti ZhuZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93919954.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2005.01.22"
+    },
+    {
+      "name": "李国豪",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Guo Hao",
+        "LiGuoHao",
+        "Li GuoHao",
+        "GuoHao Li",
+        "Hao LiGuo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25407866.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2005.02.23"
+    },
+    {
+      "name": "童铠",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Tong Kai",
+        "TongKai",
+        "Kai Tong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43383520.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2005.08.10"
+    },
+    {
+      "name": "夏德全",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xia De Quan",
+        "XiaDeQuan",
+        "Xia DeQuan",
+        "DeQuan Xia",
+        "Quan XiaDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09930939.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2005.09.08"
+    },
+    {
+      "name": "王选",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Xuan",
+        "WangXuan",
+        "Xuan Wang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15401865.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2006.02.13"
+    },
+    {
+      "name": "徐端夫",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Duan Fu",
+        "XuDuanFu",
+        "Xu DuanFu",
+        "DuanFu Xu",
+        "Fu XuDuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56432328.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2006.04.05"
+    },
+    {
+      "name": "严恺",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yan Kai",
+        "YanKai",
+        "Kai Yan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31911905.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2006.05.07"
+    },
+    {
+      "name": "邱竹贤",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qiu Zhu Xian",
+        "QiuZhuXian",
+        "Qiu ZhuXian",
+        "ZhuXian Qiu",
+        "Xian QiuZhu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31444399.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2006.07.28"
+    },
+    {
+      "name": "汤德全",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Tang De Quan",
+        "TangDeQuan",
+        "Tang DeQuan",
+        "DeQuan Tang",
+        "Quan TangDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96524586.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2006.08.19"
+    },
+    {
+      "name": "杜庆华",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Du Qing Hua",
+        "DuQingHua",
+        "Du QingHua",
+        "QingHua Du",
+        "Hua DuQing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93178331.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2006.11.05"
+    },
+    {
+      "name": "张高勇",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Gao Yong",
+        "ZhangGaoYong",
+        "Zhang GaoYong",
+        "GaoYong Zhang",
+        "Yong ZhangGao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46774260.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.03.16"
+    },
+    {
+      "name": "林鹏",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lin Peng",
+        "LinPeng",
+        "Peng Lin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65305412.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.05.12"
+    },
+    {
+      "name": "顾冠群",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gu Guan Qun",
+        "GuGuanQun",
+        "Gu GuanQun",
+        "GuanQun Gu",
+        "Qun GuGuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53695046.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.05.26"
+    },
+    {
+      "name": "徐秉汉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Bing Han",
+        "XuBingHan",
+        "Xu BingHan",
+        "BingHan Xu",
+        "Han XuBing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31544627.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.06.14"
+    },
+    {
+      "name": "刘广润",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Guang Run",
+        "LiuGuangRun",
+        "Liu GuangRun",
+        "GuangRun Liu",
+        "Run LiuGuang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93810907.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.06.25"
+    },
+    {
+      "name": "李振岐",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Zhen Qi",
+        "LiZhenQi",
+        "Li ZhenQi",
+        "ZhenQi Li",
+        "Qi LiZhen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46624790.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.09.23"
+    },
+    {
+      "name": "雷廷权",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lei Ting Quan",
+        "LeiTingQuan",
+        "Lei TingQuan",
+        "TingQuan Lei",
+        "Quan LeiTing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03407783.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.12.06"
+    },
+    {
+      "name": "屈梁生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qu Liang Sheng",
+        "QuLiangSheng",
+        "Qu LiangSheng",
+        "LiangSheng Qu",
+        "Sheng QuLiang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59533413.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.12.07"
+    },
+    {
+      "name": "丁伯南",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ding Bo Nan",
+        "DingBoNan",
+        "Ding BoNan",
+        "BoNan Ding",
+        "Nan DingBo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09150840.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.12.13"
+    },
+    {
+      "name": "陈德仁",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen De Ren",
+        "ChenDeRen",
+        "Chen DeRen",
+        "DeRen Chen",
+        "Ren ChenDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93590143.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.12.21"
+    },
+    {
+      "name": "关君蔚",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Guan Jun Wei",
+        "GuanJunWei",
+        "Guan JunWei",
+        "JunWei Guan",
+        "Wei GuanJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65203712.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2007.12.29"
+    },
+    {
+      "name": "陈火旺",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Huo Wang",
+        "ChenHuoWang",
+        "Chen HuoWang",
+        "HuoWang Chen",
+        "Wang ChenHuo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18440061.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2008.02.02"
+    },
+    {
+      "name": "姚福生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yao Fu Sheng",
+        "YaoFuSheng",
+        "Yao FuSheng",
+        "FuSheng Yao",
+        "Sheng YaoFu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12504320.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2008.07.11"
+    },
+    {
+      "name": "黄尚廉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Shang Lian",
+        "HuangShangLian",
+        "Huang ShangLian",
+        "ShangLian Huang",
+        "Lian HuangShang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15197502.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2008.07.21"
+    },
+    {
+      "name": "陈秉聪",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Bing Cong",
+        "ChenBingCong",
+        "Chen BingCong",
+        "BingCong Chen",
+        "Cong ChenBing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68521494.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2008.09.01"
+    },
+    {
+      "name": "陈明致",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Ming Zhi",
+        "ChenMingZhi",
+        "Chen MingZhi",
+        "MingZhi Chen",
+        "Zhi ChenMing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46225679.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2008.10.10"
+    },
+    {
+      "name": "侯祥麟",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Hou Xiang Lin",
+        "HouXiangLin",
+        "Hou XiangLin",
+        "XiangLin Hou",
+        "Lin HouXiang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03717566.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2008.12.08"
+    },
+    {
+      "name": "杨锦宗",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yang Jin Zong",
+        "YangJinZong",
+        "Yang JinZong",
+        "JinZong Yang",
+        "Zong YangJin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15927020.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2008.12.29"
+    },
+    {
+      "name": "陈先霖",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Xian Lin",
+        "ChenXianLin",
+        "Chen XianLin",
+        "XianLin Chen",
+        "Lin ChenXian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50367438.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2009.01.31"
+    },
+    {
+      "name": "段镇基",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Duan Zhen Ji",
+        "DuanZhenJi",
+        "Duan ZhenJi",
+        "ZhenJi Duan",
+        "Ji DuanZhen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56642069.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2009.06.27"
+    },
+    {
+      "name": "时铭显",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shi Ming Xian",
+        "ShiMingXian",
+        "Shi MingXian",
+        "MingXian Shi",
+        "Xian ShiMing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21353787.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2009.09.24"
+    },
+    {
+      "name": "韩德馨",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Han De Xin",
+        "HanDeXin",
+        "Han DeXin",
+        "DeXin Han",
+        "Xin HanDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62622769.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2009.10.17"
+    },
+    {
+      "name": "钱学森",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qian Xue Sen",
+        "QianXueSen",
+        "Qian XueSen",
+        "XueSen Qian",
+        "Sen QianXue"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18275660.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2009.10.31"
+    },
+    {
+      "name": "张在明",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Zai Ming",
+        "ZhangZaiMing",
+        "Zhang ZaiMing",
+        "ZaiMing Zhang",
+        "Ming ZhangZai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50217214.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2009.12.04"
+    },
+    {
+      "name": "徐乾清",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Qian Qing",
+        "XuQianQing",
+        "Xu QianQing",
+        "QianQing Xu",
+        "Qing XuQian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28237876.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2010.01.09"
+    },
+    {
+      "name": "刘耕陶",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Geng Tao",
+        "LiuGengTao",
+        "Liu GengTao",
+        "GengTao Liu",
+        "Tao LiuGeng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68817747.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2010.02.27"
+    },
+    {
+      "name": "黎磊石",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Lei Shi",
+        "LiLeiShi",
+        "Li LeiShi",
+        "LeiShi Li",
+        "Shi LiLei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84511760.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2010.03.16"
+    },
+    {
+      "name": "闻立时",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wen Li Shi",
+        "WenLiShi",
+        "Wen LiShi",
+        "LiShi Wen",
+        "Shi WenLi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21217965.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2010.04.06"
+    },
+    {
+      "name": "刘更另",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Geng Ling",
+        "LiuGengLing",
+        "Liu GengLing",
+        "GengLing Liu",
+        "Ling LiuGeng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18937925.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2010.06.30"
+    },
+    {
+      "name": "赵仁恺",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhao Ren Kai",
+        "ZhaoRenKai",
+        "Zhao RenKai",
+        "RenKai Zhao",
+        "Kai ZhaoRen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34442105.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2010.07.29"
+    },
+    {
+      "name": "梅自强",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Mei Zi Qiang",
+        "MeiZiQiang",
+        "Mei ZiQiang",
+        "ZiQiang Mei",
+        "Qiang MeiZi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84560945.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2010.08.19"
+    },
+    {
+      "name": "于维汉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yu Wei Han",
+        "YuWeiHan",
+        "Yu WeiHan",
+        "WeiHan Yu",
+        "Han YuWei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12625507.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2010.11.17"
+    },
+    {
+      "name": "董海山",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Dong Hai Shan",
+        "DongHaiShan",
+        "Dong HaiShan",
+        "HaiShan Dong",
+        "Shan DongHai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53283083.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.02.03"
+    },
+    {
+      "name": "谢鉴衡",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xie Jian Heng",
+        "XieJianHeng",
+        "Xie JianHeng",
+        "JianHeng Xie",
+        "Heng XieJian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75322349.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.02.09"
+    },
+    {
+      "name": "屠基达",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Tu Ji Da",
+        "TuJiDa",
+        "Tu JiDa",
+        "JiDa Tu",
+        "Da TuJi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37766241.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.02.16"
+    },
+    {
+      "name": "朱光亚",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhu Guang Ya",
+        "ZhuGuangYa",
+        "Zhu GuangYa",
+        "GuangYa Zhu",
+        "Ya ZhuGuang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90137628.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.02.26"
+    },
+    {
+      "name": "吴阶平",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wu Jie Ping",
+        "WuJiePing",
+        "Wu JiePing",
+        "JiePing Wu",
+        "Ping WuJie"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18231732.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.03.02"
+    },
+    {
+      "name": "徐旭常",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Xu Chang",
+        "XuXuChang",
+        "Xu XuChang",
+        "XuChang Xu",
+        "Chang XuXu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59262854.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.03.18"
+    },
+    {
+      "name": "罗沛霖",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Luo Pei Lin",
+        "LuoPeiLin",
+        "Luo PeiLin",
+        "PeiLin Luo",
+        "Lin LuoPei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03891860.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.04.17"
+    },
+    {
+      "name": "高守一",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gao Shou Yi",
+        "GaoShouYi",
+        "Gao ShouYi",
+        "ShouYi Gao",
+        "Yi GaoShou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15188487.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.05.21"
+    },
+    {
+      "name": "陈国良",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Guo Liang",
+        "ChenGuoLiang",
+        "Chen GuoLiang",
+        "GuoLiang Chen",
+        "Liang ChenGuo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87717288.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.05.25"
+    },
+    {
+      "name": "陈新",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Xin",
+        "ChenXin",
+        "Xin Chen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06956822.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.06.26"
+    },
+    {
+      "name": "王大珩",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Da Hang",
+        "WangDaHang",
+        "Wang DaHang",
+        "DaHang Wang",
+        "Hang WangDa"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81193347.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.07.21"
+    },
+    {
+      "name": "黄翠芬",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Cui Fen",
+        "HuangCuiFen",
+        "Huang CuiFen",
+        "CuiFen Huang",
+        "Fen HuangCui"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93788900.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.08.09"
+    },
+    {
+      "name": "王涛",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Tao",
+        "WangTao",
+        "Tao Wang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71588731.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.08.10"
+    },
+    {
+      "name": "刘济舟",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Ji Zhou",
+        "LiuJiZhou",
+        "Liu JiZhou",
+        "JiZhou Liu",
+        "Zhou LiuJi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28752181.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.08.25"
+    },
+    {
+      "name": "张直中",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Zhi Zhong",
+        "ZhangZhiZhong",
+        "Zhang ZhiZhong",
+        "ZhiZhong Zhang",
+        "Zhong ZhangZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75303076.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.09.16"
+    },
+    {
+      "name": "董玉琛",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Dong Yu Chen",
+        "DongYuChen",
+        "Dong YuChen",
+        "YuChen Dong",
+        "Chen DongYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18502949.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.09.26"
+    },
+    {
+      "name": "刘兴洲",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Xing Zhou",
+        "LiuXingZhou",
+        "Liu XingZhou",
+        "XingZhou Liu",
+        "Zhou LiuXing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50508559.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.11.06"
+    },
+    {
+      "name": "孙才新",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Cai Xin",
+        "SunCaiXin",
+        "Sun CaiXin",
+        "CaiXin Sun",
+        "Xin SunCai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84484402.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.11.25"
+    },
+    {
+      "name": "周炯槃",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhou Jiong Pan",
+        "ZhouJiongPan",
+        "Zhou JiongPan",
+        "JiongPan Zhou",
+        "Pan ZhouJiong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81655851.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.12.06"
+    },
+    {
+      "name": "朱建士",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhu Jian Shi",
+        "ZhuJianShi",
+        "Zhu JianShi",
+        "JianShi Zhu",
+        "Shi ZhuJian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03620879.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2011.12.18"
+    },
+    {
+      "name": "王士雯",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Shi Wen",
+        "WangShiWen",
+        "Wang ShiWen",
+        "ShiWen Wang",
+        "Wen WangShi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25669150.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.01.30"
+    },
+    {
+      "name": "顾夏声",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gu Xia Sheng",
+        "GuXiaSheng",
+        "Gu XiaSheng",
+        "XiaSheng Gu",
+        "Sheng GuXia"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59241309.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.02.06"
+    },
+    {
+      "name": "黄培云",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Pei Yun",
+        "HuangPeiYun",
+        "Huang PeiYun",
+        "PeiYun Huang",
+        "Yun HuangPei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59413983.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.02.06"
+    },
+    {
+      "name": "徐玉如",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Yu Ru",
+        "XuYuRu",
+        "Xu YuRu",
+        "YuRu Xu",
+        "Ru XuYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21202911.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.02.17"
+    },
+    {
+      "name": "邵象华",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shao Xiang Hua",
+        "ShaoXiangHua",
+        "Shao XiangHua",
+        "XiangHua Shao",
+        "Hua ShaoXiang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12966364.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.03.21"
+    },
+    {
+      "name": "李瑞麟",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Rui Lin",
+        "LiRuiLin",
+        "Li RuiLin",
+        "RuiLin Li",
+        "Lin LiRui"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00552719.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.04.12"
+    },
+    {
+      "name": "林俊德",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lin Jun De",
+        "LinJunDe",
+        "Lin JunDe",
+        "JunDe Lin",
+        "De LinJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21322066.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.05.31"
+    },
+    {
+      "name": "陈俊愉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Jun Yu",
+        "ChenJunYu",
+        "Chen JunYu",
+        "JunYu Chen",
+        "Yu ChenJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53523852.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.06.08"
+    },
+    {
+      "name": "曾德超",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ceng De Chao",
+        "CengDeChao",
+        "Ceng DeChao",
+        "DeChao Ceng",
+        "Chao CengDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65998869.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.06.23"
+    },
+    {
+      "name": "沈荣显",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shen Rong Xian",
+        "ShenRongXian",
+        "Shen RongXian",
+        "RongXian Shen",
+        "Xian ShenRong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65762717.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.06.30"
+    },
+    {
+      "name": "翁心植",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Weng Xin Zhi",
+        "WengXinZhi",
+        "Weng XinZhi",
+        "XinZhi Weng",
+        "Zhi WengXin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18137893.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.07.07"
+    },
+    {
+      "name": "潘家铮",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Pan Jia Zheng",
+        "PanJiaZheng",
+        "Pan JiaZheng",
+        "JiaZheng Pan",
+        "Zheng PanJia"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12993900.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.07.13"
+    },
+    {
+      "name": "张蔚榛",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Wei Zhen",
+        "ZhangWeiZhen",
+        "Zhang WeiZhen",
+        "WeiZhen Zhang",
+        "Zhen ZhangWei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59507504.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.07.14"
+    },
+    {
+      "name": "朱尊权",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhu Zun Quan",
+        "ZhuZunQuan",
+        "Zhu ZunQuan",
+        "ZunQuan Zhu",
+        "Quan ZhuZun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28199221.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.07.16"
+    },
+    {
+      "name": "张炳炎",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Bing Yan",
+        "ZhangBingYan",
+        "Zhang BingYan",
+        "BingYan Zhang",
+        "Yan ZhangBing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78551489.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.08.02"
+    },
+    {
+      "name": "王忠诚",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Zhong Cheng",
+        "WangZhongCheng",
+        "Wang ZhongCheng",
+        "ZhongCheng Wang",
+        "Cheng WangZhong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31142695.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2012.09.30"
+    },
+    {
+      "name": "史轶蘩",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shi Yi Fan",
+        "ShiYiFan",
+        "Shi YiFan",
+        "YiFan Shi",
+        "Fan ShiYi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37592172.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2013.02.13"
+    },
+    {
+      "name": "徐元森",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Yuan Sen",
+        "XuYuanSen",
+        "Xu YuanSen",
+        "YuanSen Xu",
+        "Sen XuYuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21392317.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2013.03.27"
+    },
+    {
+      "name": "张光斗",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Guang Dou",
+        "ZhangGuangDou",
+        "Zhang GuangDou",
+        "GuangDou Zhang",
+        "Dou ZhangGuang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15770144.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2013.06.21"
+    },
+    {
+      "name": "孙铁珩",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Tie Hang",
+        "SunTieHang",
+        "Sun TieHang",
+        "TieHang Sun",
+        "Hang SunTie"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34368999.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2013.07.02"
+    },
+    {
+      "name": "周开达",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhou Kai Da",
+        "ZhouKaiDa",
+        "Zhou KaiDa",
+        "KaiDa Zhou",
+        "Da ZhouKai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56327309.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2013.07.20"
+    },
+    {
+      "name": "王澍寰",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Shu Huan",
+        "WangShuHuan",
+        "Wang ShuHuan",
+        "ShuHuan Wang",
+        "Huan WangShu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71759069.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2013.10.08"
+    },
+    {
+      "name": "陈志恺",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Zhi Kai",
+        "ChenZhiKai",
+        "Chen ZhiKai",
+        "ZhiKai Chen",
+        "Kai ChenZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93770852.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2013.10.19"
+    },
+    {
+      "name": "周后元",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhou Hou Yuan",
+        "ZhouHouYuan",
+        "Zhou HouYuan",
+        "HouYuan Zhou",
+        "Yuan ZhouHou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84505182.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2013.10.29"
+    },
+    {
+      "name": "薛鸣球",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xue Ming Qiu",
+        "XueMingQiu",
+        "Xue MingQiu",
+        "MingQiu Xue",
+        "Qiu XueMing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06663943.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2013.11.12"
+    },
+    {
+      "name": "吴祖垲",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wu Zu Kai",
+        "WuZuKai",
+        "Wu ZuKai",
+        "ZuKai Wu",
+        "Kai WuZu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09800980.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.01.16"
+    },
+    {
+      "name": "张宗祜",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Zong Hu",
+        "ZhangZongHu",
+        "Zhang ZongHu",
+        "ZongHu Zhang",
+        "Hu ZhangZong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12415711.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.02.19"
+    },
+    {
+      "name": "周干峙",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhou Gan Zhi",
+        "ZhouGanZhi",
+        "Zhou GanZhi",
+        "GanZhi Zhou",
+        "Zhi ZhouGan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87585457.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.03.14"
+    },
+    {
+      "name": "刘源张",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Yuan Zhang",
+        "LiuYuanZhang",
+        "Liu YuanZhang",
+        "YuanZhang Liu",
+        "Zhang LiuYuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34965820.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "工程管理学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.04.03"
+    },
+    {
+      "name": "沈德忠",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shen De Zhong",
+        "ShenDeZhong",
+        "Shen DeZhong",
+        "DeZhong Shen",
+        "Zhong ShenDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90874676.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.04.05"
+    },
+    {
+      "name": "葛宝丰",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ge Bao Feng",
+        "GeBaoFeng",
+        "Ge BaoFeng",
+        "BaoFeng Ge",
+        "Feng GeBao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12982855.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.07.10"
+    },
+    {
+      "name": "方秦汉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Fang Qin Han",
+        "FangQinHan",
+        "Fang QinHan",
+        "QinHan Fang",
+        "Han FangQin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84972357.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.10.14"
+    },
+    {
+      "name": "魏可镁",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wei Ke Mei",
+        "WeiKeMei",
+        "Wei KeMei",
+        "KeMei Wei",
+        "Mei WeiKe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87236762.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.10.23"
+    },
+    {
+      "name": "师昌绪",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shi Chang Xu",
+        "ShiChangXu",
+        "Shi ChangXu",
+        "ChangXu Shi",
+        "Xu ShiChang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06337518.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.11.10"
+    },
+    {
+      "name": "刘连元",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Lian Yuan",
+        "LiuLianYuan",
+        "Liu LianYuan",
+        "LianYuan Liu",
+        "Yuan LiuLian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65927495.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.11.17"
+    },
+    {
+      "name": "刘广志",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Guang Zhi",
+        "LiuGuangZhi",
+        "Liu GuangZhi",
+        "GuangZhi Liu",
+        "Zhi LiuGuang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65916962.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.11.19"
+    },
+    {
+      "name": "王如松",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Ru Song",
+        "WangRuSong",
+        "Wang RuSong",
+        "RuSong Wang",
+        "Song WangRu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03454168.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.11.28"
+    },
+    {
+      "name": "曾士迈",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ceng Shi Mai",
+        "CengShiMai",
+        "Ceng ShiMai",
+        "ShiMai Ceng",
+        "Mai CengShi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25131407.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2014.12.31"
+    },
+    {
+      "name": "徐更光",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Geng Guang",
+        "XuGengGuang",
+        "Xu GengGuang",
+        "GengGuang Xu",
+        "Guang XuGeng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75656185.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.01.07"
+    },
+    {
+      "name": "吴佑寿",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wu You Shou",
+        "WuYouShou",
+        "Wu YouShou",
+        "YouShou Wu",
+        "Shou WuYou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53211160.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.01.14"
+    },
+    {
+      "name": "刘筠",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Yun",
+        "LiuYun",
+        "Yun Liu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59635439.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.01.21"
+    },
+    {
+      "name": "雷志栋",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lei Zhi Dong",
+        "LeiZhiDong",
+        "Lei ZhiDong",
+        "ZhiDong Lei",
+        "Dong LeiZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21911461.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.01.26"
+    },
+    {
+      "name": "陈福田",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Fu Tian",
+        "ChenFuTian",
+        "Chen FuTian",
+        "FuTian Chen",
+        "Tian ChenFu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18240473.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.03.20"
+    },
+    {
+      "name": "黄志强",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Zhi Qiang",
+        "HuangZhiQiang",
+        "Huang ZhiQiang",
+        "ZhiQiang Huang",
+        "Qiang HuangZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15518451.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.04.24"
+    },
+    {
+      "name": "乔登江",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qiao Deng Jiang",
+        "QiaoDengJiang",
+        "Qiao DengJiang",
+        "DengJiang Qiao",
+        "Jiang QiaoDeng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68971931.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.05.08"
+    },
+    {
+      "name": "程莘农",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Cheng Shen Nong",
+        "ChengShenNong",
+        "Cheng ShenNong",
+        "ShenNong Cheng",
+        "Nong ChengShen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84850427.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.05.09"
+    },
+    {
+      "name": "安静娴",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "An Jing Xian",
+        "AnJingXian",
+        "An JingXian",
+        "JingXian An",
+        "Xian AnJing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40844290.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.07.10"
+    },
+    {
+      "name": "沈家祥",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shen Jia Xiang",
+        "ShenJiaXiang",
+        "Shen JiaXiang",
+        "JiaXiang Shen",
+        "Xiang ShenJia"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21901858.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.07.30"
+    },
+    {
+      "name": "张涤生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Di Sheng",
+        "ZhangDiSheng",
+        "Zhang DiSheng",
+        "DiSheng Zhang",
+        "Sheng ZhangDi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78431954.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.08.19"
+    },
+    {
+      "name": "曾苏民",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ceng Su Min",
+        "CengSuMin",
+        "Ceng SuMin",
+        "SuMin Ceng",
+        "Min CengSu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71959000.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.11.08"
+    },
+    {
+      "name": "雷霁霖",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lei Ji Lin",
+        "LeiJiLin",
+        "Lei JiLin",
+        "JiLin Lei",
+        "Lin LeiJi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68690401.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.12.16"
+    },
+    {
+      "name": "旭日干",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Ri Gan",
+        "XuRiGan",
+        "Xu RiGan",
+        "RiGan Xu",
+        "Gan XuRi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31413313.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2015.12.24"
+    },
+    {
+      "name": "张福绥",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Fu Sui",
+        "ZhangFuSui",
+        "Zhang FuSui",
+        "FuSui Zhang",
+        "Sui ZhangFu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43134764.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.02.09"
+    },
+    {
+      "name": "闵恩泽",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Min En Ze",
+        "MinEnZe",
+        "Min EnZe",
+        "EnZe Min",
+        "Ze MinEn"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78517653.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.03.07"
+    },
+    {
+      "name": "宋文骢",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Song Wen Cong",
+        "SongWenCong",
+        "Song WenCong",
+        "WenCong Song",
+        "Cong SongWen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12521994.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.03.22"
+    },
+    {
+      "name": "余松烈",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yu Song Lie",
+        "YuSongLie",
+        "Yu SongLie",
+        "SongLie Yu",
+        "Lie YuSong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34210465.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.04.20"
+    },
+    {
+      "name": "陈士橹",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Shi Lu",
+        "ChenShiLu",
+        "Chen ShiLu",
+        "ShiLu Chen",
+        "Lu ChenShi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09921411.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.04.24"
+    },
+    {
+      "name": "范立础",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Fan Li Chu",
+        "FanLiChu",
+        "Fan LiChu",
+        "LiChu Fan",
+        "Chu FanLi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34689554.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.05.03"
+    },
+    {
+      "name": "石屏",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shi Ping",
+        "ShiPing",
+        "Ping Shi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50521849.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.05.10"
+    },
+    {
+      "name": "曾庆元",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ceng Qing Yuan",
+        "CengQingYuan",
+        "Ceng QingYuan",
+        "QingYuan Ceng",
+        "Yuan CengQing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21370437.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.06.03"
+    },
+    {
+      "name": "牛憨笨",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Niu Han Ben",
+        "NiuHanBen",
+        "Niu HanBen",
+        "HanBen Niu",
+        "Ben NiuHan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90182197.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.07.04"
+    },
+    {
+      "name": "胡壮麒",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Hu Zhuang Qi",
+        "HuZhuangQi",
+        "Hu ZhuangQi",
+        "ZhuangQi Hu",
+        "Qi HuZhuang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40392195.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.07.10"
+    },
+    {
+      "name": "刘建航",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Jian Hang",
+        "LiuJianHang",
+        "Liu JianHang",
+        "JianHang Liu",
+        "Hang LiuJian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18272404.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.07.31"
+    },
+    {
+      "name": "刘大钧",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Da Jun",
+        "LiuDaJun",
+        "Liu DaJun",
+        "DaJun Liu",
+        "Jun LiuDa"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93671774.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.08.22"
+    },
+    {
+      "name": "严东生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yan Dong Sheng",
+        "YanDongSheng",
+        "Yan DongSheng",
+        "DongSheng Yan",
+        "Sheng YanDong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03753393.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.09.18"
+    },
+    {
+      "name": "冯宗炜",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Feng Zong Wei",
+        "FengZongWei",
+        "Feng ZongWei",
+        "ZongWei Feng",
+        "Wei FengZong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78650759.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.11.06"
+    },
+    {
+      "name": "谭靖夷",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Tan Jing Yi",
+        "TanJingYi",
+        "Tan JingYi",
+        "JingYi Tan",
+        "Yi TanJing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71481278.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.11.12"
+    },
+    {
+      "name": "梁应辰",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liang Ying Chen",
+        "LiangYingChen",
+        "Liang YingChen",
+        "YingChen Liang",
+        "Chen LiangYing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81809843.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2016.12.18"
+    },
+    {
+      "name": "卢良恕",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lu Liang Shu",
+        "LuLiangShu",
+        "Lu LiangShu",
+        "LiangShu Lu",
+        "Shu LuLiang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03995136.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.01.04"
+    },
+    {
+      "name": "吕志涛",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lv Zhi Tao",
+        "LvZhiTao",
+        "Lv ZhiTao",
+        "ZhiTao Lv",
+        "Tao LvZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25237586.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.01.11"
+    },
+    {
+      "name": "崔国良",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Cui Guo Liang",
+        "CuiGuoLiang",
+        "Cui GuoLiang",
+        "GuoLiang Cui",
+        "Liang CuiGuo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87522195.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.01.18"
+    },
+    {
+      "name": "熊远著",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xiong Yuan Zhu",
+        "XiongYuanZhu",
+        "Xiong YuanZhu",
+        "YuanZhu Xiong",
+        "Zhu XiongYuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53692548.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.01.30"
+    },
+    {
+      "name": "赵国藩",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhao Guo Fan",
+        "ZhaoGuoFan",
+        "Zhao GuoFan",
+        "GuoFan Zhao",
+        "Fan ZhaoGuo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50869557.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.02.01"
+    },
+    {
+      "name": "俞大光",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yu Da Guang",
+        "YuDaGuang",
+        "Yu DaGuang",
+        "DaGuang Yu",
+        "Guang YuDa"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15651228.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.04.12"
+    },
+    {
+      "name": "张乃通",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Nai Tong",
+        "ZhangNaiTong",
+        "Zhang NaiTong",
+        "NaiTong Zhang",
+        "Tong ZhangNai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21222990.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.04.21"
+    },
+    {
+      "name": "阮可强",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ruan Ke Qiang",
+        "RuanKeQiang",
+        "Ruan KeQiang",
+        "KeQiang Ruan",
+        "Qiang RuanKe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18260428.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.04.29"
+    },
+    {
+      "name": "屠善澄",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Tu Shan Cheng",
+        "TuShanCheng",
+        "Tu ShanCheng",
+        "ShanCheng Tu",
+        "Cheng TuShan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34623599.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.05.06"
+    },
+    {
+      "name": "郭予元",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Guo Yu Yuan",
+        "GuoYuYuan",
+        "Guo YuYuan",
+        "YuYuan Guo",
+        "Yuan GuoYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25242772.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.05.29"
+    },
+    {
+      "name": "刘宝琛",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Bao Chen",
+        "LiuBaoChen",
+        "Liu BaoChen",
+        "BaoChen Liu",
+        "Chen LiuBao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90992715.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.06.21"
+    },
+    {
+      "name": "朱英国",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhu Ying Guo",
+        "ZhuYingGuo",
+        "Zhu YingGuo",
+        "YingGuo Zhu",
+        "Guo ZhuYing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50954029.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.08.09"
+    },
+    {
+      "name": "金鉴明",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Jin Jian Ming",
+        "JinJianMing",
+        "Jin JianMing",
+        "JianMing Jin",
+        "Ming JinJian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53193029.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部,工程管理学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.09.19"
+    },
+    {
+      "name": "张齐生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Qi Sheng",
+        "ZhangQiSheng",
+        "Zhang QiSheng",
+        "QiSheng Zhang",
+        "Sheng ZhangQi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34218196.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.09.25"
+    },
+    {
+      "name": "沈祖炎",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shen Zu Yan",
+        "ShenZuYan",
+        "Shen ZuYan",
+        "ZuYan Shen",
+        "Yan ShenZu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50503584.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.10.11"
+    },
+    {
+      "name": "李正邦",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Zheng Bang",
+        "LiZhengBang",
+        "Li ZhengBang",
+        "ZhengBang Li",
+        "Bang LiZheng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00807743.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.10.24"
+    },
+    {
+      "name": "曹楚生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Cao Chu Sheng",
+        "CaoChuSheng",
+        "Cao ChuSheng",
+        "ChuSheng Cao",
+        "Sheng CaoChu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59943261.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.11.19"
+    },
+    {
+      "name": "陆钟武",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lu Zhong Wu",
+        "LuZhongWu",
+        "Lu ZhongWu",
+        "ZhongWu Lu",
+        "Wu LuZhong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65276284.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.11.27"
+    },
+    {
+      "name": "陈吉余",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Ji Yu",
+        "ChenJiYu",
+        "Chen JiYu",
+        "JiYu Chen",
+        "Yu ChenJi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59857630.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.11.28"
+    },
+    {
+      "name": "高伯龙",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gao Bo Long",
+        "GaoBoLong",
+        "Gao BoLong",
+        "BoLong Gao",
+        "Long GaoBo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96176521.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.12.06"
+    },
+    {
+      "name": "童志鹏",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Tong Zhi Peng",
+        "TongZhiPeng",
+        "Tong ZhiPeng",
+        "ZhiPeng Tong",
+        "Peng TongZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84678087.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2017.12.19"
+    },
+    {
+      "name": "管德",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Guan De",
+        "GuanDe",
+        "De Guan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53929543.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.01.09"
+    },
+    {
+      "name": "何友声",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "He You Sheng",
+        "HeYouSheng",
+        "He YouSheng",
+        "YouSheng He",
+        "Sheng HeYou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12606563.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.01.17"
+    },
+    {
+      "name": "戴复东",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Dai Fu Dong",
+        "DaiFuDong",
+        "Dai FuDong",
+        "FuDong Dai",
+        "Dong DaiFu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81496496.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.02.25"
+    },
+    {
+      "name": "艾兴",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ai Xing",
+        "AiXing",
+        "Xing Ai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93910906.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.04.07"
+    },
+    {
+      "name": "吴德昌",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wu De Chang",
+        "WuDeChang",
+        "Wu DeChang",
+        "DeChang Wu",
+        "Chang WuDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00260664.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.05.10"
+    },
+    {
+      "name": "李载平",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Zai Ping",
+        "LiZaiPing",
+        "Li ZaiPing",
+        "ZaiPing Li",
+        "Ping LiZai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75823313.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.05.30"
+    },
+    {
+      "name": "刘伯里",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Bo Li",
+        "LiuBoLi",
+        "Liu BoLi",
+        "BoLi Liu",
+        "Li LiuBo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09811875.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.07.02"
+    },
+    {
+      "name": "刘彤华",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Tong Hua",
+        "LiuTongHua",
+        "Liu TongHua",
+        "TongHua Liu",
+        "Hua LiuTong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46554261.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.07.08"
+    },
+    {
+      "name": "林祥棣",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lin Xiang Di",
+        "LinXiangDi",
+        "Lin XiangDi",
+        "XiangDi Lin",
+        "Di LinXiang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62342552.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.07.29"
+    },
+    {
+      "name": "王梦恕",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Meng Shu",
+        "WangMengShu",
+        "Wang MengShu",
+        "MengShu Wang",
+        "Shu WangMeng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09716175.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.09.20"
+    },
+    {
+      "name": "徐德龙",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu De Long",
+        "XuDeLong",
+        "Xu DeLong",
+        "DeLong Xu",
+        "Long XuDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96573574.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.09.21"
+    },
+    {
+      "name": "李连达",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Lian Da",
+        "LiLianDa",
+        "Li LianDa",
+        "LianDa Li",
+        "Da LiLian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34993383.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.10.18"
+    },
+    {
+      "name": "侯芙生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Hou Fu Sheng",
+        "HouFuSheng",
+        "Hou FuSheng",
+        "FuSheng Hou",
+        "Sheng HouFu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15866831.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.10.31"
+    },
+    {
+      "name": "谢世楞",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xie Shi Leng",
+        "XieShiLeng",
+        "Xie ShiLeng",
+        "ShiLeng Xie",
+        "Leng XieShi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93757450.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.11.07"
+    },
+    {
+      "name": "彭司勋",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Peng Si Xun",
+        "PengSiXun",
+        "Peng SiXun",
+        "SiXun Peng",
+        "Xun PengSi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31964999.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.12.09"
+    },
+    {
+      "name": "梁维燕",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liang Wei Yan",
+        "LiangWeiYan",
+        "Liang WeiYan",
+        "WeiYan Liang",
+        "Yan LiangWei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03669105.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2018.12.29"
+    },
+    {
+      "name": "涂铭旌",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Tu Ming Jing",
+        "TuMingJing",
+        "Tu MingJing",
+        "MingJing Tu",
+        "Jing TuMing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40300859.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.01.01"
+    },
+    {
+      "name": "高长青",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gao Chang Qing",
+        "GaoChangQing",
+        "Gao ChangQing",
+        "ChangQing Gao",
+        "Qing GaoChang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/95744049.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.01.08"
+    },
+    {
+      "name": "阮雪榆",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ruan Xue Yu",
+        "RuanXueYu",
+        "Ruan XueYu",
+        "XueYu Ruan",
+        "Yu RuanXue"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00714624.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.02.03"
+    },
+    {
+      "name": "孙伟",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Wei",
+        "SunWei",
+        "Wei Sun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68573289.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.02.22"
+    },
+    {
+      "name": "容柏生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Rong Bai Sheng",
+        "RongBaiSheng",
+        "Rong BaiSheng",
+        "BaiSheng Rong",
+        "Sheng RongBai"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71148624.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.05.11"
+    },
+    {
+      "name": "李恒德",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Heng De",
+        "LiHengDe",
+        "Li HengDe",
+        "HengDe Li",
+        "De LiHeng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40241650.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.05.28"
+    },
+    {
+      "name": "宁滨",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ning Bin",
+        "NingBin",
+        "Bin Ning"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59177474.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.06.14"
+    },
+    {
+      "name": "孙忠良",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Zhong Liang",
+        "SunZhongLiang",
+        "Sun ZhongLiang",
+        "ZhongLiang Sun",
+        "Liang SunZhong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71724388.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.06.29"
+    },
+    {
+      "name": "季国标",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ji Guo Biao",
+        "JiGuoBiao",
+        "Ji GuoBiao",
+        "GuoBiao Ji",
+        "Biao JiGuo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28530847.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.09.05"
+    },
+    {
+      "name": "李玶",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Ping",
+        "LiPing",
+        "Ping Li"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46591106.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.09.10"
+    },
+    {
+      "name": "韩其为",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Han Qi Wei",
+        "HanQiWei",
+        "Han QiWei",
+        "QiWei Han",
+        "Wei HanQi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81811820.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.10.01"
+    },
+    {
+      "name": "胡亚美",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Hu Ya Mei",
+        "HuYaMei",
+        "Hu YaMei",
+        "YaMei Hu",
+        "Mei HuYa"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93443418.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.10.03"
+    },
+    {
+      "name": "孟执中",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Meng Zhi Zhong",
+        "MengZhiZhong",
+        "Meng ZhiZhong",
+        "ZhiZhong Meng",
+        "Zhong MengZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62176166.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.12.14"
+    },
+    {
+      "name": "林宗虎",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lin Zong Hu",
+        "LinZongHu",
+        "Lin ZongHu",
+        "ZongHu Lin",
+        "Hu LinZong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03299978.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2019.12.21"
+    },
+    {
+      "name": "蒋洪德",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Jiang Hong De",
+        "JiangHongDe",
+        "Jiang HongDe",
+        "HongDe Jiang",
+        "De JiangHong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90218966.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.01.04"
+    },
+    {
+      "name": "池志强",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chi Zhi Qiang",
+        "ChiZhiQiang",
+        "Chi ZhiQiang",
+        "ZhiQiang Chi",
+        "Qiang ChiZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75485164.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.01.07"
+    },
+    {
+      "name": "段正澄",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Duan Zheng Cheng",
+        "DuanZhengCheng",
+        "Duan ZhengCheng",
+        "ZhengCheng Duan",
+        "Cheng DuanZheng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37486861.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.02.15"
+    },
+    {
+      "name": "沙庆林",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sha Qing Lin",
+        "ShaQingLin",
+        "Sha QingLin",
+        "QingLin Sha",
+        "Lin ShaQing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40463811.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.02.23"
+    },
+    {
+      "name": "蒋亦元",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Jiang Yi Yuan",
+        "JiangYiYuan",
+        "Jiang YiYuan",
+        "YiYuan Jiang",
+        "Yuan JiangYi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71659053.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.02.24"
+    },
+    {
+      "name": "宁津生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ning Jin Sheng",
+        "NingJinSheng",
+        "Ning JinSheng",
+        "JinSheng Ning",
+        "Sheng NingJin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25821921.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.03.15"
+    },
+    {
+      "name": "李道增",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Dao Zeng",
+        "LiDaoZeng",
+        "Li DaoZeng",
+        "DaoZeng Li",
+        "Zeng LiDao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59684730.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.03.19"
+    },
+    {
+      "name": "卢世璧",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lu Shi Bi",
+        "LuShiBi",
+        "Lu ShiBi",
+        "ShiBi Lu",
+        "Bi LuShi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96402110.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.03.28"
+    },
+    {
+      "name": "郁铭芳",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yu Ming Fang",
+        "YuMingFang",
+        "Yu MingFang",
+        "MingFang Yu",
+        "Fang YuMing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75962275.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.04.12"
+    },
+    {
+      "name": "陈肇元",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Zhao Yuan",
+        "ChenZhaoYuan",
+        "Chen ZhaoYuan",
+        "ZhaoYuan Chen",
+        "Yuan ChenZhao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53754445.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.06.25"
+    },
+    {
+      "name": "肖碧莲",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xiao Bi Lian",
+        "XiaoBiLian",
+        "Xiao BiLian",
+        "BiLian Xiao",
+        "Lian XiaoBi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43389745.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.06.30"
+    },
+    {
+      "name": "许其凤",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Qi Feng",
+        "XuQiFeng",
+        "Xu QiFeng",
+        "QiFeng Xu",
+        "Feng XuQi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56734246.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.07.02"
+    },
+    {
+      "name": "郑守仁",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zheng Shou Ren",
+        "ZhengShouRen",
+        "Zheng ShouRen",
+        "ShouRen Zheng",
+        "Ren ZhengShou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00517160.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.07.24"
+    },
+    {
+      "name": "李东英",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Dong Ying",
+        "LiDongYing",
+        "Li DongYing",
+        "DongYing Li",
+        "Ying LiDong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18333261.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部,工程管理学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.09.22"
+    },
+    {
+      "name": "文伏波",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wen Fu Bo",
+        "WenFuBo",
+        "Wen FuBo",
+        "FuBo Wen",
+        "Bo WenFu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18743200.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.10.28"
+    },
+    {
+      "name": "陈灏珠",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Hao Zhu",
+        "ChenHaoZhu",
+        "Chen HaoZhu",
+        "HaoZhu Chen",
+        "Zhu ChenHao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34319605.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.10.30"
+    },
+    {
+      "name": "侯锋",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Hou Feng",
+        "HouFeng",
+        "Feng Hou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71124469.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.11.07"
+    },
+    {
+      "name": "李冠兴",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Guan Xing",
+        "LiGuanXing",
+        "Li GuanXing",
+        "GuanXing Li",
+        "Xing LiGuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68125665.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.12.01"
+    },
+    {
+      "name": "王玉普",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Yu Pu",
+        "WangYuPu",
+        "Wang YuPu",
+        "YuPu Wang",
+        "Pu WangYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46333378.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "工程管理学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.12.08"
+    },
+    {
+      "name": "邹德慈",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zou De Ci",
+        "ZouDeCi",
+        "Zou DeCi",
+        "DeCi Zou",
+        "Ci ZouDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65498751.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2020.12.28"
+    },
+    {
+      "name": "沈忠厚",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shen Zhong Hou",
+        "ShenZhongHou",
+        "Shen ZhongHou",
+        "ZhongHou Shen",
+        "Hou ShenZhong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21665687.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.02.05"
+    },
+    {
+      "name": "彭士禄",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Peng Shi Lu",
+        "PengShiLu",
+        "Peng ShiLu",
+        "ShiLu Peng",
+        "Lu PengShi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43624612.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.03.22"
+    },
+    {
+      "name": "李京文",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Jing Wen",
+        "LiJingWen",
+        "Li JingWen",
+        "JingWen Li",
+        "Wen LiJing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75712970.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "工程管理学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.03.31"
+    },
+    {
+      "name": "闵桂荣",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Min Gui Rong",
+        "MinGuiRong",
+        "Min GuiRong",
+        "GuiRong Min",
+        "Rong MinGui"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59652992.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.04.28"
+    },
+    {
+      "name": "刘兴土",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Xing Tu",
+        "LiuXingTu",
+        "Liu XingTu",
+        "XingTu Liu",
+        "Tu LiuXing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50787677.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.05.06"
+    },
+    {
+      "name": "袁隆平",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yuan Long Ping",
+        "YuanLongPing",
+        "Yuan LongPing",
+        "LongPing Yuan",
+        "Ping YuanLong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84368456.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.05.22"
+    },
+    {
+      "name": "陈清如",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Qing Ru",
+        "ChenQingRu",
+        "Chen QingRu",
+        "QingRu Chen",
+        "Ru ChenQing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59487258.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.05.26"
+    },
+    {
+      "name": "黄熙龄",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Xi Ling",
+        "HuangXiLing",
+        "Huang XiLing",
+        "XiLing Huang",
+        "Ling HuangXi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/09715199.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.06.16"
+    },
+    {
+      "name": "姜景山",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Jiang Jing Shan",
+        "JiangJingShan",
+        "Jiang JingShan",
+        "JingShan Jiang",
+        "Shan JiangJing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03603425.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.06.27"
+    },
+    {
+      "name": "郑哲敏",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zheng Zhe Min",
+        "ZhengZheMin",
+        "Zheng ZheMin",
+        "ZheMin Zheng",
+        "Min ZhengZhe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96622825.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.08.25"
+    },
+    {
+      "name": "李正名",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Zheng Ming",
+        "LiZhengMing",
+        "Li ZhengMing",
+        "ZhengMing Li",
+        "Ming LiZheng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43735416.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.10.04"
+    },
+    {
+      "name": "叶可明",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ye Ke Ming",
+        "YeKeMing",
+        "Ye KeMing",
+        "KeMing Ye",
+        "Ming YeKe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12146941.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部,工程管理学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.10.05"
+    },
+    {
+      "name": "陈念念",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Nian Nian",
+        "ChenNianNian",
+        "Chen NianNian",
+        "NianNian Chen",
+        "Nian ChenNian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50623541.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2021.12.21"
+    },
+    {
+      "name": "潘自强",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Pan Zi Qiang",
+        "PanZiQiang",
+        "Pan ZiQiang",
+        "ZiQiang Pan",
+        "Qiang PanZi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71164950.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.01.19"
+    },
+    {
+      "name": "戴永年",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Dai Yong Nian",
+        "DaiYongNian",
+        "Dai YongNian",
+        "YongNian Dai",
+        "Nian DaiYong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84631458.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.01.27"
+    },
+    {
+      "name": "毛用泽",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Mao Yong Ze",
+        "MaoYongZe",
+        "Mao YongZe",
+        "YongZe Mao",
+        "Ze MaoYong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56476933.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.03.06"
+    },
+    {
+      "name": "陈敬熊",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Jing Xiong",
+        "ChenJingXiong",
+        "Chen JingXiong",
+        "JingXiong Chen",
+        "Xiong ChenJing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40737958.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.03.16"
+    },
+    {
+      "name": "张子仪",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Zi Yi",
+        "ZhangZiYi",
+        "Zhang ZiYi",
+        "ZiYi Zhang",
+        "Yi ZhangZi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37964203.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.03.23"
+    },
+    {
+      "name": "李三立",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li San Li",
+        "LiSanLi",
+        "Li SanLi",
+        "SanLi Li",
+        "Li LiSan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53878278.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.04.23"
+    },
+    {
+      "name": "黄文虎",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Wen Hu",
+        "HuangWenHu",
+        "Huang WenHu",
+        "WenHu Huang",
+        "Hu HuangWen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12563126.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.05.19"
+    },
+    {
+      "name": "王哲荣",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Zhe Rong",
+        "WangZheRong",
+        "Wang ZheRong",
+        "ZheRong Wang",
+        "Rong WangZhe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68970283.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.05.31"
+    },
+    {
+      "name": "周勤之",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhou Qin Zhi",
+        "ZhouQinZhi",
+        "Zhou QinZhi",
+        "QinZhi Zhou",
+        "Zhi ZhouQin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40354274.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.06.07"
+    },
+    {
+      "name": "邹竞",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zou Jing",
+        "ZouJing",
+        "Jing Zou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37977073.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.06.09"
+    },
+    {
+      "name": "梁骏吾",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liang Jun Wu",
+        "LiangJunWu",
+        "Liang JunWu",
+        "JunWu Liang",
+        "Wu LiangJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/03815214.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.06.23"
+    },
+    {
+      "name": "孟兆祯",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Meng Zhao Zhen",
+        "MengZhaoZhen",
+        "Meng ZhaoZhen",
+        "ZhaoZhen Meng",
+        "Zhen MengZhao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65295716.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.07.15"
+    },
+    {
+      "name": "王威琪",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Wei Qi",
+        "WangWeiQi",
+        "Wang WeiQi",
+        "WeiQi Wang",
+        "Qi WangWei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71497840.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.08.26"
+    },
+    {
+      "name": "朱英浩",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhu Ying Hao",
+        "ZhuYingHao",
+        "Zhu YingHao",
+        "YingHao Zhu",
+        "Hao ZhuYing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18492816.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.09.01"
+    },
+    {
+      "name": "李德群",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li De Qun",
+        "LiDeQun",
+        "Li DeQun",
+        "DeQun Li",
+        "Qun LiDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/47471633.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.09.05"
+    },
+    {
+      "name": "钱鸣高",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qian Ming Gao",
+        "QianMingGao",
+        "Qian MingGao",
+        "MingGao Qian",
+        "Gao QianMing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59247213.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.09.23"
+    },
+    {
+      "name": "顾健人",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gu Jian Ren",
+        "GuJianRen",
+        "Gu JianRen",
+        "JianRen Gu",
+        "Ren GuJian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53455060.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.09.27"
+    },
+    {
+      "name": "王琳芳",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Lin Fang",
+        "WangLinFang",
+        "Wang LinFang",
+        "LinFang Wang",
+        "Fang WangLin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00719524.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.10.16"
+    },
+    {
+      "name": "陈冀胜",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Ji Sheng",
+        "ChenJiSheng",
+        "Chen JiSheng",
+        "JiSheng Chen",
+        "Sheng ChenJi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00994491.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.10.19"
+    },
+    {
+      "name": "钱正英",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qian Zheng Ying",
+        "QianZhengYing",
+        "Qian ZhengYing",
+        "ZhengYing Qian",
+        "Ying QianZheng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40457166.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.10.22"
+    },
+    {
+      "name": "赵梓森",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhao Zi Sen",
+        "ZhaoZiSen",
+        "Zhao ZiSen",
+        "ZiSen Zhao",
+        "Sen ZhaoZi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28823140.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.15"
+    },
+    {
+      "name": "汤鸿霄",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Tang Hong Xiao",
+        "TangHongXiao",
+        "Tang HongXiao",
+        "HongXiao Tang",
+        "Xiao TangHong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25813077.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.16"
+    },
+    {
+      "name": "张国成",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Guo Cheng",
+        "ZhangGuoCheng",
+        "Zhang GuoCheng",
+        "GuoCheng Zhang",
+        "Cheng ZhangGuo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/93377711.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.21"
+    },
+    {
+      "name": "赵伊君",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhao Yi Jun",
+        "ZhaoYiJun",
+        "Zhao YiJun",
+        "YiJun Zhao",
+        "Jun ZhaoYi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40700214.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.21"
+    },
+    {
+      "name": "顾真安",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gu Zhen An",
+        "GuZhenAn",
+        "Gu ZhenAn",
+        "ZhenAn Gu",
+        "An GuZhen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40249170.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.22"
+    },
+    {
+      "name": "龙驭球",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Long Yu Qiu",
+        "LongYuQiu",
+        "Long YuQiu",
+        "YuQiu Long",
+        "Qiu LongYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21947804.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.22"
+    },
+    {
+      "name": "马建章",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ma Jian Zhang",
+        "MaJianZhang",
+        "Ma JianZhang",
+        "JianZhang Ma",
+        "Zhang MaJian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78650645.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.23"
+    },
+    {
+      "name": "李文华",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Wen Hua",
+        "LiWenHua",
+        "Li WenHua",
+        "WenHua Li",
+        "Hua LiWen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40803854.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.23"
+    },
+    {
+      "name": "张金哲",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Jin Zhe",
+        "ZhangJinZhe",
+        "Zhang JinZhe",
+        "JinZhe Zhang",
+        "Zhe ZhangJin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37163573.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.24"
+    },
+    {
+      "name": "王仲奇",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Zhong Qi",
+        "WangZhongQi",
+        "Wang ZhongQi",
+        "ZhongQi Wang",
+        "Qi WangZhong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65721914.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.25"
+    },
+    {
+      "name": "关桥",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Guan Qiao",
+        "GuanQiao",
+        "Qiao Guan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40646908.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.26"
+    },
+    {
+      "name": "李庆忠",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Qing Zhong",
+        "LiQingZhong",
+        "Li QingZhong",
+        "QingZhong Li",
+        "Zhong LiQing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18581067.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.26"
+    },
+    {
+      "name": "关肇邺",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Guan Zhao Ye",
+        "GuanZhaoYe",
+        "Guan ZhaoYe",
+        "ZhaoYe Guan",
+        "Ye GuanZhao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59750078.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.26"
+    },
+    {
+      "name": "李天初",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Tian Chu",
+        "LiTianChu",
+        "Li TianChu",
+        "TianChu Li",
+        "Chu LiTian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68444168.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.28"
+    },
+    {
+      "name": "孙敬良",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Jing Liang",
+        "SunJingLiang",
+        "Sun JingLiang",
+        "JingLiang Sun",
+        "Liang SunJing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78775829.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.28"
+    },
+    {
+      "name": "于德泉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yu De Quan",
+        "YuDeQuan",
+        "Yu DeQuan",
+        "DeQuan Yu",
+        "Quan YuDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68100769.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2022.12.31"
+    },
+    {
+      "name": "范维唐",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Fan Wei Tang",
+        "FanWeiTang",
+        "Fan WeiTang",
+        "WeiTang Fan",
+        "Tang FanWei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/15579138.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.01"
+    },
+    {
+      "name": "徐銤",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Mi",
+        "XuMi",
+        "Mi Xu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59110621.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.04"
+    },
+    {
+      "name": "武胜",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wu Sheng",
+        "WuSheng",
+        "Sheng Wu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50941512.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.04"
+    },
+    {
+      "name": "葛修润",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ge Xiu Run",
+        "GeXiuRun",
+        "Ge XiuRun",
+        "XiuRun Ge",
+        "Run GeXiu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40108050.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.04"
+    },
+    {
+      "name": "张金麟",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Jin Lin",
+        "ZhangJinLin",
+        "Zhang JinLin",
+        "JinLin Zhang",
+        "Lin ZhangJin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37816402.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.09"
+    },
+    {
+      "name": "茆智",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Mao Zhi",
+        "MaoZhi",
+        "Zhi Mao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59829121.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.13"
+    },
+    {
+      "name": "梁晋才",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liang Jin Cai",
+        "LiangJinCai",
+        "Liang JinCai",
+        "JinCai Liang",
+        "Cai LiangJin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37633473.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.17"
+    },
+    {
+      "name": "方智远",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Fang Zhi Yuan",
+        "FangZhiYuan",
+        "Fang ZhiYuan",
+        "ZhiYuan Fang",
+        "Yuan FangZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75846159.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.20"
+    },
+    {
+      "name": "胡光镇",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Hu Guang Zhen",
+        "HuGuangZhen",
+        "Hu GuangZhen",
+        "GuangZhen Hu",
+        "Zhen HuGuang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90565044.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.23"
+    },
+    {
+      "name": "李钊",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Zhao",
+        "LiZhao",
+        "Zhao Li"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81624002.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.24"
+    },
+    {
+      "name": "黎介寿",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Jie Shou",
+        "LiJieShou",
+        "Li JieShou",
+        "JieShou Li",
+        "Shou LiJie"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50656745.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.30"
+    },
+    {
+      "name": "欧阳平凯",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ou Yang Ping Kai",
+        "OuYangPingKai",
+        "Ou YangPingKai",
+        "YangPingKai Ou",
+        "Kai OuYangPing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78603498.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.01.30"
+    },
+    {
+      "name": "吴中如",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wu Zhong Ru",
+        "WuZhongRu",
+        "Wu ZhongRu",
+        "ZhongRu Wu",
+        "Ru WuZhong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28432469.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.02.05"
+    },
+    {
+      "name": "徐滨士",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Bin Shi",
+        "XuBinShi",
+        "Xu BinShi",
+        "BinShi Xu",
+        "Shi XuBin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28968866.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部,工程管理学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.02.15"
+    },
+    {
+      "name": "王小谟",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Xiao Mo",
+        "WangXiaoMo",
+        "Wang XiaoMo",
+        "XiaoMo Wang",
+        "Mo WangXiao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78659734.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.03.06"
+    },
+    {
+      "name": "周君亮",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhou Jun Liang",
+        "ZhouJunLiang",
+        "Zhou JunLiang",
+        "JunLiang Zhou",
+        "Liang ZhouJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53339101.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.04.30"
+    },
+    {
+      "name": "孙九林",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Jiu Lin",
+        "SunJiuLin",
+        "Sun JiuLin",
+        "JiuLin Sun",
+        "Lin SunJiu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25196895.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.05.10"
+    },
+    {
+      "name": "关兴亚",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Guan Xing Ya",
+        "GuanXingYa",
+        "Guan XingYa",
+        "XingYa Guan",
+        "Ya GuanXing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62850561.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.05.23"
+    },
+    {
+      "name": "陆元九",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lu Yuan Jiu",
+        "LuYuanJiu",
+        "Lu YuanJiu",
+        "YuanJiu Lu",
+        "Jiu LuYuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59964430.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.06.06"
+    },
+    {
+      "name": "刘守仁",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Shou Ren",
+        "LiuShouRen",
+        "Liu ShouRen",
+        "ShouRen Liu",
+        "Ren LiuShou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21323562.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.06.11"
+    },
+    {
+      "name": "钟训正",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhong Xun Zheng",
+        "ZhongXunZheng",
+        "Zhong XunZheng",
+        "XunZheng Zhong",
+        "Zheng ZhongXun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90872965.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.06.22"
+    },
+    {
+      "name": "凌永顺",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ling Yong Shun",
+        "LingYongShun",
+        "Ling YongShun",
+        "YongShun Ling",
+        "Shun LingYong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81814731.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.07.02"
+    },
+    {
+      "name": "汪应洛",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Ying Luo",
+        "WangYingLuo",
+        "Wang YingLuo",
+        "YingLuo Wang",
+        "Luo WangYing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31242867.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "工程管理学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.07.11"
+    },
+    {
+      "name": "潘镜芙",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Pan Jing Fu",
+        "PanJingFu",
+        "Pan JingFu",
+        "JingFu Pan",
+        "Fu PanJing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46356089.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.10.08"
+    },
+    {
+      "name": "韩大匡",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Han Da Kuang",
+        "HanDaKuang",
+        "Han DaKuang",
+        "DaKuang Han",
+        "Kuang HanDa"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/90314064.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.10.23"
+    },
+    {
+      "name": "王淀佐",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Dian Zuo",
+        "WangDianZuo",
+        "Wang DianZuo",
+        "DianZuo Wang",
+        "Zuo WangDian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31843925.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.10.25"
+    },
+    {
+      "name": "秦裕琨",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qin Yu Kun",
+        "QinYuKun",
+        "Qin YuKun",
+        "YuKun Qin",
+        "Kun QinYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00317956.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.11.13"
+    },
+    {
+      "name": "王明庥",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Ming Xiu",
+        "WangMingXiu",
+        "Wang MingXiu",
+        "MingXiu Wang",
+        "Xiu WangMing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81501832.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.11.18"
+    },
+    {
+      "name": "古德生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gu De Sheng",
+        "GuDeSheng",
+        "Gu DeSheng",
+        "DeSheng Gu",
+        "Sheng GuDe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40589851.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.11.26"
+    },
+    {
+      "name": "徐承恩",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Xu Cheng En",
+        "XuChengEn",
+        "Xu ChengEn",
+        "ChengEn Xu",
+        "En XuCheng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/31644690.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.12.03"
+    },
+    {
+      "name": "桑国卫",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sang Guo Wei",
+        "SangGuoWei",
+        "Sang GuoWei",
+        "GuoWei Sang",
+        "Wei SangGuo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37895794.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.12.07"
+    },
+    {
+      "name": "王子才",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Zi Cai",
+        "WangZiCai",
+        "Wang ZiCai",
+        "ZiCai Wang",
+        "Cai WangZi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/37319920.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.12.13"
+    },
+    {
+      "name": "潘君骅",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Pan Jun Hua",
+        "PanJunHua",
+        "Pan JunHua",
+        "JunHua Pan",
+        "Hua PanJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50534074.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2023.12.18"
+    },
+    {
+      "name": "顾心怿",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gu Xin Yi",
+        "GuXinYi",
+        "Gu XinYi",
+        "XinYi Gu",
+        "Yi GuXin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56694027.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.01.02"
+    },
+    {
+      "name": "盛志勇",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sheng Zhi Yong",
+        "ShengZhiYong",
+        "Sheng ZhiYong",
+        "ZhiYong Sheng",
+        "Yong ShengZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59245729.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.01.27"
+    },
+    {
+      "name": "朱伯芳",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhu Bo Fang",
+        "ZhuBoFang",
+        "Zhu BoFang",
+        "BoFang Zhu",
+        "Fang ZhuBo"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/21463076.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.02.04"
+    },
+    {
+      "name": "李佩成",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Pei Cheng",
+        "LiPeiCheng",
+        "Li PeiCheng",
+        "PeiCheng Li",
+        "Cheng LiPei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53576708.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.02.23"
+    },
+    {
+      "name": "朱能鸿",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhu Neng Hong",
+        "ZhuNengHong",
+        "Zhu NengHong",
+        "NengHong Zhu",
+        "Hong ZhuNeng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59709030.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.03.08"
+    },
+    {
+      "name": "杨士莪",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yang Shi E",
+        "YangShiE",
+        "Yang ShiE",
+        "ShiE Yang",
+        "E YangShi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87498683.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.03.19"
+    },
+    {
+      "name": "李俊贤",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li Jun Xian",
+        "LiJunXian",
+        "Li JunXian",
+        "JunXian Li",
+        "Xian LiJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81150053.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.03.20"
+    },
+    {
+      "name": "程顺和",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Cheng Shun He",
+        "ChengShunHe",
+        "Cheng ShunHe",
+        "ShunHe Cheng",
+        "He ChengShun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78507867.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.04.10"
+    },
+    {
+      "name": "常印佛",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chang Yin Fu",
+        "ChangYinFu",
+        "Chang YinFu",
+        "YinFu Chang",
+        "Fu ChangYin"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28438086.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.04.27"
+    },
+    {
+      "name": "金庆焕",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Jin Qing Huan",
+        "JinQingHuan",
+        "Jin QingHuan",
+        "QingHuan Jin",
+        "Huan JinQing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34511665.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.05.22"
+    },
+    {
+      "name": "邱蔚六",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Qiu Wei Liu",
+        "QiuWeiLiu",
+        "Qiu WeiLiu",
+        "WeiLiu Qiu",
+        "Liu QiuWei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84910678.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.05.24"
+    },
+    {
+      "name": "陈景",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Jing",
+        "ChenJing",
+        "Jing Chen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06878498.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.06.01"
+    },
+    {
+      "name": "朱永濬",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhu Yong Jun",
+        "ZhuYongJun",
+        "Zhu YongJun",
+        "YongJun Zhu",
+        "Jun ZhuYong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/84256403.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.06.08"
+    },
+    {
+      "name": "王永志",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Yong Zhi",
+        "WangYongZhi",
+        "Wang YongZhi",
+        "YongZhi Wang",
+        "Zhi WangYong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50126747.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.06.11"
+    },
+    {
+      "name": "张寿荣",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhang Shou Rong",
+        "ZhangShouRong",
+        "Zhang ShouRong",
+        "ShouRong Zhang",
+        "Rong ZhangShou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53691156.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部,工程管理学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.07.14"
+    },
+    {
+      "name": "林尚扬",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lin Shang Yang",
+        "LinShangYang",
+        "Lin ShangYang",
+        "ShangYang Lin",
+        "Yang LinShang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00585157.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.07.20"
+    },
+    {
+      "name": "刘昌孝",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Chang Xiao",
+        "LiuChangXiao",
+        "Liu ChangXiao",
+        "ChangXiao Liu",
+        "Xiao LiuChang"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/28423461.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.07.25"
+    },
+    {
+      "name": "孔宪京",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Kong Xian Jing",
+        "KongXianJing",
+        "Kong XianJing",
+        "XianJing Kong",
+        "Jing KongXian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/79992669.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.09.10"
+    },
+    {
+      "name": "叶铭汉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ye Ming Han",
+        "YeMingHan",
+        "Ye MingHan",
+        "MingHan Ye",
+        "Han YeMing"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40340079.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.10.04"
+    },
+    {
+      "name": "施仲衡",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shi Zhong Heng",
+        "ShiZhongHeng",
+        "Shi ZhongHeng",
+        "ZhongHeng Shi",
+        "Heng ShiZhong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/78394449.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2024.12.23"
+    },
+    {
+      "name": "王正国",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Zheng Guo",
+        "WangZhengGuo",
+        "Wang ZhengGuo",
+        "ZhengGuo Wang",
+        "Guo WangZheng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65360991.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.01.05"
+    },
+    {
+      "name": "裴荣富",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Pei Rong Fu",
+        "PeiRongFu",
+        "Pei RongFu",
+        "RongFu Pei",
+        "Fu PeiRong"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65154302.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.01.25"
+    },
+    {
+      "name": "黄旭华",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Xu Hua",
+        "HuangXuHua",
+        "Huang XuHua",
+        "XuHua Huang",
+        "Hua HuangXu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18380681.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.02.06"
+    },
+    {
+      "name": "姚穆",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yao Mu",
+        "YaoMu",
+        "Mu Yao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68999420.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.02.19"
+    },
+    {
+      "name": "赵法箴",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhao Fa Zhen",
+        "ZhaoFaZhen",
+        "Zhao FaZhen",
+        "FaZhen Zhao",
+        "Zhen ZhaoFa"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/68768046.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.02.26"
+    },
+    {
+      "name": "汪懋华",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Mao Hua",
+        "WangMaoHua",
+        "Wang MaoHua",
+        "MaoHua Wang",
+        "Hua WangMao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/56802308.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.02.28"
+    },
+    {
+      "name": "陆道培",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Lu Dao Pei",
+        "LuDaoPei",
+        "Lu DaoPei",
+        "DaoPei Lu",
+        "Pei LuDao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/40260280.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.04.02"
+    },
+    {
+      "name": "冯叔瑜",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Feng Shu Yu",
+        "FengShuYu",
+        "Feng ShuYu",
+        "ShuYu Feng",
+        "Yu FengShu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00737977.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "土木、水利与建筑工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.04.14"
+    },
+    {
+      "name": "温俊峰",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wen Jun Feng",
+        "WenJunFeng",
+        "Wen JunFeng",
+        "JunFeng Wen",
+        "Feng WenJun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46802168.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.04.23"
+    },
+    {
+      "name": "石学敏",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shi Xue Min",
+        "ShiXueMin",
+        "Shi XueMin",
+        "XueMin Shi",
+        "Min ShiXue"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62476391.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.05.11"
+    },
+    {
+      "name": "顾玉东",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gu Yu Dong",
+        "GuYuDong",
+        "Gu YuDong",
+        "YuDong Gu",
+        "Dong GuYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/53884733.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.05.24"
+    },
+    {
+      "name": "唐孝炎",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Tang Xiao Yan",
+        "TangXiaoYan",
+        "Tang XiaoYan",
+        "XiaoYan Tang",
+        "Yan TangXiao"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/65675483.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.06.11"
+    },
+    {
+      "name": "马远良",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ma Yuan Liang",
+        "MaYuanLiang",
+        "Ma YuanLiang",
+        "YuanLiang Ma",
+        "Liang MaYuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/25190801.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.07.11"
+    },
+    {
+      "name": "汪槱生",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang You Sheng",
+        "WangYouSheng",
+        "Wang YouSheng",
+        "YouSheng Wang",
+        "Sheng WangYou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/96440392.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.08.04"
+    },
+    {
+      "name": "孙传尧",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Chuan Yao",
+        "SunChuanYao",
+        "Sun ChuanYao",
+        "ChuanYao Sun",
+        "Yao SunChuan"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/50771342.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.08.21"
+    },
+    {
+      "name": "于本水",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yu Ben Shui",
+        "YuBenShui",
+        "Yu BenShui",
+        "BenShui Yu",
+        "Shui YuBen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/71209416.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.08.27"
+    },
+    {
+      "name": "喻树迅",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Yu Shu Xun",
+        "YuShuXun",
+        "Yu ShuXun",
+        "ShuXun Yu",
+        "Xun YuShu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75339318.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "农业学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.09.07"
+    },
+    {
+      "name": "王思敬",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wang Si Jing",
+        "WangSiJing",
+        "Wang SiJing",
+        "SiJing Wang",
+        "Jing WangSi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62798620.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.09.15"
+    },
+    {
+      "name": "任阵海",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Ren Zhen Hai",
+        "RenZhenHai",
+        "Ren ZhenHai",
+        "ZhenHai Ren",
+        "Hai RenZhen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87477015.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "环境与轻纺工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.11.01"
+    },
+    {
+      "name": "沈闻孙",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shen Wen Sun",
+        "ShenWenSun",
+        "Shen WenSun",
+        "WenSun Shen",
+        "Sun ShenWen"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06987268.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.11.17"
+    },
+    {
+      "name": "黄培康",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Huang Pei Kang",
+        "HuangPeiKang",
+        "Huang PeiKang",
+        "PeiKang Huang",
+        "Kang HuangPei"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/46419136.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.12.22"
+    },
+    {
+      "name": "吴锋",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wu Feng",
+        "WuFeng",
+        "Feng Wu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/92622570.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2025.12.29"
+    },
+    {
+      "name": "周立伟",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zhou Li Wei",
+        "ZhouLiWei",
+        "Zhou LiWei",
+        "LiWei Zhou",
+        "Wei ZhouLi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43919202.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.01.06"
+    },
+    {
+      "name": "左铁镛",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Zuo Tie Yong",
+        "ZuoTieYong",
+        "Zuo TieYong",
+        "TieYong Zuo",
+        "Yong ZuoTie"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/00526207.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "化工、冶金与材料工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.01.14"
+    },
+    {
+      "name": "龚知本",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Gong Zhi Ben",
+        "GongZhiBen",
+        "Gong ZhiBen",
+        "ZhiBen Gong",
+        "Ben GongZhi"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/43617362.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.01.17"
+    },
+    {
+      "name": "孙燕",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Yan",
+        "SunYan",
+        "Yan Sun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/81551649.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.01.24"
+    },
+    {
+      "name": "沈渔邨",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Shen Yu Cun",
+        "ShenYuCun",
+        "Shen YuCun",
+        "YuCun Shen",
+        "Cun ShenYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/62230205.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.02.27"
+    },
+    {
+      "name": "孙玉",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Sun Yu",
+        "SunYu",
+        "Yu Sun"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/75444523.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.03.20"
+    },
+    {
+      "name": "魏正耀",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wei Zheng Yao",
+        "WeiZhengYao",
+        "Wei ZhengYao",
+        "ZhengYao Wei",
+        "Yao WeiZheng"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/87783443.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.03.24"
+    },
+    {
+      "name": "李幼平",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Li You Ping",
+        "LiYouPing",
+        "Li YouPing",
+        "YouPing Li",
+        "Ping LiYou"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/34527840.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "信息与电子工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.03.25"
+    },
+    {
+      "name": "刘玉清",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Liu Yu Qing",
+        "LiuYuQing",
+        "Liu YuQing",
+        "YuQing Liu",
+        "Qing LiuYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/06435172.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.04.06"
+    },
+    {
+      "name": "冯煜芳",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Feng Yu Fang",
+        "FengYuFang",
+        "Feng YuFang",
+        "YuFang Feng",
+        "Fang FengYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/48072917.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.04.13"
+    },
+    {
+      "name": "吴咸中",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Wu Xian Zhong",
+        "WuXianZhong",
+        "Wu XianZhong",
+        "XianZhong Wu",
+        "Zhong WuXian"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/59328891.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "医药卫生学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.04.24"
+    },
+    {
+      "name": "陈毓川",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Chen Yu Chuan",
+        "ChenYuChuan",
+        "Chen YuChuan",
+        "YuChuan Chen",
+        "Chuan ChenYu"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/12376838.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "能源与矿业工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.05.06"
+    },
+    {
+      "name": "苏哲子",
+      "tag_type": "cae_academician",
+      "aliases": [
+        "Su Zhe Zi",
+        "SuZheZi",
+        "Su ZheZi",
+        "ZheZi Su",
+        "Zi SuZhe"
+      ],
+      "source_links": [
+        "https://www.cae.cn/cae/html/main/colys/18296611.html"
+      ],
+      "matched_affiliations": [
+        "中国工程院已故院士",
+        "机械与运载工程学部"
+      ],
+      "note": "中国工程院已故院士；source: 中国工程院官网；official deceased academician list；deceased 2026.05.09"
+    }
+  ]
+}

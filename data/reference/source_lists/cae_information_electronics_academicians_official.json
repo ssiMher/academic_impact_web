@@ -5,7 +5,10 @@
     {
       "name": "贲德",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "De Ben",
+        "Ben De"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2079/index.html"
       ],
@@ -17,7 +20,12 @@
     {
       "name": "蔡鹤皋",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Hegao Cai",
+        "Cai Hegao",
+        "He Gao Cai",
+        "Cai He Gao"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/298/index.html"
       ],
@@ -29,7 +37,12 @@
     {
       "name": "蔡吉人",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jiren Cai",
+        "Cai Jiren",
+        "Ji Ren Cai",
+        "Cai Ji Ren"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1903/index.html"
       ],
@@ -41,7 +54,12 @@
     {
       "name": "柴洪峰",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Hongfeng Chai",
+        "Chai Hongfeng",
+        "Hong Feng Chai",
+        "Chai Hong Feng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/4994/index.html"
       ],
@@ -53,7 +71,12 @@
     {
       "name": "柴天佑",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Tianyou Chai",
+        "Chai Tianyou",
+        "Tian You Chai",
+        "Chai Tian You"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1904/index.html"
       ],
@@ -65,7 +88,10 @@
     {
       "name": "陈纯",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Chun Chen",
+        "Chen Chun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/5016/index.html"
       ],
@@ -77,7 +103,10 @@
     {
       "name": "陈杰",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jie Chen",
+        "Chen Jie"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8054/index.html"
       ],
@@ -89,7 +118,10 @@
     {
       "name": "陈鲸",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jing Chen",
+        "Chen Jing"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/736/index.html"
       ],
@@ -101,7 +133,12 @@
     {
       "name": "陈俊亮",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Junliang Chen",
+        "Chen Junliang",
+        "Jun Liang Chen",
+        "Chen Jun Liang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/308/index.html"
       ],
@@ -113,7 +150,12 @@
     {
       "name": "陈良惠",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Lianghui Chen",
+        "Chen Lianghui",
+        "Liang Hui Chen",
+        "Chen Liang Hui"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/116/index.html"
       ],
@@ -125,7 +167,12 @@
     {
       "name": "陈志杰",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zhijie Chen",
+        "Chen Zhijie",
+        "Zhi Jie Chen",
+        "Chen Zhi Jie"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3884/index.html"
       ],
@@ -137,7 +184,12 @@
     {
       "name": "陈左宁",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zuoning Chen",
+        "Chen Zuoning",
+        "Zuo Ning Chen",
+        "Chen Zuo Ning"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1835/index.html"
       ],
@@ -149,7 +201,10 @@
     {
       "name": "戴浩",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Hao Dai",
+        "Dai Hao"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1749/index.html"
       ],
@@ -161,7 +216,12 @@
     {
       "name": "戴琼海",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Qionghai Dai",
+        "Dai Qionghai",
+        "Qiong Hai Dai",
+        "Dai Qiong Hai"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8058/index.html"
       ],
@@ -173,7 +233,12 @@
     {
       "name": "邓中翰",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zhonghan Deng",
+        "Deng Zhonghan",
+        "Zhong Han Deng",
+        "Deng Zhong Han"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1602/index.html"
       ],
@@ -185,7 +250,12 @@
     {
       "name": "邓中亮",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zhongliang Deng",
+        "Deng Zhongliang",
+        "Zhong Liang Deng",
+        "Deng Zhong Liang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8395/index.html"
       ],
@@ -197,7 +267,12 @@
     {
       "name": "丁文华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Wenhua Ding",
+        "Ding Wenhua",
+        "Wen Hua Ding",
+        "Ding Wen Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3907/index.html"
       ],
@@ -209,7 +284,12 @@
     {
       "name": "段宝岩",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Baoyan Duan",
+        "Duan Baoyan",
+        "Bao Yan Duan",
+        "Duan Bao Yan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3930/index.html"
       ],
@@ -221,7 +301,12 @@
     {
       "name": "樊邦奎",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Bangkui Fan",
+        "Fan Bangkui",
+        "Bang Kui Fan",
+        "Fan Bang Kui"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/6051/index.html"
       ],
@@ -233,7 +318,12 @@
     {
       "name": "樊仲维",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zhongwei Fan",
+        "Fan Zhongwei",
+        "Zhong Wei Fan",
+        "Fan Zhong Wei"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8396/index.html"
       ],
@@ -245,7 +335,12 @@
     {
       "name": "范滇元",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Dianyuan Fan",
+        "Fan Dianyuan",
+        "Dian Yuan Fan",
+        "Fan Dian Yuan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/150/index.html"
       ],
@@ -257,7 +352,12 @@
     {
       "name": "范国滨",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Guobin Fan",
+        "Fan Guobin",
+        "Guo Bin Fan",
+        "Fan Guo Bin"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8030/index.html"
       ],
@@ -269,7 +369,12 @@
     {
       "name": "方滨兴",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Binxing Fang",
+        "Fang Binxing",
+        "Bin Xing Fang",
+        "Fang Bin Xing"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/737/index.html"
       ],
@@ -281,7 +386,12 @@
     {
       "name": "方家熊",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jiaxiong Fang",
+        "Fang Jiaxiong",
+        "Jia Xiong Fang",
+        "Fang Jia Xiong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/153/index.html"
       ],
@@ -293,7 +403,12 @@
     {
       "name": "费爱国",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Aiguo Fei",
+        "Fei Aiguo",
+        "Ai Guo Fei",
+        "Fei Ai Guo"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3906/index.html"
       ],
@@ -305,7 +420,12 @@
     {
       "name": "封锡盛",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xisheng Feng",
+        "Feng Xisheng",
+        "Xi Sheng Feng",
+        "Feng Xi Sheng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1840/index.html"
       ],
@@ -317,7 +437,10 @@
     {
       "name": "高洁",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jie Gao",
+        "Gao Jie"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/659/index.html"
       ],
@@ -329,7 +452,10 @@
     {
       "name": "高文",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Wen Gao",
+        "Gao Wen"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3926/index.html"
       ],
@@ -341,7 +467,12 @@
     {
       "name": "宫先仪",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xianyi Gong",
+        "Gong Xianyi",
+        "Xian Yi Gong",
+        "Gong Xian Yi"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/79/index.html"
       ],
@@ -353,7 +484,12 @@
     {
       "name": "龚惠兴",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Huixing Gong",
+        "Gong Huixing",
+        "Hui Xing Gong",
+        "Gong Hui Xing"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1818/index.html"
       ],
@@ -365,7 +501,12 @@
     {
       "name": "桂卫华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Weihua Gui",
+        "Gui Weihua",
+        "Wei Hua Gui",
+        "Gui Wei Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3904/index.html"
       ],
@@ -377,7 +518,12 @@
     {
       "name": "郭桂蓉",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Guirong Guo",
+        "Guo Guirong",
+        "Gui Rong Guo",
+        "Guo Gui Rong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/90/index.html"
       ],
@@ -389,7 +535,12 @@
     {
       "name": "何德全",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Dequan He",
+        "He Dequan",
+        "De Quan He",
+        "He De Quan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/224/index.html"
       ],
@@ -401,7 +552,12 @@
     {
       "name": "何新贵",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xingui He",
+        "He Xingui",
+        "Xin Gui He",
+        "He Xin Gui"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/227/index.html"
       ],
@@ -413,7 +569,10 @@
     {
       "name": "何友",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "You He",
+        "He You"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3905/index.html"
       ],
@@ -425,7 +584,12 @@
     {
       "name": "胡启恒",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Qiheng Hu",
+        "Hu Qiheng",
+        "Qi Heng Hu",
+        "Hu Qi Heng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/232/index.html"
       ],
@@ -437,7 +601,12 @@
     {
       "name": "黄殿中",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Dianzhong Huang",
+        "Huang Dianzhong",
+        "Dian Zhong Huang",
+        "Huang Dian Zhong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8272/index.html"
       ],
@@ -449,7 +618,12 @@
     {
       "name": "江碧涛",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Bitao Jiang",
+        "Jiang Bitao",
+        "Bi Tao Jiang",
+        "Jiang Bi Tao"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8203/index.html"
       ],
@@ -461,7 +635,12 @@
     {
       "name": "姜会林",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Huilin Jiang",
+        "Jiang Huilin",
+        "Hui Lin Jiang",
+        "Jiang Hui Lin"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/4989/index.html"
       ],
@@ -473,7 +652,12 @@
     {
       "name": "姜文汉",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Wenhan Jiang",
+        "Jiang Wenhan",
+        "Wen Han Jiang",
+        "Jiang Wen Han"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/654/index.html"
       ],
@@ -485,7 +669,12 @@
     {
       "name": "蒋昌俊",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Changjun Jiang",
+        "Jiang Changjun",
+        "Chang Jun Jiang",
+        "Jiang Chang Jun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8210/index.html"
       ],
@@ -497,7 +686,12 @@
     {
       "name": "金国藩",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Guofan Jin",
+        "Jin Guofan",
+        "Guo Fan Jin",
+        "Jin Guo Fan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/393/index.html"
       ],
@@ -509,7 +703,12 @@
     {
       "name": "金怡濂",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yilian Jin",
+        "Jin Yilian",
+        "Yi Lian Jin",
+        "Jin Yi Lian"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/396/index.html"
       ],
@@ -521,7 +720,12 @@
     {
       "name": "孔志印",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zhiyin Kong",
+        "Kong Zhiyin",
+        "Zhi Yin Kong",
+        "Kong Zhi Yin"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8201/index.html"
       ],
@@ -533,7 +737,12 @@
     {
       "name": "蓝羽石",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yushi Lan",
+        "Lan Yushi",
+        "Yu Shi Lan",
+        "Lan Yu Shi"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8209/index.html"
       ],
@@ -545,7 +754,12 @@
     {
       "name": "李伯虎",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Bohu Li",
+        "Li Bohu",
+        "Bo Hu Li",
+        "Li Bo Hu"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/400/index.html"
       ],
@@ -557,7 +771,12 @@
     {
       "name": "李得天",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Detian Li",
+        "Li Detian",
+        "De Tian Li",
+        "Li De Tian"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8207/index.html"
       ],
@@ -569,7 +788,12 @@
     {
       "name": "李德仁",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Deren Li",
+        "Li Deren",
+        "De Ren Li",
+        "Li De Ren"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/403/index.html"
       ],
@@ -581,7 +805,12 @@
     {
       "name": "李德毅",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Deyi Li",
+        "Li Deyi",
+        "De Yi Li",
+        "Li De Yi"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/640/index.html"
       ],
@@ -593,7 +822,12 @@
     {
       "name": "李国杰",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Guojie Li",
+        "Li Guojie",
+        "Guo Jie Li",
+        "Li Guo Jie"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/406/index.html"
       ],
@@ -605,7 +839,12 @@
     {
       "name": "李劲东",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jindong Li",
+        "Li Jindong",
+        "Jin Dong Li",
+        "Li Jin Dong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8304/index.html"
       ],
@@ -617,7 +856,12 @@
     {
       "name": "李乐民",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Lemin Li",
+        "Li Lemin",
+        "Le Min Li",
+        "Li Le Min"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/638/index.html"
       ],
@@ -629,7 +873,12 @@
     {
       "name": "李同保",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Tongbao Li",
+        "Li Tongbao",
+        "Tong Bao Li",
+        "Li Tong Bao"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2076/index.html"
       ],
@@ -641,7 +890,12 @@
     {
       "name": "李贤玉",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xianyu Li",
+        "Li Xianyu",
+        "Xian Yu Li",
+        "Li Xian Yu"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8157/index.html"
       ],
@@ -653,7 +907,12 @@
     {
       "name": "廖湘科",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xiangke Liao",
+        "Liao Xiangke",
+        "Xiang Ke Liao",
+        "Liao Xiang Ke"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/6046/index.html"
       ],
@@ -665,7 +924,12 @@
     {
       "name": "林永年",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yongnian Lin",
+        "Lin Yongnian",
+        "Yong Nian Lin",
+        "Lin Yong Nian"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2077/index.html"
       ],
@@ -677,7 +941,10 @@
     {
       "name": "刘玠",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jie Liu",
+        "Liu Jie"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/381/index.html"
       ],
@@ -689,7 +956,12 @@
     {
       "name": "刘清宇",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Qingyu Liu",
+        "Liu Qingyu",
+        "Qing Yu Liu",
+        "Liu Qing Yu"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8305/index.html"
       ],
@@ -701,7 +973,12 @@
     {
       "name": "刘尚合",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shanghe Liu",
+        "Liu Shanghe",
+        "Shang He Liu",
+        "Liu Shang He"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/623/index.html"
       ],
@@ -713,7 +990,12 @@
     {
       "name": "刘永坚",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yongjian Liu",
+        "Liu Yongjian",
+        "Yong Jian Liu",
+        "Liu Yong Jian"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8053/index.html"
       ],
@@ -725,7 +1007,12 @@
     {
       "name": "刘永坦",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yongtan Liu",
+        "Liu Yongtan",
+        "Yong Tan Liu",
+        "Liu Yong Tan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/621/index.html"
       ],
@@ -737,7 +1024,12 @@
     {
       "name": "刘韵洁",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yunjie Liu",
+        "Liu Yunjie",
+        "Yun Jie Liu",
+        "Liu Yun Jie"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1748/index.html"
       ],
@@ -749,7 +1041,12 @@
     {
       "name": "刘泽金",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zejin Liu",
+        "Liu Zejin",
+        "Ze Jin Liu",
+        "Liu Ze Jin"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8022/index.html"
       ],
@@ -761,7 +1058,10 @@
     {
       "name": "龙腾",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Teng Long",
+        "Long Teng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8202/index.html"
       ],
@@ -773,7 +1073,12 @@
     {
       "name": "卢锡城",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xicheng Lu",
+        "Lu Xicheng",
+        "Xi Cheng Lu",
+        "Lu Xi Cheng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/378/index.html"
       ],
@@ -785,7 +1090,12 @@
     {
       "name": "陆建勋",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jianxun Lu",
+        "Lu Jianxun",
+        "Jian Xun Lu",
+        "Lu Jian Xun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/645/index.html"
       ],
@@ -797,7 +1107,10 @@
     {
       "name": "陆军",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jun Lu",
+        "Lu Jun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8044/index.html"
       ],
@@ -809,7 +1122,12 @@
     {
       "name": "陆铭华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Minghua Lu",
+        "Lu Minghua",
+        "Ming Hua Lu",
+        "Lu Ming Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8397/index.html"
       ],
@@ -821,7 +1139,12 @@
     {
       "name": "栾恩杰",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Enjie Luan",
+        "Luan Enjie",
+        "En Jie Luan",
+        "Luan En Jie"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2660/index.html"
       ],
@@ -833,7 +1156,12 @@
     {
       "name": "罗先刚",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xiangang Luo",
+        "Luo Xiangang",
+        "Xian Gang Luo",
+        "Luo Xian Gang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8096/index.html"
       ],
@@ -845,7 +1173,10 @@
     {
       "name": "罗毅",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yi Luo",
+        "Luo Yi"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8208/index.html"
       ],
@@ -857,7 +1188,12 @@
     {
       "name": "吕跃广",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yueguang Lv",
+        "Lv Yueguang",
+        "Yue Guang Lv",
+        "Lv Yue Guang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3946/index.html"
       ],
@@ -869,7 +1205,12 @@
     {
       "name": "毛二可",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Erke Mao",
+        "Mao Erke",
+        "Er Ke Mao",
+        "Mao Er Ke"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/371/index.html"
       ],
@@ -881,7 +1222,12 @@
     {
       "name": "尼玛扎西",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Mazhaxi Ni",
+        "Ni Mazhaxi",
+        "Ma Zha Xi Ni",
+        "Ni Ma Zha Xi"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8306/index.html"
       ],
@@ -893,7 +1239,12 @@
     {
       "name": "倪光南",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Guangnan Ni",
+        "Ni Guangnan",
+        "Guang Nan Ni",
+        "Ni Guang Nan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/657/index.html"
       ],
@@ -905,7 +1256,12 @@
     {
       "name": "潘云鹤",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yunhe Pan",
+        "Pan Yunhe",
+        "Yun He Pan",
+        "Pan Yun He"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/662/index.html"
       ],
@@ -917,7 +1273,12 @@
     {
       "name": "沈昌祥",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Changxiang Shen",
+        "Shen Changxiang",
+        "Chang Xiang Shen",
+        "Shen Chang Xiang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/643/index.html"
       ],
@@ -929,7 +1290,10 @@
     {
       "name": "宋健",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jian Song",
+        "Song Jian"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/632/index.html"
       ],
@@ -941,7 +1305,12 @@
     {
       "name": "苏东林",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Donglin Su",
+        "Su Donglin",
+        "Dong Lin Su",
+        "Su Dong Lin"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8097/index.html"
       ],
@@ -953,7 +1322,12 @@
     {
       "name": "苏君红",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Junhong Su",
+        "Su Junhong",
+        "Jun Hong Su",
+        "Su Jun Hong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/644/index.html"
       ],
@@ -965,7 +1339,12 @@
     {
       "name": "孙家广",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jiaguang Sun",
+        "Sun Jiaguang",
+        "Jia Guang Sun",
+        "Sun Jia Guang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/626/index.html"
       ],
@@ -977,7 +1356,12 @@
     {
       "name": "孙凝晖",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Ninghui Sun",
+        "Sun Ninghui",
+        "Ning Hui Sun",
+        "Sun Ning Hui"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8098/index.html"
       ],
@@ -989,7 +1373,12 @@
     {
       "name": "孙优贤",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Youxian Sun",
+        "Sun Youxian",
+        "You Xian Sun",
+        "Sun You Xian"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2069/index.html"
       ],
@@ -1001,7 +1390,12 @@
     {
       "name": "谭久彬",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jiubin Tan",
+        "Tan Jiubin",
+        "Jiu Bin Tan",
+        "Tan Jiu Bin"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8010/index.html"
       ],
@@ -1013,7 +1407,12 @@
     {
       "name": "童小华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xiaohua Tong",
+        "Tong Xiaohua",
+        "Xiao Hua Tong",
+        "Tong Xiao Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8307/index.html"
       ],
@@ -1025,7 +1424,12 @@
     {
       "name": "汪成为",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Chengwei Wang",
+        "Wang Chengwei",
+        "Cheng Wei Wang",
+        "Wang Cheng Wei"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/642/index.html"
       ],
@@ -1037,7 +1441,12 @@
     {
       "name": "王恩东",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Endong Wang",
+        "Wang Endong",
+        "En Dong Wang",
+        "Wang En Dong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/4977/index.html"
       ],
@@ -1049,7 +1458,10 @@
     {
       "name": "王坚",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jian Wang",
+        "Wang Jian"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8160/index.html"
       ],
@@ -1061,7 +1473,12 @@
     {
       "name": "王建华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jianhua Wang",
+        "Wang Jianhua",
+        "Jian Hua Wang",
+        "Wang Jian Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8398/index.html"
       ],
@@ -1073,7 +1490,12 @@
     {
       "name": "王任享",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Renxiang Wang",
+        "Wang Renxiang",
+        "Ren Xiang Wang",
+        "Wang Ren Xiang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/377/index.html"
       ],
@@ -1085,7 +1507,12 @@
     {
       "name": "王沙飞",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shafei Wang",
+        "Wang Shafei",
+        "Sha Fei Wang",
+        "Wang Sha Fei"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8031/index.html"
       ],
@@ -1097,7 +1524,12 @@
     {
       "name": "王天然",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Tianran Wang",
+        "Wang Tianran",
+        "Tian Ran Wang",
+        "Wang Tian Ran"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/376/index.html"
       ],
@@ -1109,7 +1541,12 @@
     {
       "name": "王晓云",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xiaoyun Wang",
+        "Wang Xiaoyun",
+        "Xiao Yun Wang",
+        "Wang Xiao Yun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8399/index.html"
       ],
@@ -1121,7 +1558,12 @@
     {
       "name": "王岩飞",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yanfei Wang",
+        "Wang Yanfei",
+        "Yan Fei Wang",
+        "Wang Yan Fei"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8308/index.html"
       ],
@@ -1133,7 +1575,12 @@
     {
       "name": "王耀南",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yaonan Wang",
+        "Wang Yaonan",
+        "Yao Nan Wang",
+        "Wang Yao Nan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8099/index.html"
       ],
@@ -1145,7 +1592,10 @@
     {
       "name": "王越",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yue Wang",
+        "Wang Yue"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/373/index.html"
       ],
@@ -1157,7 +1607,12 @@
     {
       "name": "王振常",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zhenchang Wang",
+        "Wang Zhenchang",
+        "Zhen Chang Wang",
+        "Wang Zhen Chang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8309/index.html"
       ],
@@ -1169,7 +1624,10 @@
     {
       "name": "韦钰",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yu Wei",
+        "Wei Yu"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1932/index.html"
       ],
@@ -1181,7 +1639,12 @@
     {
       "name": "魏子卿",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Ziqing Wei",
+        "Wei Ziqing",
+        "Zi Qing Wei",
+        "Wei Zi Qing"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/664/index.html"
       ],
@@ -1193,7 +1656,12 @@
     {
       "name": "邬贺铨",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Hequan Wu",
+        "Wu Hequan",
+        "He Quan Wu",
+        "Wu He Quan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/629/index.html"
       ],
@@ -1205,7 +1673,12 @@
     {
       "name": "邬江兴",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jiangxing Wu",
+        "Wu Jiangxing",
+        "Jiang Xing Wu",
+        "Wu Jiang Xing"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1676/index.html"
       ],
@@ -1217,7 +1690,10 @@
     {
       "name": "吴澄",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Cheng Wu",
+        "Wu Cheng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/630/index.html"
       ],
@@ -1229,7 +1705,10 @@
     {
       "name": "吴枫",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Feng Wu",
+        "Wu Feng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8400/index.html"
       ],
@@ -1241,7 +1720,12 @@
     {
       "name": "吴汉明",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Hanming Wu",
+        "Wu Hanming",
+        "Han Ming Wu",
+        "Wu Han Ming"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8101/index.html"
       ],
@@ -1253,7 +1737,12 @@
     {
       "name": "吴建平",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jianping Wu",
+        "Wu Jianping",
+        "Jian Ping Wu",
+        "Wu Jian Ping"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/4974/index.html"
       ],
@@ -1265,7 +1754,12 @@
     {
       "name": "吴剑旗",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jianqi Wu",
+        "Wu Jianqi",
+        "Jian Qi Wu",
+        "Wu Jian Qi"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8204/index.html"
       ],
@@ -1277,7 +1771,12 @@
     {
       "name": "吴世忠",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shizhong Wu",
+        "Wu Shizhong",
+        "Shi Zhong Wu",
+        "Wu Shi Zhong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8310/index.html"
       ],
@@ -1289,7 +1788,12 @@
     {
       "name": "吴伟仁",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Weiren Wu",
+        "Wu Weiren",
+        "Wei Ren Wu",
+        "Wu Wei Ren"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/5040/index.html"
       ],
@@ -1301,7 +1805,12 @@
     {
       "name": "吾守尔·斯拉木",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shouer·silamu Wu",
+        "Wu Shouer·silamu",
+        "Shou Er · Si La Mu Wu",
+        "Wu Shou Er · Si La Mu"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3943/index.html"
       ],
@@ -1313,7 +1822,12 @@
     {
       "name": "徐扬生",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yangsheng Xu",
+        "Xu Yangsheng",
+        "Yang Sheng Xu",
+        "Xu Yang Sheng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/488/index.html"
       ],
@@ -1325,7 +1839,12 @@
     {
       "name": "许居衍",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Juyan Xu",
+        "Xu Juyan",
+        "Ju Yan Xu",
+        "Xu Ju Yan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/628/index.html"
       ],
@@ -1337,7 +1856,12 @@
     {
       "name": "许祖彦",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zuyan Xu",
+        "Xu Zuyan",
+        "Zu Yan Xu",
+        "Xu Zu Yan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2071/index.html"
       ],
@@ -1349,7 +1873,12 @@
     {
       "name": "杨长风",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zhangfeng Yang",
+        "Yang Zhangfeng",
+        "Zhang Feng Yang",
+        "Yang Zhang Feng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8268/index.html"
       ],
@@ -1361,7 +1890,10 @@
     {
       "name": "杨宏",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Hong Yang",
+        "Yang Hong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8269/index.html"
       ],
@@ -1373,7 +1905,12 @@
     {
       "name": "杨善林",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shanlin Yang",
+        "Yang Shanlin",
+        "Shan Lin Yang",
+        "Yang Shan Lin"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3864/index.html"
       ],
@@ -1385,7 +1922,12 @@
     {
       "name": "杨士中",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shizhong Yang",
+        "Yang Shizhong",
+        "Shi Zhong Yang",
+        "Yang Shi Zhong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/641/index.html"
       ],
@@ -1397,7 +1939,12 @@
     {
       "name": "杨小牛",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xiaoniu Yang",
+        "Yang Xiaoniu",
+        "Xiao Niu Yang",
+        "Yang Xiao Niu"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3908/index.html"
       ],
@@ -1409,7 +1956,12 @@
     {
       "name": "姚富强",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Fuqiang Yao",
+        "Yao Fuqiang",
+        "Fu Qiang Yao",
+        "Yao Fu Qiang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8102/index.html"
       ],
@@ -1421,7 +1973,12 @@
     {
       "name": "姚骏恩",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Junen Yao",
+        "Yao Junen",
+        "Jun En Yao",
+        "Yao Jun En"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/653/index.html"
       ],
@@ -1433,7 +1990,12 @@
     {
       "name": "叶尚福",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shangfu Ye",
+        "Ye Shangfu",
+        "Shang Fu Ye",
+        "Ye Shang Fu"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1933/index.html"
       ],
@@ -1445,7 +2007,12 @@
     {
       "name": "叶声华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shenghua Ye",
+        "Ye Shenghua",
+        "Sheng Hua Ye",
+        "Ye Sheng Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/379/index.html"
       ],
@@ -1457,7 +2024,12 @@
     {
       "name": "于海斌",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Haibin Yu",
+        "Yu Haibin",
+        "Hai Bin Yu",
+        "Yu Hai Bin"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8311/index.html"
       ],
@@ -1469,7 +2041,10 @@
     {
       "name": "于全",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Quan Yu",
+        "Yu Quan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/1304/index.html"
       ],
@@ -1481,7 +2056,12 @@
     {
       "name": "余少华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shaohua Yu",
+        "Yu Shaohua",
+        "Shao Hua Yu",
+        "Yu Shao Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/4957/index.html"
       ],
@@ -1493,7 +2073,12 @@
     {
       "name": "云晓春",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xiaochun Yun",
+        "Yun Xiaochun",
+        "Xiao Chun Yun",
+        "Yun Xiao Chun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8401/index.html"
       ],
@@ -1505,7 +2090,12 @@
     {
       "name": "张宝东",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Baodong Zhang",
+        "Zhang Baodong",
+        "Bao Dong Zhang",
+        "Zhang Bao Dong"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8206/index.html"
       ],
@@ -1517,7 +2107,12 @@
     {
       "name": "张光义",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Guangyi Zhang",
+        "Zhang Guangyi",
+        "Guang Yi Zhang",
+        "Zhang Guang Yi"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/633/index.html"
       ],
@@ -1529,7 +2124,12 @@
     {
       "name": "张广军",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Guangjun Zhang",
+        "Zhang Guangjun",
+        "Guang Jun Zhang",
+        "Zhang Guang Jun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3910/index.html"
       ],
@@ -1541,7 +2141,12 @@
     {
       "name": "张宏科",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Hongke Zhang",
+        "Zhang Hongke",
+        "Hong Ke Zhang",
+        "Zhang Hong Ke"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8205/index.html"
       ],
@@ -1553,7 +2158,12 @@
     {
       "name": "张履谦",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Lvqian Zhang",
+        "Zhang Lvqian",
+        "Lv Qian Zhang",
+        "Zhang Lv Qian"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/637/index.html"
       ],
@@ -1565,7 +2175,12 @@
     {
       "name": "张明高",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Minggao Zhang",
+        "Zhang Minggao",
+        "Ming Gao Zhang",
+        "Zhang Ming Gao"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/634/index.html"
       ],
@@ -1577,7 +2192,10 @@
     {
       "name": "张平",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Ping Zhang",
+        "Zhang Ping"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8103/index.html"
       ],
@@ -1589,7 +2207,12 @@
     {
       "name": "张文军",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Wenjun Zhang",
+        "Zhang Wenjun",
+        "Wen Jun Zhang",
+        "Zhang Wen Jun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8402/index.html"
       ],
@@ -1601,7 +2224,12 @@
     {
       "name": "张锡祥",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xixiang Zhang",
+        "Zhang Xixiang",
+        "Xi Xiang Zhang",
+        "Zhang Xi Xiang"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/636/index.html"
       ],
@@ -1613,7 +2241,12 @@
     {
       "name": "张学军",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xuejun Zhang",
+        "Zhang Xuejun",
+        "Xue Jun Zhang",
+        "Zhang Xue Jun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8312/index.html"
       ],
@@ -1625,7 +2258,12 @@
     {
       "name": "张钟华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zhonghua Zhang",
+        "Zhang Zhonghua",
+        "Zhong Hua Zhang",
+        "Zhang Zhong Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2074/index.html"
       ],
@@ -1637,7 +2275,12 @@
     {
       "name": "赵沁平",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Qinping Zhao",
+        "Zhao Qinping",
+        "Qin Ping Zhao",
+        "Zhao Qin Ping"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3909/index.html"
       ],
@@ -1649,7 +2292,12 @@
     {
       "name": "赵晓哲",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Xiaozhe Zhao",
+        "Zhao Xiaozhe",
+        "Xiao Zhe Zhao",
+        "Zhao Xiao Zhe"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/3893/index.html"
       ],
@@ -1661,7 +2309,12 @@
     {
       "name": "郑南宁",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Nanning Zheng",
+        "Zheng Nanning",
+        "Nan Ning Zheng",
+        "Zheng Nan Ning"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2078/index.html"
       ],
@@ -1673,7 +2326,12 @@
     {
       "name": "郑庆华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Qinghua Zheng",
+        "Zheng Qinghua",
+        "Qing Hua Zheng",
+        "Zheng Qing Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8313/index.html"
       ],
@@ -1685,7 +2343,12 @@
     {
       "name": "郑纬民",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Weimin Zheng",
+        "Zheng Weimin",
+        "Wei Min Zheng",
+        "Zheng Wei Min"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8104/index.html"
       ],
@@ -1697,7 +2360,10 @@
     {
       "name": "钟山",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shan Zhong",
+        "Zhong Shan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2080/index.html"
       ],
@@ -1709,7 +2375,12 @@
     {
       "name": "周建华",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jianhua Zhou",
+        "Zhou Jianhua",
+        "Jian Hua Zhou",
+        "Zhou Jian Hua"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8403/index.html"
       ],
@@ -1721,7 +2392,12 @@
     {
       "name": "周寿桓",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Shouhuan Zhou",
+        "Zhou Shouhuan",
+        "Shou Huan Zhou",
+        "Zhou Shou Huan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/648/index.html"
       ],
@@ -1733,7 +2409,12 @@
     {
       "name": "周仲义",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zhongyi Zhou",
+        "Zhou Zhongyi",
+        "Zhong Yi Zhou",
+        "Zhou Zhong Yi"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/647/index.html"
       ],
@@ -1745,7 +2426,12 @@
     {
       "name": "朱高峰",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Gaofeng Zhu",
+        "Zhu Gaofeng",
+        "Gao Feng Zhu",
+        "Zhu Gao Feng"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/627/index.html"
       ],
@@ -1757,7 +2443,12 @@
     {
       "name": "庄松林",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Songlin Zhuang",
+        "Zhuang Songlin",
+        "Song Lin Zhuang",
+        "Zhuang Song Lin"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/2070/index.html"
       ],
@@ -1769,7 +2460,12 @@
     {
       "name": "郭毅可",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yike Guo",
+        "Guo Yike",
+        "Yi Ke Guo",
+        "Guo Yi Ke"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8459/index.html"
       ],
@@ -1781,7 +2477,10 @@
     {
       "name": "黄捷",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Jie Huang",
+        "Huang Jie"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8460/index.html"
       ],
@@ -1793,7 +2492,12 @@
     {
       "name": "李尔平",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Erping Li",
+        "Li Erping",
+        "Er Ping Li",
+        "Li Er Ping"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8461/index.html"
       ],
@@ -1805,7 +2509,12 @@
     {
       "name": "申作军",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Zuojun Shen",
+        "Shen Zuojun",
+        "Zuo Jun Shen",
+        "Shen Zuo Jun"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8462/index.html"
       ],
@@ -1817,7 +2526,12 @@
     {
       "name": "宋永端",
       "tag_type": "cae_academician",
-      "aliases": [],
+      "aliases": [
+        "Yongduan Song",
+        "Song Yongduan",
+        "Yong Duan Song",
+        "Song Yong Duan"
+      ],
       "source_links": [
         "https://ysg.ckcest.cn/html/details/8463/index.html"
       ],

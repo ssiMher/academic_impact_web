@@ -1,0 +1,797 @@
+{
+  "_comment": "中国科学院已故外籍院士官方来源快照；英文名作为 name，中文名和拼音作为 aliases，当前应为 42 人。",
+  "source": "https://casad.cas.cn/ysxx2022/ygwj/",
+  "official_count": 42,
+  "items": [
+    {
+      "name": "Peter H.Raven",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "雷文",
+        "Lei Wen",
+        "LeiWen",
+        "Wen Lei"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808868.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Beng Chin Ooi",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "黄铭钧",
+        "Huang Ming Jun",
+        "HuangMingJun",
+        "Huang MingJun",
+        "MingJun Huang",
+        "Jun HuangMing"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/202312/t20231205_4990332.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Chihtang Sah",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "萨支唐",
+        "Sa Zhi Tang",
+        "SaZhiTang",
+        "Sa ZhiTang",
+        "ZhiTang Sa",
+        "Tang SaZhi"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808832.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Jacob Palis",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "雅各布·帕里斯",
+        "Ya Ge Bu Pa Li Si",
+        "YaGeBuPaLiSi",
+        "Ya GeBuPaLiSi",
+        "GeBuPaLiSi Ya",
+        "Si YaGeBuPaLi"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/201312/t20131223_4003236.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "James Fraser Stoddart",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "詹姆斯·弗雷泽·司徒塔特",
+        "Zhan Mu Si Fu Lei Ze Si Tu Ta Te",
+        "ZhanMuSiFuLeiZeSiTuTaTe",
+        "Zhan MuSiFuLeiZeSiTuTaTe",
+        "MuSiFuLeiZeSiTuTaTe Zhan",
+        "Te ZhanMuSiFuLeiZeSiTuTa"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/201711/t20171130_4625330.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Tsung-Dao Lee",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "李政道",
+        "Li Zheng Dao",
+        "LiZhengDao",
+        "Li ZhengDao",
+        "ZhengDao Li",
+        "Dao LiZheng"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808863.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Burrell Clark Burchfiel",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "伯奇费尔",
+        "Bo Qi Fei Er",
+        "BoQiFeiEr",
+        "Bo QiFeiEr",
+        "QiFeiEr Bo",
+        "Er BoQiFei"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808929.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Zhores I. Alferov",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "若列斯.阿尔费罗夫",
+        "Ruo Lie Si A Er Fei Luo Fu",
+        "RuoLieSiAErFeiLuoFu",
+        "Ruo LieSiAErFeiLuoFu",
+        "LieSiAErFeiLuoFu Ruo",
+        "Fu RuoLieSiAErFeiLuo"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808837.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Derek H. Barton",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "巴顿",
+        "Ba Dun",
+        "BaDun",
+        "Dun Ba"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810576.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Robert Wolfgang Cahn",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "罗伯特.康",
+        "Luo Bo Te Kang",
+        "LuoBoTeKang",
+        "Luo BoTeKang",
+        "BoTeKang Luo",
+        "Kang LuoBoTe"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808855.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Leroy L. Chang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "张立纲",
+        "Zhang Li Gang",
+        "ZhangLiGang",
+        "Zhang LiGang",
+        "LiGang Zhang",
+        "Gang ZhangLi"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808806.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Y. Austin Chang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "张永山",
+        "Zhang Yong Shan",
+        "ZhangYongShan",
+        "Zhang YongShan",
+        "YongShan Zhang",
+        "Shan ZhangYong"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808803.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Shiing-Shen Chern",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "陈省身",
+        "Chen Sheng Shen",
+        "ChenShengShen",
+        "Chen ShengShen",
+        "ShengShen Chen",
+        "Shen ChenSheng"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810574.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Wilbur Norman Christiansen",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "克里斯琴森",
+        "Ke Li Si Qin Sen",
+        "KeLiSiQinSen",
+        "Ke LiSiQinSen",
+        "LiSiQinSen Ke",
+        "Sen KeLiSiQin"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810570.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Frank A.Cotton",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "科顿",
+        "Ke Dun",
+        "KeDun",
+        "Dun Ke"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810572.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Guy Blaudin de The",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "盖伊·德泰",
+        "Gai Yi De Tai",
+        "GaiYiDeTai",
+        "Gai YiDeTai",
+        "YiDeTai Gai",
+        "Tai GaiYiDe"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808906.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Ludwig D.Faddeev",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "法捷耶夫",
+        "Fa Jie Ye Fu",
+        "FaJieYeFu",
+        "Fa JieYeFu",
+        "JieYeFu Fa",
+        "Fu FaJieYe"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808916.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Yuan-Cheng Fung",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "冯元桢",
+        "Feng Yuan Zhen",
+        "FengYuanZhen",
+        "Feng YuanZhen",
+        "YuanZhen Feng",
+        "Zhen FengYuan"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808914.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Francois Mathey",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "弗朗斯瓦·马蒂",
+        "Fu Lang Si Wa Ma Di",
+        "FuLangSiWaMaDi",
+        "Fu LangSiWaMaDi",
+        "LangSiWaMaDi Fu",
+        "Di FuLangSiWaMa"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/201112/t20111213_3412544.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Thomas S.Huang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "黄煦涛",
+        "Huang Xu Tao",
+        "HuangXuTao",
+        "Huang XuTao",
+        "XuTao Huang",
+        "Tao HuangXu"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808889.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Hiroo Inokuchi",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "井口洋夫",
+        "Jing Kou Yang Fu",
+        "JingKouYangFu",
+        "Jing KouYangFu",
+        "KouYangFu Jing",
+        "Fu JingKouYang"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808876.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Charles K.Kao",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "高锟",
+        "Gao Kun",
+        "GaoKun",
+        "Kun Gao"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808902.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Ernest Shiu-Jen Kuh",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "葛守仁",
+        "Ge Shou Ren",
+        "GeShouRen",
+        "Ge ShouRen",
+        "ShouRen Ge",
+        "Ren GeShou"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808900.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Chia-Chiao Lin",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "林家翘",
+        "Lin Jia Qiao",
+        "LinJiaQiao",
+        "Lin JiaQiao",
+        "JiaQiao Lin",
+        "Qiao LinJia"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808858.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "T.Y.Lin",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "林同炎",
+        "Lin Tong Yan",
+        "LinTongYan",
+        "Lin TongYan",
+        "TongYan Lin",
+        "Yan LinTong"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810568.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Jacques-Louis Lions",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "利翁斯",
+        "Li Weng Si",
+        "LiWengSi",
+        "Li WengSi",
+        "WengSi Li",
+        "Si LiWeng"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810566.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Kuo-Nan Liou",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "廖国男",
+        "Liao Guo Nan",
+        "LiaoGuoNan",
+        "Liao GuoNan",
+        "GuoNan Liao",
+        "Nan LiaoGuo"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/201711/t20171130_4625322.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Robert Howard Grubbs",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "罗伯特·格拉布斯",
+        "Luo Bo Te Ge La Bu Si",
+        "LuoBoTeGeLaBuSi",
+        "Luo BoTeGeLaBuSi",
+        "BoTeGeLaBuSi Luo",
+        "Si LuoBoTeGeLaBu"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/201512/t20151224_4502751.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Tso - Ping Ma",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "马佐平",
+        "Ma Zuo Ping",
+        "MaZuoPing",
+        "Ma ZuoPing",
+        "ZuoPing Ma",
+        "Ping MaZuo"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200912/t20091203_2681422.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Helmut Moritz",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "莫里茨",
+        "Mo Li Ci",
+        "MoLiCi",
+        "Mo LiCi",
+        "LiCi Mo",
+        "Ci MoLi"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808845.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Ferid Murad",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "弗里德·穆拉德",
+        "Fu Li De Mu La De",
+        "FuLiDeMuLaDe",
+        "Fu LiDeMuLaDe",
+        "LiDeMuLaDe Fu",
+        "De FuLiDeMuLa"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808911.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "D. Roger J. Owen",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "罗格·欧文",
+        "Luo Ge Ou Wen",
+        "LuoGeOuWen",
+        "Luo GeOuWen",
+        "GeOuWen Luo",
+        "Wen LuoGeOu"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/201112/t20111213_3412560.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Joseph Needham",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "李约瑟",
+        "Li Yue Se",
+        "LiYueSe",
+        "Li YueSe",
+        "YueSe Li",
+        "Se LiYue"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810564.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Wolfgang K.H.Panofsky",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "潘诺夫斯基",
+        "Pan Nuo Fu Si Ji",
+        "PanNuoFuSiJi",
+        "Pan NuoFuSiJi",
+        "NuoFuSiJi Pan",
+        "Ji PanNuoFuSi"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810562.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Samvel S. Grigorian",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "萨姆韦尔.格里戈良",
+        "Sa Mu Wei Er Ge Li Ge Liang",
+        "SaMuWeiErGeLiGeLiang",
+        "Sa MuWeiErGeLiGeLiang",
+        "MuWeiErGeLiGeLiang Sa",
+        "Liang SaMuWeiErGeLiGe"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808834.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Herbert A. Simon",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "司马贺",
+        "Si Ma He",
+        "SiMaHe",
+        "Si MaHe",
+        "MaHe Si",
+        "He SiMa"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810560.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Chang-Lin Tien",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "田长霖",
+        "Tian Zhang Lin",
+        "TianZhangLin",
+        "Tian ZhangLin",
+        "ZhangLin Tian",
+        "Lin TianZhang"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810558.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Chien-Shiung Wu",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "吴健雄",
+        "Wu Jian Xiong",
+        "WuJianXiong",
+        "Wu JianXiong",
+        "JianXiong Wu",
+        "Xiong WuJian"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1810556.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Theodore Yao-Tsu WU",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "吴耀祖",
+        "Wu Yao Zu",
+        "WuYaoZu",
+        "Wu YaoZu",
+        "YaoZu Wu",
+        "Zu WuYao"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808819.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Ahmed H. Zewail",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "哈迈德·泽维尔",
+        "Ha Mai De Ze Wei Er",
+        "HaMaiDeZeWeiEr",
+        "Ha MaiDeZeWeiEr",
+        "MaiDeZeWeiEr Ha",
+        "Er HaMaiDeZeWei"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200912/t20091203_2681417.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Shoucheng Zhang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "张首晟",
+        "Zhang Shou Cheng",
+        "ZhangShouCheng",
+        "Zhang ShouCheng",
+        "ShouCheng Zhang",
+        "Cheng ZhangShou"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/201312/t20131223_4003258.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    },
+    {
+      "name": "Olgierd Cecil Zienkiewicz",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "辛克维奇",
+        "Xin Ke Wei Qi",
+        "XinKeWeiQi",
+        "Xin KeWeiQi",
+        "KeWeiQi Xin",
+        "Qi XinKeWei"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/ygwj/200906/t20090624_1808813.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院已故外籍院士"
+      ],
+      "note": "中国科学院已故外籍院士；source: 中国科学院学部官网；official deceased foreign academician list"
+    }
+  ]
+}

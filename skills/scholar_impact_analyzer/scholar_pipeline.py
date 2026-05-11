@@ -124,6 +124,40 @@ def normalize_citation_authors(authors: list[Any]) -> list[str]:
     return normalized
 
 
+def normalize_author_details(author_details: list[Any]) -> list[dict[str, Any]]:
+    normalized = []
+    seen_names = set()
+    for author in author_details:
+        if not isinstance(author, dict):
+            continue
+        name = (author.get("name") or "").strip()
+        if not name or name in seen_names:
+            continue
+        seen_names.add(name)
+        institutions = []
+        for institution in author.get("institutions") or []:
+            if isinstance(institution, dict):
+                raw_display_name = (
+                    institution.get("display_name")
+                    or institution.get("name")
+                    or ""
+                )
+            else:
+                raw_display_name = str(institution or "")
+            display_name = raw_display_name.strip()
+            if display_name and display_name not in institutions:
+                institutions.append(display_name)
+        normalized.append(
+            {
+                "name": name,
+                "author_id": str(author.get("author_id") or author.get("id") or ""),
+                "source_url": author.get("source_url") or author.get("url") or "",
+                "institutions": institutions,
+            }
+        )
+    return normalized
+
+
 def normalize_citation_edge(
     source_publication: dict[str, Any],
     citing_paper: dict[str, Any],
@@ -131,6 +165,14 @@ def normalize_citation_edge(
 ) -> dict[str, Any]:
     external_ids = citing_paper.get("externalIds") or {}
     unique_ids = source_publication.get("unique_ids") or {}
+    author_details = normalize_author_details(citing_paper.get("author_details") or [])
+    detailed_author_names = [
+        author["name"] for author in author_details if author.get("name")
+    ]
+    citing_authors = (
+        detailed_author_names
+        or normalize_citation_authors(citing_paper.get("authors") or [])
+    )
     return {
         "source_publication_id": source_publication.get("id"),
         "source_publication_doi": source_publication.get("doi")
@@ -142,7 +184,8 @@ def normalize_citation_edge(
         "citing_doi": external_ids.get("DOI") or "",
         "citing_year": citing_paper.get("year"),
         "citing_venue": citing_paper.get("venue") or "Unknown Venue",
-        "citing_authors": normalize_citation_authors(citing_paper.get("authors") or []),
+        "citing_authors": citing_authors,
+        "citing_author_details": author_details,
         "provider": provider,
         "source_url": citing_paper.get("source_url") or "",
     }

@@ -187,6 +187,43 @@ class ScholarStatsTestCase(unittest.TestCase):
         self.assertEqual(candidates[0]["matched_paper_ids"], ["C001"])
         self.assertEqual(candidates[0]["matched_paper_titles"], ["Fellow Citation"])
 
+    def test_build_person_candidates_from_citation_edges_uses_author_detail_names(self):
+        citation_edges = [
+            {
+                "citing_paper_id": "C001",
+                "citing_title": "Fellow Citation",
+                "citing_authors": ["Hopper G."],
+                "citing_author_details": [
+                    {
+                        "name": "Grace Hopper",
+                        "source_url": "https://openalex.org/A123",
+                        "institutions": ["Yale University"],
+                    }
+                ],
+            }
+        ]
+        registry = {
+            "items": [
+                {
+                    "name": "Grace Hopper",
+                    "tag_type": "acm_fellow",
+                    "source_links": ["https://example.test/grace"],
+                }
+            ]
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            registry_path = Path(tmpdir) / "registry.json"
+            registry_path.write_text(json.dumps(registry), encoding="utf-8")
+            candidates = self.stats.build_person_candidates_from_citation_edges(
+                citation_edges,
+                registry_path=str(registry_path),
+            )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["name"], "Grace Hopper")
+        self.assertEqual(candidates[0]["matched_paper_ids"], ["C001"])
+
     def test_build_deep_analysis_queue_prioritizes_fellow_and_top_venue(self):
         citation_edges = [
             {

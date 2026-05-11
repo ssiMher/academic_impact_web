@@ -1,0 +1,2372 @@
+{
+  "_comment": "中国科学院外籍院士官方来源快照。name 使用英文名以匹配 DBLP/OpenAlex/Scopus 作者，aliases 保留中文名。",
+  "source": "https://casad.cas.cn/ysxx2022/wjys/",
+  "items": [
+    {
+      "name": "Ibrokhim Abdurakhmonov",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "易卜拉欣·阿卜杜拉赫莫诺夫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104945.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Pierre Agostini",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "皮埃尔·阿戈斯蒂尼"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104926.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Per Ahlberg",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "佩尔·阿尔伯格"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104925.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Ali Şengör",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "阿里·申戈尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104896.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Christian Amatore",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "克里斯汀·阿芒托"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201312/t20131223_4003222.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Kristi Anseth",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "克里斯蒂·安赛斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104919.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Michael Batty",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "迈克·巴蒂"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990316.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Alexis Bell",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "亚历克西斯·贝尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104944.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Guy Bertrand",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "盖伊·贝特朗"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104913.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Flemming Besenbacher",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "弗莱明·贝森巴赫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201312/t20131223_4003230.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Caucher Birkar",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "考切尔·比尔卡尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104918.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Valery Bondur",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "瓦列里·邦杜"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625309.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Peter G. Bruce",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "彼得·布鲁斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990317.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Deliang Chen",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "陈德亮"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625310.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Gang Chen",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "陈刚"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104904.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Shu Chien",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "钱煦"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808842.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Alfred Y. Cho",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "卓以和"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808793.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Steven Chu",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "朱棣文"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808799.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Ching-Wu Chu",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "朱经武"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808797.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Nam-Hai Chua",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "蔡南海"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808927.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Philippe G. Ciarlet",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "菲立普·希阿雷"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201312/t20131230_4008175.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Aaron J. Ciechanover",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "阿龙·切哈诺沃"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201312/t20131223_4003233.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Andrew I. Cooper",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "安德鲁·库伯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990318.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Vincent Courtillot",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "万森·库尔提欧"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808824.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Yi Cui",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "崔屹"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104906.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Robert E.Dickinson",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "罗伯特·迪金森"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808921.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Donald Bruce Dingwell",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "唐纳德·布鲁斯·丁威尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990319.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Jerzy Duszynski",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "耶日·杜辛斯基"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625313.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Richard Lawrence Edwards",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "艾思本"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502745.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Artur Ekert",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "阿图尔·埃克特"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104899.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Else Marie Friis",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "傅睿思"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808908.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Harald Fuchs",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "哈罗德·富克斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104914.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Toshio Fukuda",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "福田敏男"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625314.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Huajian Gao",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "高华健"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502747.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Jean-Pierre Gattuso",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "让·皮埃尔·加图索"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990320.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Andre K. Geim",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "安德烈·盖姆"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625315.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Fausto Giunchiglia",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "福斯托·准奇利亚"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104908.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Martin Groetschel",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "马丁·格勒切尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502750.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "David Gross",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "戴维·格罗斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201112/t20111213_3412539.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "John Hardy",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "约翰·哈迪"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990322.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Alan J.Heeger",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "艾伦·黑格"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808934.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Avram Hershko",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "阿夫拉姆·赫什科"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201112/t20111213_3412546.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Yu-Chi Ho",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "何毓琦"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808894.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Georg Hoffmann",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "乔治·霍夫曼"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104929.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Tomas Hokfelt",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "霍克弗尔特"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808886.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "John Edward Hopcroft",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "约翰·霍普克罗夫特"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625318.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Brian John Hoskins",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "霍西金斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808884.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Chenming Calvin Hu",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "胡正明"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808892.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Yonggang Huang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "黄永刚"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625320.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Sumio Iijima",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "饭岛澄男"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201112/t20111213_3412556.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Chennupati Jagadish",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "切纳帕蒂·贾格迪什"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990324.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Mohammad Qasim Jan",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "穆罕默德·卡西姆·简"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990325.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Michael Jordan",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "迈克尔·乔丹"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104922.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Yuet Wai Kan",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "简悦威"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808881.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Gurdev S.Khush",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "库什"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808871.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Klaus Von Klitzing",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "克劳斯·冯·克利钦"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808873.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Markku Tapio Kulmala",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "马库·库马拉"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502760.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Jean-Marie Lehn",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "杰马里·莱恩"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808879.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Norman N.Li",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "黎念之"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808866.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Charles M. Lieber",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "查尔斯·李波"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502761.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Anders Lindquist",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "安德森·林奎斯特"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502762.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Benjamin List",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "本亚明·利斯特"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104901.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Bede Liu",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "刘必治"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201112/t20111213_3412552.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Ho-kwang David Mao",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "毛河光"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808850.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Rudolph A. Marcus",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "马库斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808853.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Tshilidzi Marwala",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "奇利齐·马瓦拉"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990327.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Jim McDonald",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "吉姆·麦克唐纳"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990328.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Hartmut Michel",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "米歇尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808847.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Chad A. Mirkin",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "查德·米尔金"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625324.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Klaus Müllen",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "克劳斯·缪伦"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990329.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Helena Nader",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "海伦娜·纳德尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104916.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Arokia Nathan",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "阿洛基亚·那桑"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104898.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Bradley Nelson",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "布拉德利·尼尔森"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104903.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Konstantin S. Novoselov",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "康斯坦丁·诺沃肖洛夫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990330.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Ryoji Noyori",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "野依良治"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201112/t20111213_3412545.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Paul Nurse",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "保罗·纳斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502765.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Andrei Okounkov",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "安德烈·奥昆科夫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990331.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Svante Pääbo",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "斯万特·帕博"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990333.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Giorgio Parisi",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "乔治·帕里西"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104940.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Michele Parrinello",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "米歇尔·帕里内洛"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990334.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Martyn Poliakoff",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "马丁·波利亚科夫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990335.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "H. Vincent Poor",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "文森特·珀尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625326.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Atta-ur Rahman",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "阿塔·拉曼"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502768.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "C. N. R. Rao",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "拉奥"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201312/t20131223_4003238.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Angel Rubio",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "安吉·卢比奥"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990336.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Roberta L. Rudnick",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "罗伯塔·鲁德尼克"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201112/t20111213_3412551.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Philip St.John Russell",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "菲利普·圣·约翰·罗素"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990337.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Shavkat Salikhov",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "肖开提·萨利霍夫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625327.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Lars Ivar Samuelson",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "乐思·伊瓦·桑姆尔森"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990338.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Jonathan L. Sessler",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "乔纳森·塞斯乐"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990340.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Karen C. Seto",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "凯伦·司徒"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990341.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Adi Shamir",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "阿迪·沙米尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104894.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Dan Shechtman",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "丹·谢赫特曼"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104907.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Zhixun Shen",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "沈志勋"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625329.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Yuen-Ron Shen",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "沈元壤"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808829.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Yang Shi",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "施扬"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104942.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Yum-Tong Siu",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "肖荫堂"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808816.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Soroosh Sorooshian",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "索鲁习·索鲁习安"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990342.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Peter J.Stang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "彼得·史唐"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808932.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Nils Christian Stenseth",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "尼尔斯·克里斯蒂安·斯坦塞斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990343.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Gabor Jozsef Stepan",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "盖博·约瑟夫·施德潘"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990344.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Zhigang Suo",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "锁志刚"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990345.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Subra Suresh",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "苏布拉·苏雷什"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201312/t20131223_4003242.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Lisa Tauxe",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "丽莎·托克斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104920.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Lonnie Thompson",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "郎尼·汤姆森"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200912/t20091203_2681420.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Samuel C.C.Ting",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "丁肇中"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808919.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Lloyd Nicholas Trefethen",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "劳埃德·尼古拉斯·特雷弗森"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990346.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Susan Trumbore",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "苏珊·特朗波"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104943.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Lap-Chee Tsui",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "徐立之"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200912/t20091203_2681419.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Daniel Chee Tsui",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "崔琦"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808924.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Zhong Lin Wang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "王中林"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200912/t20091203_2681425.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Xiao-Fan Wang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "王小凡"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625331.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Xiaodong Wang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "王晓东"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201312/t20131223_4003253.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Michael S. Waterman",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "迈克·沃特曼"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201312/t20131223_4003255.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Simon D.M. White",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "西蒙·怀特"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502769.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Torsten N. Wiesel",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "托斯登.威塞尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808826.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Peter John Wyllie",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "彼得.威利"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808821.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Omar Yaghi",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "奥马尔·亚吉"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104900.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Shing-Tung Yau",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "丘成桐"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808840.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Jun Ye",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "叶军"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201711/t20171130_4625333.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Junying Yuan",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "袁钧瑛"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202312/t20231205_4990347.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Richard Neil Zare",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "理查德.N.杰尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/200906/t20090624_1808860.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Xiang Zhang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "张翔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502770.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Xiaowei Zhuang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "庄小威"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201512/t20151224_4502773.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Peter Zoller",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "彼得·佐勒"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202603/t20260323_5104902.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Hongjie Dai",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "戴宏杰"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724717.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Gelii A. Zherebtcov",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "日列布佐夫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823721.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Wenfei Fan",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "樊文飞"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724719.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Bernard Lucas Feringa",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "伯纳德·L·费林加"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724720.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Leroy E. Hood",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "莱诺·伊·胡德"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724721.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Anil Kumar Jain",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "阿尼尔·库马尔·贾恩"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724722.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Muhammad Asif Khan",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "阿瑟夫·汉"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724723.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Louis Legendre",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "勒让德·路易"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724724.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Gaoqing (Max) Lu",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "逯高清"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724725.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Marcia Kemper McNutt",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "玛西娅·麦克纳特"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724726.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Gérard Albert Mourou",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "杰哈·莫罗"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724727.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Alexander Mikhailovich Sergeev",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "亚历山大·谢尔盖耶夫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724728.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Karl Barry Sharpless",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "卡尔·巴里·夏普利斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724729.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Joseph Sifakis",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "约瑟夫·希发基思"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724730.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Pol D. Spanos",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "保罗·斯潘诺斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724731.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "John Roger Speakman",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "约翰·罗杰·斯彼克曼"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724732.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Erio Tosatti",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "托萨蒂·埃瑞奥"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724734.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Anton Zeilinger",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "安东·塞林格"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191122_4724735.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Murat Zhurinovich Zhurinov",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "穆拉特·茹林诺夫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191122_4724736.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Diran Apelian",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "迪然·阿彼林"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823659.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Zhenan Bao",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "鲍哲南"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823679.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Philippe Ciais",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "菲利普·西亚斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823680.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Luiz Davidovich",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "路易斯·戴维多维奇"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823685.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Tariq Salim Durrani",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "塔里克·杜拉尼"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823686.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Michael Grätzel",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "米夏埃尔·格雷策尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823687.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Martin Hairer",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "马丁·海尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823690.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Bill S. Hansson",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "比尔·汉森"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823691.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "David Harel",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "大卫·哈雷尔"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823692.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Keith William Hipel",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "基思·威廉·海珀"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823693.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Kendall N. Houk",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "肯德尔·霍克"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823697.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Herbert Jäckle",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "赫伯特·雅克勒"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823698.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Katharina Kohse-Höinghaus",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "凯瑟琳娜·科瑟-赫英郝斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823699.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Young Hee Lee",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "李永熙"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823703.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Marlon R. Lewis",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "马龙·刘易斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823706.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Haifan Lin",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "林海帆"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823708.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Steven G. Louie",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "雷干城"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823713.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Marlan Orvil Scully",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "司嘉理"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823714.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Hywel Rhys Thomas",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "海维尔·里斯·托马斯"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823715.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "James M Tiedje",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "詹姆斯·迪杰"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823716.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Frank Wilczek",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "弗朗克·维尔切克"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823717.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Itamar Willner",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "伊塔玛尔·威尔纳"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823718.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Peidong Yang",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "杨培东"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823719.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Efim Zelmanov",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "杰曼诺夫"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/202201/t20220126_4823720.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    },
+    {
+      "name": "Mohamed Jamal Deen",
+      "tag_type": "cas_academician",
+      "aliases": [
+        "默罕默德·贾马·迪恩"
+      ],
+      "source_links": [
+        "http://casad.cas.cn/ysxx2022/wjys/201911/t20191121_4724718.html"
+      ],
+      "matched_affiliations": [
+        "中国科学院外籍院士"
+      ],
+      "note": "中国科学院外籍院士；source: 中国科学院学部官网"
+    }
+  ]
+}

@@ -89,6 +89,31 @@ data/reference/source_lists/cas_information_technology_academicians_official.jso
 data/reference/source_lists/cae_information_electronics_academicians_official.json
 ```
 
+Full CAS / CAE academicians and foreign academicians are maintained as separate official-source snapshots:
+
+```text
+data/reference/source_lists/cas_all_academicians_official.json
+data/reference/source_lists/cas_foreign_academicians_official.json
+data/reference/source_lists/cas_deceased_academicians_official.json
+data/reference/source_lists/cas_deceased_foreign_academicians_official.json
+data/reference/source_lists/cae_all_academicians_official.json
+data/reference/source_lists/cae_foreign_academicians_official.json
+data/reference/source_lists/cae_deceased_academicians_official.json
+data/reference/source_lists/cae_deceased_foreign_academicians_official.json
+```
+
+Current official-count checkpoints:
+
+- CAS all academicians: 892, parsed from the current all-academician detail links.
+- CAS deceased academicians: 738, parsed from deceased academician detail links.
+- CAS deceased foreign academicians: 42, English names are kept as `name` where the official label includes English in parentheses.
+- CAE all academicians: 981, deduplicated by CAE detail URL; the engineering-management cross-division display is merged rather than counted twice.
+- CAE foreign academicians: 146, from the CAE foreign member list.
+- CAE deceased academicians: 380, from the CAE deceased academician table.
+- CAE deceased foreign academicians: 24, from the CAE deceased foreign academician table.
+
+For matching DBLP / OpenAlex / Scopus author names, Chinese CAS / CAE entries include generated pinyin aliases. Foreign academician entries use English names as `name` and keep Chinese official names in `aliases` where available.
+
 Supported JSON formats:
 
 ```json

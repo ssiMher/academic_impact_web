@@ -12,6 +12,34 @@ from skills.academic_impact_analyzer import person_candidates
 
 
 class PersonRegistryRefreshTestCase(unittest.TestCase):
+    def test_official_academician_source_list_counts_match_snapshots(self):
+        expected_counts = {
+            'cas_all_academicians_official.json': 892,
+            'cas_deceased_academicians_official.json': 738,
+            'cas_deceased_foreign_academicians_official.json': 42,
+            'cae_all_academicians_official.json': 981,
+            'cae_deceased_academicians_official.json': 380,
+            'cae_deceased_foreign_academicians_official.json': 24,
+            'cae_foreign_academicians_official.json': 146,
+        }
+        source_dir = Path('data/reference/source_lists')
+
+        for filename, expected_count in expected_counts.items():
+            with self.subTest(filename=filename):
+                payload = json.loads((source_dir / filename).read_text(encoding='utf-8'))
+                self.assertEqual(len(payload.get('items', [])), expected_count)
+
+    def test_cae_deceased_foreign_source_list_uses_english_names(self):
+        source_path = Path('data/reference/source_lists/cae_deceased_foreign_academicians_official.json')
+        payload = json.loads(source_path.read_text(encoding='utf-8'))
+        items = {item['name']: item for item in payload.get('items', [])}
+
+        self.assertIn('Thomas H. Lee', items)
+        self.assertIn('Leoh Ming Pei', items)
+        self.assertIn('Simon M. Sze', items)
+        self.assertIn('李天和', items['Thomas H. Lee']['aliases'])
+        self.assertIn('I. M. Pei', items['Leoh Ming Pei']['aliases'])
+
     def test_refresh_imports_csv_and_json_without_network(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -138,7 +166,8 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
 
         entries = refresh_person_tag_registry.parse_acm_fellows_html(html, source_url='https://example.com/acm')
 
-        self.assertEqual([entry['name'] for entry in entries], ['Gupta, Aarti', 'Akella, Aditya'])
+        self.assertEqual([entry['name'] for entry in entries], ['Aarti Gupta', 'Aditya Akella'])
+        self.assertIn('Gupta, Aarti', entries[0]['aliases'])
         self.assertEqual(entries[0]['tag_type'], 'acm_fellow')
         self.assertEqual(entries[0]['source_links'], ['https://example.com/acm'])
         self.assertIn('2017', entries[0]['note'])
@@ -169,10 +198,12 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
             self.assertIn('"source_entry_count": 3', output.getvalue())
             payload = json.loads(registry_path.read_text(encoding='utf-8'))
             items = {(item['tag_type'], item['name']): item for item in payload['items']}
-            self.assertIn(('acm_fellow', 'Adar, Eytan'), items)
-            self.assertIn(('acm_fellow', 'Bengio, Yoshua'), items)
-            self.assertIn(('acm_fellow', 'Li, Fei-Fei'), items)
-            self.assertIn('2025', items[('acm_fellow', 'Adar, Eytan')]['note'])
+            self.assertIn(('acm_fellow', 'Eytan Adar'), items)
+            self.assertIn(('acm_fellow', 'Yoshua Bengio'), items)
+            self.assertIn(('acm_fellow', 'Fei-Fei Li'), items)
+            self.assertIn('Adar, Eytan', items[('acm_fellow', 'Eytan Adar')]['aliases'])
+            self.assertIn('Li, Fei-Fei', items[('acm_fellow', 'Fei-Fei Li')]['aliases'])
+            self.assertIn('2025', items[('acm_fellow', 'Eytan Adar')]['note'])
 
     def test_refresh_imports_ieee_cs_copied_page_text(self):
         with tempfile.TemporaryDirectory() as tmpdir:

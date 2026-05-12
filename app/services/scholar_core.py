@@ -1092,6 +1092,102 @@ def write_scholar_citation_statistics_csv(session_id: str) -> Path:
     return path
 
 
+def build_scholar_raw_citing_authors_csv(session: dict[str, Any]) -> str:
+    headers = [
+        "source_publication_id",
+        "citing_paper_id",
+        "citing_title",
+        "citing_year",
+        "citing_venue",
+        "citing_doi",
+        "provider",
+        "cited_publication_title",
+        "author_position",
+        "author_name",
+        "raw_author_name",
+        "author_institutions",
+        "author_source_url",
+    ]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=headers)
+    writer.writeheader()
+
+    for edge in session.get("citation_edges", []) or []:
+        if not isinstance(edge, dict):
+            continue
+        author_details = edge.get("citing_author_details") or []
+        if isinstance(author_details, list) and author_details:
+            wrote_detail = False
+            for index, detail in enumerate(author_details, 1):
+                if not isinstance(detail, dict):
+                    continue
+                author_name = (detail.get("name") or "").strip()
+                if not author_name:
+                    continue
+                institutions = [
+                    item.strip()
+                    for item in (detail.get("institutions") or [])
+                    if isinstance(item, str) and item.strip()
+                ]
+                writer.writerow(
+                    {
+                        "source_publication_id": edge.get("source_publication_id") or "",
+                        "citing_paper_id": edge.get("citing_paper_id") or "",
+                        "citing_title": edge.get("citing_title") or "",
+                        "citing_year": edge.get("citing_year") or "",
+                        "citing_venue": edge.get("citing_venue") or "",
+                        "citing_doi": edge.get("citing_doi") or "",
+                        "provider": edge.get("provider") or "",
+                        "cited_publication_title": edge.get("cited_publication_title") or "",
+                        "author_position": index,
+                        "author_name": author_name,
+                        "raw_author_name": (
+                            (edge.get("citing_authors") or [])[index - 1]
+                            if len(edge.get("citing_authors") or []) >= index
+                            else author_name
+                        ),
+                        "author_institutions": " | ".join(institutions),
+                        "author_source_url": detail.get("source_url") or "",
+                    }
+                )
+                wrote_detail = True
+            if wrote_detail:
+                continue
+
+        for index, author_name in enumerate(edge.get("citing_authors") or [], 1):
+            if not author_name:
+                continue
+            writer.writerow(
+                {
+                    "source_publication_id": edge.get("source_publication_id") or "",
+                    "citing_paper_id": edge.get("citing_paper_id") or "",
+                    "citing_title": edge.get("citing_title") or "",
+                    "citing_year": edge.get("citing_year") or "",
+                    "citing_venue": edge.get("citing_venue") or "",
+                    "citing_doi": edge.get("citing_doi") or "",
+                    "provider": edge.get("provider") or "",
+                    "cited_publication_title": edge.get("cited_publication_title") or "",
+                    "author_position": index,
+                    "author_name": author_name,
+                    "raw_author_name": author_name,
+                    "author_institutions": "",
+                    "author_source_url": "",
+                }
+            )
+
+    return buffer.getvalue()
+
+
+def write_scholar_raw_citing_authors_csv(session_id: str) -> Path:
+    session = load_scholar_status(session_id)
+    csv_text = build_scholar_raw_citing_authors_csv(session)
+    export_dir = resolve_scholar_session_dir(session_id) / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    path = export_dir / "raw_citing_authors.csv"
+    path.write_text(csv_text, encoding="utf-8-sig")
+    return path
+
+
 def update_task_state(session_id: str, **updates) -> dict[str, Any]:
     with _task_lock(session_id):
         session = load_scholar_status(session_id)

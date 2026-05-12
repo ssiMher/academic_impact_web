@@ -1578,6 +1578,10 @@ class ScholarWebTestCase(unittest.TestCase):
             f"/scholars/{TEST_SESSION_ID}/exports/citation_statistics.csv",
             response.text,
         )
+        self.assertIn(
+            f"/scholars/{TEST_SESSION_ID}/exports/raw_citing_authors.csv",
+            response.text,
+        )
 
     def test_scholar_route_hides_candidate_span_control_for_fulltext_analysis(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
@@ -1735,6 +1739,77 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("Bob Fellow", response.text)
         self.assertIn("Shared Author", response.text)
         self.assertIn("ambiguous_author_count", response.text)
+
+    def test_scholar_raw_citing_authors_csv_export_route(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [
+                        {
+                            "source_publication_id": "S001",
+                            "citing_paper_id": "C001",
+                            "citing_title": "Paper One",
+                            "citing_year": 2025,
+                            "citing_venue": "SIGCOMM",
+                            "citing_doi": "10.1000/paper1",
+                            "provider": "openalex",
+                            "citing_authors": ["A. One", "B. Two"],
+                            "citing_author_details": [
+                                {
+                                    "name": "Alice One",
+                                    "institutions": ["Example U"],
+                                    "source_url": "https://example.test/alice",
+                                },
+                                {
+                                    "name": "Bob Two",
+                                    "institutions": ["Second U"],
+                                    "source_url": "https://example.test/bob",
+                                },
+                            ],
+                            "cited_publication_title": "Target Paper",
+                        },
+                        {
+                            "source_publication_id": "S002",
+                            "citing_paper_id": "C002",
+                            "citing_title": "Paper Two",
+                            "citing_year": 2024,
+                            "citing_venue": "NSDI",
+                            "citing_doi": "10.1000/paper2",
+                            "provider": "semanticscholar",
+                            "citing_authors": ["Carol Three"],
+                            "cited_publication_title": "Target Paper Two",
+                        },
+                    ],
+                    "statistics": {"publication_count": 1, "citation_edge_count": 2},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(
+            f"/scholars/{TEST_SESSION_ID}/exports/raw_citing_authors.csv"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/csv", response.headers["content-type"])
+        self.assertIn(
+            "source_publication_id,citing_paper_id,citing_title,citing_year,citing_venue,citing_doi,provider,cited_publication_title,author_position,author_name,raw_author_name,author_institutions,author_source_url",
+            response.text,
+        )
+        self.assertIn("Alice One", response.text)
+        self.assertIn("Bob Two", response.text)
+        self.assertIn("Carol Three", response.text)
+        self.assertIn("A. One", response.text)
+        self.assertIn("Example U", response.text)
 
 
 if __name__ == "__main__":

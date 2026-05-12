@@ -325,6 +325,15 @@ def download_scholar_citation_statistics_csv(session_id: str):
     return FileResponse(path, media_type="text/csv; charset=utf-8", filename=path.name)
 
 
+@app.get("/scholars/{session_id}/exports/raw_citing_authors.csv")
+def download_scholar_raw_citing_authors_csv(session_id: str):
+    try:
+        path = scholar_core.write_scholar_raw_citing_authors_csv(session_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return FileResponse(path, media_type="text/csv; charset=utf-8", filename=path.name)
+
+
 @app.post("/sessions/{session_id}/refresh")
 async def refresh_session(request: Request, session_id: str):
     form = await request.form()

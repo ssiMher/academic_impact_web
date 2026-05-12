@@ -93,6 +93,9 @@ class ScholarStatsTestCase(unittest.TestCase):
                 "status": "pending",
                 "matched_paper_ids": ["C001", "C002"],
                 "source_links": ["https://example.test/alice"],
+                "homonym_risk": True,
+                "risk_flags": ["name_only_match"],
+                "evidence": [{"matched_author": "Alice Fellow"}],
             },
             {
                 "candidate_id": "acm_fellow::bob",
@@ -101,6 +104,7 @@ class ScholarStatsTestCase(unittest.TestCase):
                 "status": "confirmed",
                 "matched_paper_ids": ["C002", "C003"],
                 "source_links": [],
+                "evidence": [{"matched_author": "Bob Fellow"}],
             },
             {
                 "candidate_id": "acm_fellow::carol",
@@ -109,6 +113,7 @@ class ScholarStatsTestCase(unittest.TestCase):
                 "status": "rejected",
                 "matched_paper_ids": ["C004"],
                 "source_links": ["https://example.test/carol"],
+                "evidence": [{"matched_author": "Carol Fellow"}],
             },
             {
                 "candidate_id": "acm_fellow::dana",
@@ -117,6 +122,7 @@ class ScholarStatsTestCase(unittest.TestCase):
                 "status": "source_complete",
                 "matched_paper_ids": ["C005"],
                 "source_links": ["https://example.test/dana"],
+                "evidence": [{"matched_author": "Dana Fellow"}],
             },
             {
                 "candidate_id": "acm_fellow::erin",
@@ -125,6 +131,7 @@ class ScholarStatsTestCase(unittest.TestCase):
                 "status": "pending",
                 "matched_paper_ids": ["C006"],
                 "source_links": [],
+                "evidence": [{"matched_author": "Shared Author"}],
             },
             {
                 "candidate_id": "acm_fellow::frank",
@@ -133,6 +140,9 @@ class ScholarStatsTestCase(unittest.TestCase):
                 "status": "pending",
                 "matched_paper_ids": ["C007"],
                 "source_links": [],
+                "homonym_risk": True,
+                "risk_flags": ["name_only_match"],
+                "evidence": [{"matched_author": "Shared Author"}],
             },
         ]
 
@@ -142,7 +152,11 @@ class ScholarStatsTestCase(unittest.TestCase):
         group = result[0]
         self.assertEqual(group["tag_type"], "acm_fellow")
         self.assertEqual(group["tag_label"], "ACM Fellow")
-        self.assertEqual(group["count"], 6)
+        self.assertEqual(group["count"], 5)
+        self.assertEqual(group["matched_author_count"], 5)
+        self.assertEqual(group["candidate_count"], 6)
+        self.assertEqual(group["ambiguous_author_count"], 1)
+        self.assertEqual(group["high_risk_author_count"], 2)
         self.assertEqual(group["confirmed_count"], 1)
         self.assertEqual(group["pending_count"], 3)
         self.assertEqual(group["rejected_count"], 1)

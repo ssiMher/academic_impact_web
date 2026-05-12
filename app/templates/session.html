@@ -503,9 +503,9 @@
           {% for group in person_stats.groups %}
           <div class="stat">
             <span>{{ group.tag_label }}</span>
-            <strong>{{ group.candidate_count }}</strong>
+            <strong>{{ group.count }}</strong>
             <p class="muted">
-              已确认 {{ group.confirmed_count }} · 待确认 {{ group.pending_count }} · 命中论文 {{ group.matched_paper_count }}
+              候选人物 {{ group.candidate_count }} · 多重碰撞 {{ group.ambiguous_author_count }} · 高风险 {{ group.high_risk_author_count }}
             </p>
           </div>
           {% endfor %}
@@ -515,7 +515,7 @@
           {% for group in person_stats.groups %}
           {% if group.candidate_count %}
           <details {% if loop.first %}open{% endif %}>
-            <summary>{{ group.tag_label }}：{{ group.candidate_count }} 人，来源完备 {{ group.source_complete_count }} 人</summary>
+            <summary>{{ group.tag_label }}：命中作者 {{ group.count }} 人，候选人物 {{ group.candidate_count }} 人，来源完备 {{ group.source_complete_count }} 人</summary>
             <ul>
               {% for candidate in group.candidate_preview %}
               <li><strong>{{ candidate.name }}</strong> · {{ candidate.status }} · 命中论文：{{ candidate.matched_paper_ids | join(', ') or '-' }}</li>

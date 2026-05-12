@@ -82,6 +82,7 @@ def person_tag_statistics(
         candidates = [
             item for item in person_candidates if item.get("tag_type") == tag_type
         ]
+        summary = PERSON_CANDIDATES.summarize_candidates(candidates)
         matched_paper_ids = set()
         for candidate in candidates:
             matched_paper_ids.update(candidate.get("matched_paper_ids") or [])
@@ -89,7 +90,12 @@ def person_tag_statistics(
             {
                 "tag_type": tag_type,
                 "tag_label": labels.get(tag_type, tag_type or "-"),
-                "count": len(candidates),
+                "count": summary["matched_author_count"],
+                "matched_author_count": summary["matched_author_count"],
+                "candidate_count": len(candidates),
+                "ambiguous_author_count": summary["ambiguous_author_count"],
+                "high_risk_author_count": summary["high_risk_author_count"],
+                "matched_author_preview": summary["matched_author_preview"],
                 "confirmed_count": sum(
                     1 for item in candidates if item.get("status") == "confirmed"
                 ),

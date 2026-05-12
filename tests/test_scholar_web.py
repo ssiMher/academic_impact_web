@@ -1574,6 +1574,10 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("Chen Tian", response.text)
         self.assertIn("强引用证据 1 条", response.text)
         self.assertIn(f"/scholars/{TEST_SESSION_ID}/exports/report.md", response.text)
+        self.assertIn(
+            f"/scholars/{TEST_SESSION_ID}/exports/citation_statistics.csv",
+            response.text,
+        )
 
     def test_scholar_route_hides_candidate_span_control_for_fulltext_analysis(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
@@ -1636,6 +1640,101 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("text/markdown", response.headers["content-type"])
         self.assertIn("# Chen Tian 学者影响力报告", response.text)
         self.assertIn("## 可复制结论", response.text)
+
+    def test_scholar_citation_statistics_csv_export_route(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [],
+                    "person_candidates": [
+                        {
+                            "candidate_id": "acm_fellow::alice-fellow",
+                            "name": "Alice Fellow",
+                            "tag_type": "acm_fellow",
+                            "tag_label": "ACM Fellow",
+                            "status": "pending",
+                            "matched_paper_ids": ["C001", "C002"],
+                            "matched_paper_titles": ["Paper One", "Paper Two"],
+                            "matched_affiliations": ["Example University"],
+                            "source_links": ["https://example.test/alice"],
+                            "homonym_risk": True,
+                            "risk_flags": ["name_only_match"],
+                            "note": "registry seed",
+                            "evidence": [
+                                {
+                                    "paper_id": "C001",
+                                    "paper_title": "Paper One",
+                                    "matched_author": "Shared Author",
+                                    "match_type": "alias",
+                                }
+                            ],
+                        },
+                        {
+                            "candidate_id": "acm_fellow::bob-fellow",
+                            "name": "Bob Fellow",
+                            "tag_type": "acm_fellow",
+                            "tag_label": "ACM Fellow",
+                            "status": "confirmed",
+                            "matched_paper_ids": ["C002"],
+                            "matched_paper_titles": ["Paper Two"],
+                            "matched_affiliations": [],
+                            "source_links": [],
+                            "evidence": [
+                                {
+                                    "paper_id": "C002",
+                                    "paper_title": "Paper Two",
+                                    "matched_author": "Shared Author",
+                                    "match_type": "exact_name",
+                                }
+                            ],
+                        },
+                    ],
+                    "statistics": {
+                        "publication_count": 1,
+                        "citation_edge_count": 2,
+                        "person_tag_statistics": [
+                            {
+                                "tag_type": "acm_fellow",
+                                "tag_label": "ACM Fellow",
+                                "count": 1,
+                                "matched_author_count": 1,
+                                "candidate_count": 2,
+                                "ambiguous_author_count": 1,
+                                "high_risk_author_count": 1,
+                                "confirmed_count": 1,
+                                "pending_count": 1,
+                                "rejected_count": 0,
+                                "source_complete_count": 1,
+                                "matched_paper_count": 2,
+                            }
+                        ],
+                    },
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(
+            f"/scholars/{TEST_SESSION_ID}/exports/citation_statistics.csv"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/csv", response.headers["content-type"])
+        self.assertIn("candidate_id,tag_type,tag_label", response.text)
+        self.assertIn("Alice Fellow", response.text)
+        self.assertIn("Bob Fellow", response.text)
+        self.assertIn("Shared Author", response.text)
+        self.assertIn("ambiguous_author_count", response.text)
 
 
 if __name__ == "__main__":

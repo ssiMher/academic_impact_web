@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
@@ -274,6 +275,55 @@ def merge_candidate(candidates: dict[str, dict[str, Any]], candidate: dict[str, 
     existing["evidence"].extend(candidate.get("evidence", []))
     if candidate.get("note") and candidate.get("note") not in existing.get("note", ""):
         existing["note"] = "；".join([part for part in [existing.get("note", ""), candidate.get("note", "")] if part])
+
+
+def candidate_matched_authors(candidate: dict[str, Any]) -> list[str]:
+    names: list[str] = []
+    seen: set[str] = set()
+    for item in candidate.get("evidence", []) or []:
+        matched_author = (item.get("matched_author") or "").strip()
+        normalized = normalize_name(matched_author)
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        names.append(matched_author)
+    if names:
+        return names
+    fallback_name = (candidate.get("name") or "").strip()
+    if fallback_name:
+        return [fallback_name]
+    return []
+
+
+def summarize_candidates(candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    author_display: OrderedDict[str, str] = OrderedDict()
+    author_candidate_ids: dict[str, set[str]] = {}
+    high_risk_authors: set[str] = set()
+
+    for candidate in candidates:
+        candidate_id = (candidate.get("candidate_id") or "").strip()
+        is_high_risk = bool(
+            candidate.get("homonym_risk")
+            or "name_only_match" in (candidate.get("risk_flags") or [])
+        )
+        for author_name in candidate_matched_authors(candidate):
+            normalized = normalize_name(author_name)
+            if not normalized:
+                continue
+            author_display.setdefault(normalized, author_name)
+            author_candidate_ids.setdefault(normalized, set()).add(candidate_id or normalized)
+            if is_high_risk:
+                high_risk_authors.add(normalized)
+
+    ambiguous_author_count = sum(
+        1 for ids in author_candidate_ids.values() if len(ids) > 1
+    )
+    return {
+        "matched_author_count": len(author_display),
+        "matched_author_preview": list(author_display.values())[:5],
+        "ambiguous_author_count": ambiguous_author_count,
+        "high_risk_author_count": len(high_risk_authors),
+    }
 
 
 def build_candidates(

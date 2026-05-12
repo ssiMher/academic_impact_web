@@ -571,13 +571,19 @@ def build_person_tag_statistics(person_candidates: List[dict]):
     groups = []
     for tag_type in ordered_tag_types:
         candidates = [item for item in person_candidates if item.get("tag_type") == tag_type]
+        summary = PERSON_CANDIDATES.summarize_candidates(candidates)
         paper_ids = set()
         for candidate in candidates:
             paper_ids.update(candidate.get("matched_paper_ids") or [])
         groups.append({
             "tag_type": tag_type,
             "tag_label": tag_labels.get(tag_type, tag_type or "-"),
+            "count": summary["matched_author_count"],
+            "matched_author_count": summary["matched_author_count"],
             "candidate_count": len(candidates),
+            "ambiguous_author_count": summary["ambiguous_author_count"],
+            "high_risk_author_count": summary["high_risk_author_count"],
+            "matched_author_preview": summary["matched_author_preview"],
             "confirmed_count": sum(1 for item in candidates if item.get("status") == "confirmed"),
             "pending_count": sum(1 for item in candidates if item.get("status") == "pending"),
             "rejected_count": sum(1 for item in candidates if item.get("status") == "rejected"),
@@ -1941,7 +1947,9 @@ def render_phase1_export_markdown(detail_payload: dict):
     for group in (impact_statistics.get("person") or {}).get("groups", []):
         lines.append(
             f"- {group.get('label')}：{group.get('count', 0)} 人"
-            f"（已确认 {group.get('confirmed_count', 0)}，待确认 {group.get('pending_count', 0)}）"
+            f"（候选人物 {group.get('candidate_count', 0)}，多重碰撞 {group.get('ambiguous_author_count', 0)}，"
+            f"高风险 {group.get('high_risk_author_count', 0)}，已确认 {group.get('confirmed_count', 0)}，"
+            f"待确认 {group.get('pending_count', 0)}）"
         )
         for candidate in group.get("candidates", [])[:8]:
             paper_ids = ", ".join(candidate.get("matched_paper_ids", [])) or "-"

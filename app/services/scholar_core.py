@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import csv
 import importlib.util
+import io
 import json
 import re
 import shutil
@@ -996,6 +998,97 @@ def write_scholar_report_markdown(session_id: str) -> Path:
     export_dir.mkdir(parents=True, exist_ok=True)
     path = export_dir / "report.md"
     path.write_text(payload["markdown"], encoding="utf-8")
+    return path
+
+
+def build_scholar_citation_statistics_csv(session: dict[str, Any]) -> str:
+    person_candidates = session.get("person_candidates", []) or []
+    statistics = session.get("statistics") or {}
+    person_stats = statistics.get("person_tag_statistics")
+    if not isinstance(person_stats, list):
+        person_stats = scholar_pipeline().SCHOLAR_STATS.person_tag_statistics(
+            person_candidates
+        )
+    group_by_type = {
+        (group.get("tag_type") or ""): group
+        for group in person_stats
+        if isinstance(group, dict)
+    }
+    headers = [
+        "candidate_id",
+        "tag_type",
+        "tag_label",
+        "matched_author_count",
+        "candidate_count",
+        "ambiguous_author_count",
+        "high_risk_author_count",
+        "confirmed_count",
+        "pending_count",
+        "rejected_count",
+        "source_complete_count",
+        "matched_paper_count",
+        "candidate_name",
+        "candidate_status",
+        "matched_authors",
+        "matched_paper_ids",
+        "matched_paper_titles",
+        "matched_affiliations",
+        "homonym_risk",
+        "risk_flags",
+        "source_links",
+        "review_note",
+        "reviewed_at",
+        "note",
+    ]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=headers)
+    writer.writeheader()
+
+    for candidate in person_candidates:
+        if not isinstance(candidate, dict):
+            continue
+        tag_type = (candidate.get("tag_type") or "").strip()
+        group = group_by_type.get(tag_type, {})
+        matched_authors = scholar_pipeline().SCHOLAR_STATS.PERSON_CANDIDATES.candidate_matched_authors(candidate)
+        writer.writerow(
+            {
+                "candidate_id": candidate.get("candidate_id") or "",
+                "tag_type": tag_type,
+                "tag_label": candidate.get("tag_label") or group.get("tag_label") or "",
+                "matched_author_count": group.get("matched_author_count", group.get("count", 0)),
+                "candidate_count": group.get("candidate_count", 0),
+                "ambiguous_author_count": group.get("ambiguous_author_count", 0),
+                "high_risk_author_count": group.get("high_risk_author_count", 0),
+                "confirmed_count": group.get("confirmed_count", 0),
+                "pending_count": group.get("pending_count", 0),
+                "rejected_count": group.get("rejected_count", 0),
+                "source_complete_count": group.get("source_complete_count", 0),
+                "matched_paper_count": group.get("matched_paper_count", 0),
+                "candidate_name": candidate.get("name") or "",
+                "candidate_status": candidate.get("status") or "",
+                "matched_authors": " | ".join(matched_authors),
+                "matched_paper_ids": " | ".join(candidate.get("matched_paper_ids") or []),
+                "matched_paper_titles": " | ".join(candidate.get("matched_paper_titles") or []),
+                "matched_affiliations": " | ".join(candidate.get("matched_affiliations") or []),
+                "homonym_risk": "yes" if candidate.get("homonym_risk") else "no",
+                "risk_flags": " | ".join(candidate.get("risk_flags") or []),
+                "source_links": " | ".join(candidate.get("source_links") or []),
+                "review_note": candidate.get("review_note") or "",
+                "reviewed_at": candidate.get("reviewed_at") or "",
+                "note": candidate.get("note") or "",
+            }
+        )
+
+    return buffer.getvalue()
+
+
+def write_scholar_citation_statistics_csv(session_id: str) -> Path:
+    session = load_scholar_status(session_id)
+    csv_text = build_scholar_citation_statistics_csv(session)
+    export_dir = resolve_scholar_session_dir(session_id) / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    path = export_dir / "citation_statistics.csv"
+    path.write_text(csv_text, encoding="utf-8-sig")
     return path
 
 

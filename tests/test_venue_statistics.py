@@ -217,6 +217,9 @@ class VenueStatisticsTestCase(unittest.TestCase):
                     "matched_paper_ids": ["P001", "P002"],
                     "source_links": ["https://example.test/alice"],
                     "status": "pending",
+                    "homonym_risk": True,
+                    "risk_flags": ["name_only_match"],
+                    "evidence": [{"matched_author": "Shared Author"}],
                 },
                 {
                     "candidate_id": "acm_fellow::bob",
@@ -226,6 +229,7 @@ class VenueStatisticsTestCase(unittest.TestCase):
                     "matched_paper_ids": ["P002"],
                     "source_links": [],
                     "status": "confirmed",
+                    "evidence": [{"matched_author": "Shared Author"}],
                 },
                 {
                     "candidate_id": "ieee_fellow::carol",
@@ -235,6 +239,7 @@ class VenueStatisticsTestCase(unittest.TestCase):
                     "matched_paper_ids": ["P003"],
                     "source_links": ["https://example.test/carol"],
                     "status": "rejected",
+                    "evidence": [{"matched_author": "Carol"}],
                 },
             ],
             "overview_stats": self.impact_cli.default_overview_stats(),
@@ -250,6 +255,9 @@ class VenueStatisticsTestCase(unittest.TestCase):
         self.assertEqual(stats["confirmed_count"], 1)
         self.assertEqual(stats["rejected_count"], 1)
         self.assertEqual(acm_group["candidate_count"], 2)
+        self.assertEqual(acm_group["matched_author_count"], 1)
+        self.assertEqual(acm_group["ambiguous_author_count"], 1)
+        self.assertEqual(acm_group["high_risk_author_count"], 1)
         self.assertEqual(acm_group["source_complete_count"], 1)
         self.assertEqual(acm_group["matched_paper_count"], 2)
         self.assertEqual(ieee_group["candidate_count"], 1)

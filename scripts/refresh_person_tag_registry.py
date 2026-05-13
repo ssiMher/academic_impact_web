@@ -36,7 +36,15 @@ SUPPORTED_TAG_TYPES = {
     "top_school",
 }
 
-LIST_FIELDS = {"aliases", "source_links", "matched_affiliations"}
+LIST_FIELDS = {
+    "aliases",
+    "source_links",
+    "matched_affiliations",
+    "openalex_author_ids",
+    "orcid_ids",
+    "dblp_author_ids",
+    "known_institutions",
+}
 
 
 def normalize_name(text: str) -> str:
@@ -78,6 +86,10 @@ def normalize_entry(item: dict[str, Any], *, default_tag_type: str = "") -> dict
         "aliases": unique(split_list(item.get("aliases"))),
         "source_links": unique(split_list(item.get("source_links"))),
         "matched_affiliations": unique(split_list(item.get("matched_affiliations"))),
+        "openalex_author_ids": unique(split_list(item.get("openalex_author_ids"))),
+        "orcid_ids": unique(split_list(item.get("orcid_ids"))),
+        "dblp_author_ids": unique(split_list(item.get("dblp_author_ids"))),
+        "known_institutions": unique(split_list(item.get("known_institutions"))),
         "note": str(item.get("note") or "").strip(),
     }
     return entry

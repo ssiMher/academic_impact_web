@@ -164,6 +164,61 @@ class ScholarStatsTestCase(unittest.TestCase):
         self.assertEqual(group["matched_paper_count"], 7)
         self.assertEqual(len(group["candidates"]), 5)
 
+    def test_person_tag_statistics_counts_only_auto_resolved_authors(self):
+        candidates = [
+            {
+                "candidate_id": "cae_academician::wei-wang",
+                "name": "Wei Wang",
+                "tag_type": "cae_academician",
+                "status": "pending",
+                "matched_paper_ids": ["C001"],
+                "source_links": ["https://example.test/wei-wang-cae"],
+                "homonym_risk": True,
+                "risk_flags": ["name_only_match"],
+                "resolved_matched_authors": [],
+                "auto_match_status": "not_matched",
+                "auto_match_reasons": ["ambiguous_name_collision"],
+                "evidence": [{"matched_author": "Wei Wang"}],
+            },
+            {
+                "candidate_id": "cas_academician::wei-wang",
+                "name": "Wei Wang",
+                "tag_type": "cas_academician",
+                "status": "pending",
+                "matched_paper_ids": ["C001"],
+                "source_links": ["https://example.test/wei-wang-cas"],
+                "homonym_risk": True,
+                "risk_flags": ["name_only_match"],
+                "resolved_matched_authors": [],
+                "auto_match_status": "not_matched",
+                "auto_match_reasons": ["ambiguous_name_collision"],
+                "evidence": [{"matched_author": "Wei Wang"}],
+            },
+            {
+                "candidate_id": "acm_fellow::grace-hopper",
+                "name": "Grace Hopper",
+                "tag_type": "acm_fellow",
+                "status": "pending",
+                "matched_paper_ids": ["C002"],
+                "source_links": ["https://example.test/grace"],
+                "resolved_matched_authors": ["Grace Hopper"],
+                "auto_match_status": "matched",
+                "auto_match_score": 12,
+                "auto_match_confidence": "high",
+                "evidence": [{"matched_author": "Grace Hopper"}],
+            },
+        ]
+
+        result = self.stats.person_tag_statistics(candidates)
+        by_type = {group["tag_type"]: group for group in result}
+
+        self.assertEqual(by_type["acm_fellow"]["matched_author_count"], 1)
+        self.assertEqual(by_type["cae_academician"]["matched_author_count"], 0)
+        self.assertEqual(by_type["cas_academician"]["matched_author_count"], 0)
+        self.assertEqual(by_type["cae_academician"]["candidate_count"], 1)
+        self.assertEqual(by_type["cae_academician"]["ambiguous_author_count"], 1)
+        self.assertEqual(by_type["cae_academician"]["high_risk_author_count"], 1)
+
     def test_build_person_candidates_from_citation_edges_uses_citing_authors(self):
         citation_edges = [
             {

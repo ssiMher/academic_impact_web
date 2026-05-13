@@ -83610,12 +83610,16 @@
         "ChenYi"
       ],
       "source_links": [
-        "http://casad.cas.cn/ysxx2022/ysmd/hxb/200906/t20090624_1802327.html"
+        "http://casad.cas.cn/ysxx2022/ysmd/hxb/200906/t20090624_1802327.html",
+        "https://openalex.org/A5030857141"
       ],
       "matched_affiliations": [
         "化学部"
       ],
-      "note": "中国科学院院士，化学部；source: 中国科学院学部官网；中国科学院院士，全体院士名单；source: 中国科学院学部官网；official detail URL deduplicated"
+      "note": "中国科学院院士，化学部；source: 中国科学院学部官网；中国科学院院士，全体院士名单；source: 中国科学院学部官网；official detail URL deduplicated",
+      "openalex_author_ids": [
+        "https://openalex.org/a5030857141"
+      ]
     },
     {
       "name": "陈文新",

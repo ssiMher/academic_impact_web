@@ -1030,11 +1030,16 @@ def build_scholar_citation_statistics_csv(session: dict[str, Any]) -> str:
         "candidate_name",
         "candidate_status",
         "matched_authors",
+        "resolved_matched_authors",
         "matched_paper_ids",
         "matched_paper_titles",
         "matched_affiliations",
         "homonym_risk",
         "risk_flags",
+        "auto_match_status",
+        "auto_match_score",
+        "auto_match_confidence",
+        "auto_match_reasons",
         "source_links",
         "review_note",
         "reviewed_at",
@@ -1049,7 +1054,16 @@ def build_scholar_citation_statistics_csv(session: dict[str, Any]) -> str:
             continue
         tag_type = (candidate.get("tag_type") or "").strip()
         group = group_by_type.get(tag_type, {})
-        matched_authors = scholar_pipeline().SCHOLAR_STATS.PERSON_CANDIDATES.candidate_matched_authors(candidate)
+        matched_authors = []
+        seen_authors = set()
+        for item in candidate.get("evidence", []) or []:
+            matched_author = (item.get("matched_author") or "").strip()
+            normalized = scholar_pipeline().SCHOLAR_STATS.normalized_name(matched_author)
+            if not normalized or normalized in seen_authors:
+                continue
+            seen_authors.add(normalized)
+            matched_authors.append(matched_author)
+        resolved_authors = scholar_pipeline().SCHOLAR_STATS.PERSON_CANDIDATES.candidate_resolved_authors(candidate)
         writer.writerow(
             {
                 "candidate_id": candidate.get("candidate_id") or "",
@@ -1067,11 +1081,16 @@ def build_scholar_citation_statistics_csv(session: dict[str, Any]) -> str:
                 "candidate_name": candidate.get("name") or "",
                 "candidate_status": candidate.get("status") or "",
                 "matched_authors": " | ".join(matched_authors),
+                "resolved_matched_authors": " | ".join(resolved_authors),
                 "matched_paper_ids": " | ".join(candidate.get("matched_paper_ids") or []),
                 "matched_paper_titles": " | ".join(candidate.get("matched_paper_titles") or []),
                 "matched_affiliations": " | ".join(candidate.get("matched_affiliations") or []),
                 "homonym_risk": "yes" if candidate.get("homonym_risk") else "no",
                 "risk_flags": " | ".join(candidate.get("risk_flags") or []),
+                "auto_match_status": candidate.get("auto_match_status") or "",
+                "auto_match_score": candidate.get("auto_match_score") or 0,
+                "auto_match_confidence": candidate.get("auto_match_confidence") or "",
+                "auto_match_reasons": " | ".join(candidate.get("auto_match_reasons") or []),
                 "source_links": " | ".join(candidate.get("source_links") or []),
                 "review_note": candidate.get("review_note") or "",
                 "reviewed_at": candidate.get("reviewed_at") or "",

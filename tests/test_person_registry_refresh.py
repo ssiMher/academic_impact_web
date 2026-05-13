@@ -54,6 +54,8 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
                                 'name': 'Grace Hopper',
                                 'tag_type': 'ieee_fellow',
                                 'source_links': ['https://example.com/old'],
+                                'openalex_author_ids': ['https://openalex.org/A-old'],
+                                'known_institutions': ['Old Institution'],
                             }
                         ]
                     },
@@ -101,6 +103,8 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
             self.assertIn('https://example.com/old', items[('ieee_fellow', 'Grace Hopper')]['source_links'])
             self.assertIn('https://example.com/new', items[('ieee_fellow', 'Grace Hopper')]['source_links'])
             self.assertIn('G. Hopper', items[('ieee_fellow', 'Grace Hopper')]['aliases'])
+            self.assertIn('https://openalex.org/A-old', items[('ieee_fellow', 'Grace Hopper')]['openalex_author_ids'])
+            self.assertIn('Old Institution', items[('ieee_fellow', 'Grace Hopper')]['known_institutions'])
 
     def test_refresh_preserves_tags_array_seed_entries(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -402,6 +406,89 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
             self.assertEqual(by_name['Dean, Jeffrey A']['evidence'][0]['match_type'], 'name_variant')
             self.assertEqual(by_name['Ghemawat, Sanjay']['evidence'][0]['matched_author'], 'Sanjay Ghemawat')
             self.assertEqual(by_name['Katz, Randy H.']['evidence'][0]['matched_author'], 'Randy H. Katz')
+
+    def test_build_candidates_suppresses_ambiguous_academician_name_only_matches(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            registry_path = tmp / 'registry.json'
+            registry_path.write_text(
+                json.dumps(
+                    {
+                        'items': [
+                            {'name': 'Wei Wang', 'tag_type': 'cae_academician'},
+                            {'name': 'Wei Wang', 'tag_type': 'cas_academician', 'aliases': ['Wang Wei']},
+                        ]
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding='utf-8',
+            )
+            papers = [
+                {
+                    'id': 'P001',
+                    'title': 'Citing Paper',
+                    'authors': ['Wei Wang'],
+                    'author_details': [
+                        {
+                            'name': 'Wei Wang',
+                            'source_url': 'https://openalex.org/A-wei-wang',
+                            'institutions': ['Example University'],
+                        }
+                    ],
+                }
+            ]
+
+            candidates = person_candidates.build_candidates(papers, registry_path=str(registry_path))
+
+            self.assertEqual(len(candidates), 2)
+            self.assertTrue(all(candidate['auto_match_status'] == 'not_matched' for candidate in candidates))
+            self.assertTrue(all(candidate['resolved_matched_authors'] == [] for candidate in candidates))
+            self.assertTrue(all('ambiguous_name_collision' in (candidate.get('auto_match_reasons') or []) for candidate in candidates))
+
+    def test_build_candidates_accepts_identity_backed_match(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            registry_path = tmp / 'registry.json'
+            registry_path.write_text(
+                json.dumps(
+                    {
+                        'items': [
+                            {
+                                'name': 'Grace Hopper',
+                                'tag_type': 'acm_fellow',
+                                'openalex_author_ids': ['https://openalex.org/A123'],
+                                'known_institutions': ['Yale University'],
+                            }
+                        ]
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding='utf-8',
+            )
+            papers = [
+                {
+                    'id': 'P001',
+                    'title': 'Compiler Paper',
+                    'authors': ['Grace Hopper'],
+                    'author_details': [
+                        {
+                            'name': 'Grace Hopper',
+                            'author_id': 'https://openalex.org/A123',
+                            'source_url': 'https://openalex.org/A123',
+                            'institutions': ['Yale University'],
+                        }
+                    ],
+                }
+            ]
+
+            candidates = person_candidates.build_candidates(papers, registry_path=str(registry_path))
+
+            self.assertEqual(len(candidates), 1)
+            candidate = candidates[0]
+            self.assertEqual(candidate['auto_match_status'], 'matched')
+            self.assertEqual(candidate['resolved_matched_authors'], ['Grace Hopper'])
+            self.assertGreaterEqual(candidate['auto_match_score'], 10)
+            self.assertEqual(candidate['auto_match_confidence'], 'high')
 
 
 if __name__ == '__main__':

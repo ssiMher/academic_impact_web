@@ -237,9 +237,13 @@ def person_tag_by_author(person_candidates: list[dict[str, Any]]) -> dict[str, s
     for candidate in person_candidates:
         if candidate.get("status") == "rejected":
             continue
-        result[normalized_name(candidate.get("name") or "")] = (
-            candidate.get("tag_label") or candidate.get("tag_type") or ""
-        )
+        matched_authors = PERSON_CANDIDATES.candidate_matched_authors(candidate)
+        if not matched_authors:
+            continue
+        for author_name in matched_authors:
+            result[normalized_name(author_name)] = (
+                candidate.get("tag_label") or candidate.get("tag_type") or ""
+            )
     return result
 
 
@@ -250,10 +254,17 @@ def person_tag_info_by_author(
     for candidate in person_candidates:
         if candidate.get("status") == "rejected":
             continue
-        result[normalized_name(candidate.get("name") or "")] = {
-            "label": candidate.get("tag_label") or candidate.get("tag_type") or "",
-            "status": candidate.get("status") or "pending",
-        }
+        matched_authors = PERSON_CANDIDATES.candidate_matched_authors(candidate)
+        if not matched_authors:
+            continue
+        candidate_status = candidate.get("status") or "pending"
+        if candidate.get("auto_match_status") == "matched":
+            candidate_status = "confirmed"
+        for author_name in matched_authors:
+            result[normalized_name(author_name)] = {
+                "label": candidate.get("tag_label") or candidate.get("tag_type") or "",
+                "status": candidate_status,
+            }
     return result
 
 

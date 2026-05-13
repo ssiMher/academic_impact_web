@@ -1670,6 +1670,11 @@ class ScholarWebTestCase(unittest.TestCase):
                             "source_links": ["https://example.test/alice"],
                             "homonym_risk": True,
                             "risk_flags": ["name_only_match"],
+                            "resolved_matched_authors": [],
+                            "auto_match_status": "not_matched",
+                            "auto_match_score": 1,
+                            "auto_match_confidence": "low",
+                            "auto_match_reasons": ["ambiguous_name_collision"],
                             "note": "registry seed",
                             "evidence": [
                                 {
@@ -1690,6 +1695,11 @@ class ScholarWebTestCase(unittest.TestCase):
                             "matched_paper_titles": ["Paper Two"],
                             "matched_affiliations": [],
                             "source_links": [],
+                            "resolved_matched_authors": ["Shared Author"],
+                            "auto_match_status": "matched",
+                            "auto_match_score": 9,
+                            "auto_match_confidence": "medium",
+                            "auto_match_reasons": ["unique_exact_name"],
                             "evidence": [
                                 {
                                     "paper_id": "C002",
@@ -1739,6 +1749,10 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("Bob Fellow", response.text)
         self.assertIn("Shared Author", response.text)
         self.assertIn("ambiguous_author_count", response.text)
+        self.assertIn("auto_match_status", response.text)
+        self.assertIn("resolved_matched_authors", response.text)
+        self.assertIn("not_matched", response.text)
+        self.assertIn("matched", response.text)
 
     def test_scholar_raw_citing_authors_csv_export_route(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

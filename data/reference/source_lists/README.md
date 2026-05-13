@@ -9,16 +9,18 @@ make person-registry-refresh
 Supported CSV columns:
 
 ```text
-name,tag_type,aliases,source_links,matched_affiliations,note
+name,tag_type,aliases,source_links,matched_affiliations,openalex_author_ids,orcid_ids,dblp_author_ids,known_institutions,note
 ```
 
 List-valued columns use `;` as the separator:
 
 ```csv
-name,tag_type,aliases,source_links,matched_affiliations,note
-Grace Hopper,ieee_fellow,G. Hopper,https://example.com/grace,,"IEEE Fellow source"
-Alan Turing,acm_fellow,A. Turing,https://example.com/turing,Princeton University,"ACM Fellow source"
+name,tag_type,aliases,source_links,matched_affiliations,openalex_author_ids,orcid_ids,dblp_author_ids,known_institutions,note
+Grace Hopper,ieee_fellow,G. Hopper,https://example.com/grace,,https://openalex.org/A123;https://openalex.org/A456,orcid:0000-0001-2345-6789,,Yale University;Harvard University,"IEEE Fellow source"
+Alan Turing,acm_fellow,A. Turing,https://example.com/turing,Princeton University,,,turing/T/Alan,Princeton University,"ACM Fellow source"
 ```
+
+`openalex_author_ids`, `orcid_ids`, `dblp_author_ids`, and `known_institutions` are optional enrichment fields used by the automatic person-match resolver. They are merged and preserved by `make person-registry-refresh`.
 
 You can also paste the copied ACM Fellows award table into a `.txt` or `.tsv` file. The importer recognizes rows shaped like:
 
@@ -125,6 +127,10 @@ Supported JSON formats:
       "aliases": ["G. Hopper"],
       "source_links": ["https://example.com/grace"],
       "matched_affiliations": [],
+      "openalex_author_ids": ["https://openalex.org/A123"],
+      "orcid_ids": ["orcid:0000-0001-2345-6789"],
+      "dblp_author_ids": [],
+      "known_institutions": ["Yale University"],
       "note": "IEEE Fellow source"
     }
   ]
@@ -142,3 +148,14 @@ Supported `tag_type` values:
 - `top_school`
 
 The refresh script only creates registry entries. Candidates remain pending until reviewed in the session page.
+
+For conservative OpenAlex identity enrichment against a known comparison pack or shortlist, use:
+
+```bash
+python3 scripts/enrich_person_tag_registry_openalex.py \
+  --registry-path data/reference/person_tag_registry.json \
+  --review-zip /path/to/author_level_analysis_outputs.zip \
+  --dry-run
+```
+
+Drop `--dry-run` to persist only the high-confidence matches. The enrichment gate is intentionally strict: common-name collisions are skipped rather than guessed.

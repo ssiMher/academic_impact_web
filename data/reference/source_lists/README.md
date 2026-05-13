@@ -159,3 +159,16 @@ python3 scripts/enrich_person_tag_registry_openalex.py \
 ```
 
 Drop `--dry-run` to persist only the high-confidence matches. The enrichment gate is intentionally strict: common-name collisions are skipped rather than guessed.
+
+For batch enrichment directly from the registry, use:
+
+```bash
+python3 scripts/enrich_person_tag_registry_openalex.py \
+  --registry-path data/reference/person_tag_registry.json \
+  --all-missing-external-ids \
+  --tag-type ieee_fellow \
+  --limit 20 \
+  --dry-run
+```
+
+This mode walks registry names directly, queries OpenAlex by name, and only writes back high-confidence matches. It is meant for throughput, but it still prefers false negatives over bad IDs.

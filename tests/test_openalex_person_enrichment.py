@@ -145,6 +145,153 @@ class OpenAlexPersonEnrichmentTestCase(unittest.TestCase):
 
             self.assertEqual(names, ["Grace Hopper", "Wei Wang", "Alex X. Liu"])
 
+    def test_find_registry_targets_can_select_items_missing_external_ids_without_name_input(self):
+        items = [
+            {
+                "name": "Grace Hopper",
+                "tag_type": "acm_fellow",
+                "aliases": [],
+                "openalex_author_ids": [],
+                "orcid_ids": [],
+            },
+            {
+                "name": "Alan Turing",
+                "tag_type": "acm_fellow",
+                "aliases": [],
+                "openalex_author_ids": ["https://openalex.org/A1"],
+                "orcid_ids": [],
+            },
+            {
+                "name": "Wei Wang",
+                "tag_type": "cae_academician",
+                "aliases": [],
+                "openalex_author_ids": [],
+                "orcid_ids": [],
+            },
+            {
+                "name": "Top School Person",
+                "tag_type": "top_school",
+                "aliases": [],
+                "openalex_author_ids": [],
+                "orcid_ids": [],
+            },
+        ]
+
+        targets = self.module.find_registry_targets(
+            items,
+            target_names=[],
+            tag_types={"acm_fellow", "ieee_fellow"},
+            missing_external_ids_only=True,
+        )
+
+        self.assertEqual([item["name"] for item in targets], ["Grace Hopper"])
+
+    def test_enrich_registry_can_batch_select_missing_external_ids(self):
+        registry = {
+            "items": [
+                {
+                    "name": "Grace Hopper",
+                    "tag_type": "acm_fellow",
+                    "aliases": ["Hopper, Grace"],
+                    "source_links": ["https://example.test/grace"],
+                    "matched_affiliations": [],
+                    "openalex_author_ids": [],
+                    "orcid_ids": [],
+                    "note": "seed",
+                },
+                {
+                    "name": "Alan Turing",
+                    "tag_type": "acm_fellow",
+                    "aliases": [],
+                    "source_links": ["https://example.test/turing"],
+                    "matched_affiliations": [],
+                    "openalex_author_ids": ["https://openalex.org/a999"],
+                    "orcid_ids": [],
+                    "note": "existing id",
+                },
+            ]
+        }
+
+        author_results = {
+            "Grace Hopper": [
+                {
+                    "id": "https://openalex.org/A123",
+                    "display_name": "Grace Hopper",
+                    "display_name_alternatives": ["Hopper, Grace"],
+                    "ids": {"orcid": "https://orcid.org/0000-0001-2345-6789"},
+                    "last_known_institutions": [{"display_name": "Yale University"}],
+                    "affiliations": [],
+                }
+            ]
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            registry_path = tmp / "registry.json"
+            registry_path.write_text(json.dumps(registry, ensure_ascii=False), encoding="utf-8")
+
+            def fake_fetch(name, **kwargs):
+                return author_results.get(name, [])
+
+            with mock.patch.object(self.module, "fetch_openalex_authors", side_effect=fake_fetch) as fetch_mock:
+                report = self.module.enrich_registry(
+                    registry_path=registry_path,
+                    target_names=[],
+                    tag_types={"acm_fellow"},
+                    missing_external_ids_only=True,
+                )
+
+            payload = json.loads(registry_path.read_text(encoding="utf-8"))
+            grace, alan = payload["items"]
+            self.assertEqual(grace["openalex_author_ids"], ["https://openalex.org/a123"])
+            self.assertEqual(alan["openalex_author_ids"], ["https://openalex.org/a999"])
+            self.assertEqual(fetch_mock.call_count, 1)
+            self.assertEqual(report["target_count"], 1)
+            self.assertEqual(report["updated"], 1)
+
+    def test_enrich_registry_respects_max_targets_for_batch_runs(self):
+        registry = {
+            "items": [
+                {
+                    "name": "Grace Hopper",
+                    "tag_type": "acm_fellow",
+                    "aliases": [],
+                    "source_links": [],
+                    "matched_affiliations": [],
+                    "openalex_author_ids": [],
+                    "orcid_ids": [],
+                    "note": "",
+                },
+                {
+                    "name": "Barbara Liskov",
+                    "tag_type": "acm_fellow",
+                    "aliases": [],
+                    "source_links": [],
+                    "matched_affiliations": [],
+                    "openalex_author_ids": [],
+                    "orcid_ids": [],
+                    "note": "",
+                },
+            ]
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            registry_path = tmp / "registry.json"
+            registry_path.write_text(json.dumps(registry, ensure_ascii=False), encoding="utf-8")
+
+            with mock.patch.object(self.module, "fetch_openalex_authors", return_value=[] ) as fetch_mock:
+                report = self.module.enrich_registry(
+                    registry_path=registry_path,
+                    target_names=[],
+                    tag_types={"acm_fellow"},
+                    missing_external_ids_only=True,
+                    max_targets=1,
+                )
+
+            self.assertEqual(fetch_mock.call_count, 1)
+            self.assertEqual(report["target_count"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

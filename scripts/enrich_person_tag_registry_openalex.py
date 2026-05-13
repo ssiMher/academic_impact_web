@@ -72,6 +72,10 @@ def normalize_institution(text: str) -> str:
     return re.sub(r"\s+", " ", str(text or "").strip())
 
 
+def has_external_identity(item: dict[str, Any]) -> bool:
+    return bool(split_list(item.get("openalex_author_ids")) or split_list(item.get("orcid_ids")))
+
+
 def load_registry(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if isinstance(payload, list):
@@ -280,9 +284,8 @@ def find_registry_targets(
     *,
     target_names: list[str],
     tag_types: set[str] | None = None,
+    missing_external_ids_only: bool = False,
 ) -> list[dict[str, Any]]:
-    if not target_names:
-        return []
     wanted = {normalize_name(name) for name in target_names if name}
     targets: list[dict[str, Any]] = []
     for item in items:
@@ -290,6 +293,12 @@ def find_registry_targets(
         if tag_types and tag_type not in tag_types:
             continue
         if tag_type not in SUPPORTED_TAG_TYPES:
+            continue
+        if missing_external_ids_only and has_external_identity(item):
+            continue
+        if not wanted:
+            if missing_external_ids_only:
+                targets.append(item)
             continue
         names = {normalize_name(value) for value in registry_names(item) if value}
         if names & wanted:
@@ -302,13 +311,22 @@ def enrich_registry(
     registry_path: Path,
     target_names: list[str],
     tag_types: set[str] | None = None,
+    missing_external_ids_only: bool = False,
+    max_targets: int | None = None,
     per_page: int = 10,
     mailto: str = "",
     dry_run: bool = False,
 ) -> dict[str, Any]:
     payload = load_registry(registry_path)
     items = payload.get("items") or []
-    targets = find_registry_targets(items, target_names=target_names, tag_types=tag_types)
+    targets = find_registry_targets(
+        items,
+        target_names=target_names,
+        tag_types=tag_types,
+        missing_external_ids_only=missing_external_ids_only,
+    )
+    if max_targets is not None:
+        targets = targets[: max(0, int(max_targets))]
     updated = 0
     skipped = 0
     decisions: list[dict[str, Any]] = []
@@ -349,7 +367,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--registry-path", default=str(DEFAULT_REGISTRY_PATH))
     parser.add_argument("--review-zip", default="", help="包含 manual_review_top50.csv / missing_from_candidate_matching.csv 的 zip 包。")
     parser.add_argument("--name", action="append", default=[], help="直接指定要 enrichment 的作者名，可重复。")
+    parser.add_argument(
+        "--all-missing-external-ids",
+        action="store_true",
+        help="从 registry 中批量处理缺少 OpenAlex/ORCID 的条目，可配合 --tag-type 缩小范围。",
+    )
     parser.add_argument("--tag-type", action="append", default=[], help="限制处理的 tag_type，可重复。")
+    parser.add_argument("--limit", type=int, default=0, help="可选，只处理前 N 个目标，适合分批跑。")
     parser.add_argument("--per-page", type=int, default=10)
     parser.add_argument("--mailto", default="")
     parser.add_argument("--dry-run", action="store_true")
@@ -365,13 +389,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.review_zip:
         target_names.extend(load_target_names_from_review_zip(Path(args.review_zip)))
     target_names = unique(target_names)
-    if not target_names:
-        parser.error("请至少通过 --name 或 --review-zip 提供一个目标作者名。")
+    if not target_names and not args.all_missing_external_ids:
+        parser.error("请至少通过 --name、--review-zip，或 --all-missing-external-ids 提供目标范围。")
 
     report = enrich_registry(
         registry_path=Path(args.registry_path),
         target_names=target_names,
         tag_types=set(args.tag_type or []) or None,
+        missing_external_ids_only=bool(args.all_missing_external_ids),
+        max_targets=(max(0, int(args.limit or 0)) or None),
         per_page=max(1, int(args.per_page or 10)),
         mailto=str(args.mailto or "").strip(),
         dry_run=bool(args.dry_run),

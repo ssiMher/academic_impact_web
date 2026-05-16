@@ -11,6 +11,7 @@ import zipfile
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
+import xml.etree.ElementTree as ET
 
 import requests
 
@@ -19,6 +20,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_CSV = ROOT / "data" / "reference" / "openalex_candidate_cross_validation.csv"
 DEFAULT_SUMMARY_CSV = ROOT / "data" / "reference" / "openalex_candidate_cross_validation_summary.csv"
 DBLP_AUTHOR_SEARCH_URL = "https://dblp.org/search/author/api"
+DBLP_AUTHOR_PUBS_URL = "https://dblp.org/pid/{dblp_id}.xml"
+DBLP_AUTHOR_PID_PATTERN = re.compile(r"/pid/([^?#]+?)(?:\.html)?/?$")
 SCOPUS_AUTHOR_SEARCH_URL = "https://api.elsevier.com/content/search/author"
 
 
@@ -102,14 +105,43 @@ def unique(values: list[str]) -> list[str]:
     return result
 
 
+def extract_dblp_pid(url: str) -> str:
+    match = DBLP_AUTHOR_PID_PATTERN.search(str(url or "").strip())
+    return match.group(1) if match else ""
+
+
+def request_dblp(
+    url: str,
+    *,
+    params: dict[str, Any] | None = None,
+    timeout: int = 20,
+    max_retries: int = 2,
+) -> requests.Response:
+    for attempt in range(max_retries + 1):
+        response = requests.get(
+            url,
+            params=params,
+            timeout=timeout,
+            headers={"User-Agent": "academic-impact-web/1.0 (+openalex-cross-validation)"},
+        )
+        if response.status_code == 429 and attempt < max_retries:
+            try:
+                retry_after = float(response.headers.get("Retry-After") or 5)
+            except ValueError:
+                retry_after = 5
+            time.sleep(max(1.0, retry_after))
+            continue
+        response.raise_for_status()
+        return response
+    raise RuntimeError("unreachable DBLP retry state")
+
+
 def fetch_dblp_authors(name: str, *, timeout: int = 20) -> list[dict[str, str]]:
-    response = requests.get(
+    response = request_dblp(
         DBLP_AUTHOR_SEARCH_URL,
         params={"q": name, "format": "json", "h": "5"},
         timeout=timeout,
-        headers={"User-Agent": "academic-impact-web/1.0 (+openalex-cross-validation)"},
     )
-    response.raise_for_status()
     payload = response.json()
     hits = (((payload.get("result") or {}).get("hits") or {}).get("hit") or [])
     if isinstance(hits, dict):
@@ -117,14 +149,133 @@ def fetch_dblp_authors(name: str, *, timeout: int = 20) -> list[dict[str, str]]:
     authors: list[dict[str, str]] = []
     for hit in hits:
         info = (hit or {}).get("info") or {}
+        url = str(info.get("url") or "").strip()
         authors.append(
             {
-                "pid": str(info.get("url") or "").rstrip("/").rsplit("/", 1)[-1],
+                "pid": extract_dblp_pid(url),
                 "name": str(info.get("author") or "").strip(),
-                "url": str(info.get("url") or "").strip(),
+                "url": url,
             }
         )
     return [author for author in authors if author["name"]]
+
+
+def xml_child_text(element: ET.Element, tag: str) -> str:
+    child = element.find(tag)
+    return "".join(child.itertext()).strip() if child is not None else ""
+
+
+def normalize_dblp_xml_publication(entry: ET.Element) -> dict[str, Any]:
+    authors = [
+        (author.text or "").strip()
+        for author in entry.findall("author")
+        if (author.text or "").strip()
+    ]
+    venue = xml_child_text(entry, "booktitle") or xml_child_text(entry, "journal")
+    return {
+        "title": xml_child_text(entry, "title"),
+        "venue": venue,
+        "year": xml_child_text(entry, "year"),
+        "coauthors": authors,
+        "key": (entry.attrib.get("key") or "").strip(),
+    }
+
+
+def publication_year(publication: dict[str, Any]) -> int:
+    try:
+        return int(str(publication.get("year") or "0"))
+    except ValueError:
+        return 0
+
+
+def fetch_dblp_publications(dblp_id: str, *, limit: int = 20, timeout: int = 20) -> list[dict[str, Any]]:
+    if not dblp_id:
+        return []
+    response = request_dblp(
+        DBLP_AUTHOR_PUBS_URL.format(dblp_id=dblp_id),
+        timeout=timeout,
+    )
+    root = ET.fromstring(response.text)
+    publications: list[dict[str, Any]] = []
+    for record in root.findall("r"):
+        children = list(record)
+        if not children:
+            continue
+        publication = normalize_dblp_xml_publication(children[0])
+        if publication.get("title"):
+            publications.append(publication)
+    publications.sort(key=publication_year, reverse=True)
+    return publications[:limit] if limit > 0 else publications
+
+
+def wait_between_dblp_requests(delay_seconds: float) -> None:
+    if delay_seconds > 0:
+        time.sleep(delay_seconds)
+
+
+def fetch_dblp_publications_for_authors(
+    authors: list[dict[str, Any]],
+    *,
+    limit: int,
+    request_delay_seconds: float,
+) -> list[dict[str, Any]]:
+    enriched: list[dict[str, Any]] = []
+    seen_pids: set[str] = set()
+    for author in authors:
+        item = dict(author)
+        pid = str(item.get("pid") or "").strip()
+        if not pid or pid in seen_pids:
+            item["publications"] = []
+            enriched.append(item)
+            continue
+        seen_pids.add(pid)
+        try:
+            item["publications"] = fetch_dblp_publications(pid, limit=limit)
+        except Exception as exc:
+            item["publications"] = []
+            item["publication_error"] = f"{type(exc).__name__}: {exc}"
+        enriched.append(item)
+        wait_between_dblp_requests(request_delay_seconds)
+    return enriched
+
+
+def dblp_publication_profile_fields(authors: list[dict[str, Any]], target_name: str) -> dict[str, str]:
+    counts: list[str] = []
+    year_ranges: list[str] = []
+    titles: list[str] = []
+    venues: list[str] = []
+    coauthors: list[str] = []
+    target_key = normalize_name(target_name)
+
+    for author in authors:
+        pid = str(author.get("pid") or "").strip()
+        publications = [pub for pub in author.get("publications", []) if isinstance(pub, dict)]
+        if pid and publications:
+            counts.append(f"{pid}={len(publications)}")
+            years = sorted({publication_year(pub) for pub in publications if publication_year(pub)})
+            if years:
+                year_ranges.append(f"{pid}={years[0]}-{years[-1]}")
+        for publication in publications:
+            title = str(publication.get("title") or "").strip()
+            venue = str(publication.get("venue") or "").strip()
+            year = str(publication.get("year") or "").strip()
+            if title:
+                context = " ".join(part for part in [venue, year] if part).strip()
+                titles.append(f"{title} ({context})" if context else title)
+            if venue:
+                venues.append(venue)
+            for coauthor in publication.get("coauthors", []):
+                coauthor = str(coauthor or "").strip()
+                if coauthor and normalize_name(coauthor) != target_key:
+                    coauthors.append(coauthor)
+
+    return {
+        "dblp_publication_counts": ";".join(unique(counts)),
+        "dblp_year_ranges": ";".join(unique(year_ranges)),
+        "dblp_recent_titles": " | ".join(unique(titles)[:12]),
+        "dblp_recent_venues": ";".join(unique(venues)[:12]),
+        "dblp_coauthors": ";".join(unique(coauthors)[:30]),
+    }
 
 
 def scopus_author_query(name: str) -> str:
@@ -200,6 +351,9 @@ def external_evidence_for_name(
     name: str,
     *,
     use_dblp: bool,
+    fetch_dblp_publication_profiles: bool,
+    dblp_publication_limit: int,
+    dblp_request_delay: float,
     use_scopus: bool,
     scopus_api_key: str = "",
     scopus_insttoken: str = "",
@@ -208,6 +362,13 @@ def external_evidence_for_name(
     if use_dblp:
         try:
             evidence["dblp"] = fetch_dblp_authors(name)
+            wait_between_dblp_requests(dblp_request_delay)
+            if fetch_dblp_publication_profiles:
+                evidence["dblp"] = fetch_dblp_publications_for_authors(
+                    evidence["dblp"],
+                    limit=dblp_publication_limit,
+                    request_delay_seconds=dblp_request_delay,
+                )
         except Exception as exc:
             evidence["dblp_error"] = f"{type(exc).__name__}: {exc}"
     if use_scopus:
@@ -292,6 +453,9 @@ def cross_validate(
     output_csv_path: Path,
     summary_csv_path: Path,
     use_dblp: bool = False,
+    fetch_dblp_publications: bool = False,
+    dblp_publication_limit: int = 20,
+    dblp_request_delay: float = 0.0,
     use_scopus: bool = False,
     scopus_api_key: str = "",
     scopus_insttoken: str = "",
@@ -320,12 +484,16 @@ def cross_validate(
             external = external_evidence_for_name(
                 target_name,
                 use_dblp=use_dblp,
+                fetch_dblp_publication_profiles=fetch_dblp_publications,
+                dblp_publication_limit=dblp_publication_limit,
+                dblp_request_delay=dblp_request_delay,
                 use_scopus=use_scopus,
                 scopus_api_key=scopus_api_key,
                 scopus_insttoken=scopus_insttoken,
             )
             external_cache[name_key] = external
         raw_metadata = raw_by_name.get(name_key, {"institutions": [], "source_urls": []})
+        dblp_profile = dblp_publication_profile_fields(external.get("dblp", []), target_name)
         scored_rows: list[dict[str, Any]] = []
         for candidate in candidates:
             evidence_score, evidence_reasons = score_candidate(candidate, resolution_row, raw_metadata, external)
@@ -343,6 +511,8 @@ def cross_validate(
                     "raw_author_source_urls": ";".join(raw_metadata.get("source_urls") or []),
                     "dblp_pids": ";".join(item.get("pid", "") for item in external.get("dblp", []) if item.get("pid")),
                     "dblp_names": ";".join(item.get("name", "") for item in external.get("dblp", []) if item.get("name")),
+                    "dblp_urls": ";".join(item.get("url", "") for item in external.get("dblp", []) if item.get("url")),
+                    **dblp_profile,
                     "scopus_author_ids": ";".join(item.get("scopus_author_id", "") for item in external.get("scopus", []) if item.get("scopus_author_id")),
                     "scopus_names": ";".join(item.get("name", "") for item in external.get("scopus", []) if item.get("name")),
                     "scopus_affiliations": ";".join(item.get("affiliation", "") for item in external.get("scopus", []) if item.get("affiliation")),
@@ -388,6 +558,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-csv", default=str(DEFAULT_OUTPUT_CSV))
     parser.add_argument("--summary-csv", default=str(DEFAULT_SUMMARY_CSV))
     parser.add_argument("--use-dblp", action="store_true")
+    parser.add_argument("--fetch-dblp-publications", action="store_true", help="Fetch DBLP author PID XML pages and add publication titles, venues, years, and coauthors to the output.")
+    parser.add_argument("--dblp-publication-limit", type=int, default=20, help="Maximum DBLP publications to summarize per DBLP author PID.")
+    parser.add_argument("--dblp-request-delay", type=float, default=1.0, help="Seconds to wait between DBLP requests. DBLP recommends at least 1-2 seconds for crawlers.")
     parser.add_argument("--use-scopus", action="store_true")
     parser.add_argument("--scopus-api-key", default=os.environ.get("ELSEVIER_API_KEY", ""))
     parser.add_argument("--scopus-insttoken", default=os.environ.get("ELSEVIER_INSTTOKEN", ""))
@@ -404,6 +577,9 @@ def main(argv: list[str] | None = None) -> int:
         output_csv_path=Path(args.output_csv),
         summary_csv_path=Path(args.summary_csv),
         use_dblp=bool(args.use_dblp),
+        fetch_dblp_publications=bool(args.fetch_dblp_publications),
+        dblp_publication_limit=int(args.dblp_publication_limit),
+        dblp_request_delay=float(args.dblp_request_delay),
         use_scopus=bool(args.use_scopus),
         scopus_api_key=str(args.scopus_api_key or "").strip(),
         scopus_insttoken=str(args.scopus_insttoken or "").strip(),

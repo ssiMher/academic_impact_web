@@ -208,6 +208,103 @@ class OpenAlexCandidateCrossValidationTestCase(unittest.TestCase):
             self.assertIn("dblp_exact_name", rows[0]["evidence_reasons"])
             self.assertIn("scopus_exact_name", rows[0]["evidence_reasons"])
 
+    def test_cross_validate_records_dblp_publication_profile_when_requested(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            zip_path = tmp / "resolution.zip"
+            candidates_path = tmp / "candidates.csv"
+            out_path = tmp / "cross.csv"
+            summary_path = tmp / "summary.csv"
+
+            with zipfile.ZipFile(zip_path, "w") as archive:
+                archive.writestr(
+                    "openalex_ai_resolved_ids.csv",
+                    "name,tag_type,resolution_status,selected_openalex_id,selected_orcid,selected_display_name,selected_institutions,confidence_label,evidence_summary,source_decision,candidate_count\n"
+                    "Grace Hopper,acm_fellow,unresolved,,,,,,skipped,1\n",
+                )
+
+            with candidates_path.open("w", encoding="utf-8-sig", newline="") as handle:
+                writer = csv.DictWriter(
+                    handle,
+                    fieldnames=[
+                        "name",
+                        "tag_type",
+                        "decision",
+                        "reason",
+                        "candidate_count",
+                        "rank",
+                        "score",
+                        "score_percent",
+                        "openalex_id",
+                        "display_name",
+                        "orcid",
+                        "institutions",
+                        "reasons",
+                    ],
+                )
+                writer.writeheader()
+                writer.writerow(
+                    {
+                        "name": "Grace Hopper",
+                        "tag_type": "acm_fellow",
+                        "decision": "skipped",
+                        "reason": "ambiguous",
+                        "candidate_count": "1",
+                        "rank": "1",
+                        "score": "12",
+                        "score_percent": "100",
+                        "openalex_id": "https://openalex.org/a3",
+                        "display_name": "Grace Hopper",
+                        "orcid": "",
+                        "institutions": "Yale University",
+                        "reasons": "display_name_exact",
+                    }
+                )
+
+            with mock.patch.object(
+                self.module,
+                "fetch_dblp_authors",
+                return_value=[{"pid": "h/GraceHopper", "name": "Grace Hopper", "url": "https://dblp.org/pid/h/GraceHopper"}],
+            ), mock.patch.object(
+                self.module,
+                "fetch_dblp_publications",
+                return_value=[
+                    {
+                        "title": "The Education of a Computer.",
+                        "venue": "CACM",
+                        "year": "1952",
+                        "coauthors": ["Grace Hopper", "Howard Aiken"],
+                    },
+                    {
+                        "title": "Automatic Programming.",
+                        "venue": "AIEE",
+                        "year": "1954",
+                        "coauthors": ["Grace Hopper"],
+                    },
+                ],
+            ):
+                self.module.cross_validate(
+                    resolution_zip_path=zip_path,
+                    candidates_csv_path=candidates_path,
+                    raw_citing_authors_csv_path=None,
+                    output_csv_path=out_path,
+                    summary_csv_path=summary_path,
+                    use_dblp=True,
+                    fetch_dblp_publications=True,
+                    dblp_publication_limit=20,
+                    use_scopus=False,
+                )
+
+            with out_path.open("r", encoding="utf-8-sig", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+
+            self.assertEqual(rows[0]["dblp_urls"], "https://dblp.org/pid/h/GraceHopper")
+            self.assertEqual(rows[0]["dblp_publication_counts"], "h/GraceHopper=2")
+            self.assertEqual(rows[0]["dblp_year_ranges"], "h/GraceHopper=1952-1954")
+            self.assertIn("The Education of a Computer.", rows[0]["dblp_recent_titles"])
+            self.assertIn("CACM", rows[0]["dblp_recent_venues"])
+            self.assertIn("Howard Aiken", rows[0]["dblp_coauthors"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -219,8 +219,27 @@ python3 scripts/cross_validate_openalex_candidates.py \
 
 - `--raw-citing-authors-csv` 可选，来自学者页的 `Export Raw Citing Authors CSV`
 - `--use-dblp` 会查询 DBLP 作者搜索接口，适合 CS/IEEE 名字辅助判断
+- `--fetch-dblp-publications` 会继续按 DBLP PID 拉取作者论文 XML，并在输出里补充 `dblp_urls`、`dblp_publication_counts`、`dblp_year_ranges`、`dblp_recent_titles`、`dblp_recent_venues`、`dblp_coauthors`
+- `--dblp-publication-limit` 控制每个 DBLP 作者 PID 汇总多少篇论文，默认 20
+- `--dblp-request-delay` 控制 DBLP 请求间隔，CLI 默认 1 秒；DBLP 官方建议爬虫至少间隔 1-2 秒
 - `--use-scopus` 会查询 Elsevier Scopus Author Search，需要配置 `ELSEVIER_API_KEY`
 - 输出文件仍然不会写回 registry，只是生成候选级证据表，便于后续 AI 或规则继续筛选
+
+如果要生成给 AI 继续判别的 DBLP 论文画像，可以这样跑：
+
+```bash
+python3 scripts/cross_validate_openalex_candidates.py \
+  --resolution-zip /mnt/d/Desktop/openalex_ai_resolution_2600.zip \
+  --candidates-csv /mnt/c/Users/withe/Desktop/openalex_candidates_ieee_merged_2600.csv \
+  --use-dblp \
+  --fetch-dblp-publications \
+  --dblp-publication-limit 20 \
+  --dblp-request-delay 1.5 \
+  --output-csv /mnt/c/Users/withe/Desktop/openalex_cross_validation_ieee_2600_dblp_publications.csv \
+  --summary-csv /mnt/c/Users/withe/Desktop/openalex_cross_validation_summary_ieee_2600_dblp_publications.csv
+```
+
+这个模式会比普通 `--use-dblp` 慢很多，因为它不仅查姓名，还会继续访问每个 DBLP 作者主页的 XML。适合分批跑，或者只对高优先级 unresolved 名单跑。
 
 如果想直接从 registry 里批量补外部 ID，可以这样跑：
 

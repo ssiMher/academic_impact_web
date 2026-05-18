@@ -45,6 +45,7 @@ ACADEMIC_IMPACT_LLM_URL=http://127.0.0.1:18002/v1/chat/completions
 ACADEMIC_IMPACT_LLM_MODEL=Qwen3.5-27B-Q4_K_M.gguf
 ACADEMIC_IMPACT_LLM_API_KEY=
 ACADEMIC_IMPACT_DOWNLOAD_DIR=/home/YOUR_USER/data/academic_impact_web/downloads
+ACADEMIC_IMPACT_PDF_LIBRARY_DIRS=/home/YOUR_USER/papers:/home/YOUR_USER/pdf_archive
 ```
 
 你需要手工改：
@@ -53,6 +54,7 @@ ACADEMIC_IMPACT_DOWNLOAD_DIR=/home/YOUR_USER/data/academic_impact_web/downloads
 - `ACADEMIC_IMPACT_LLM_MODEL`
 - `ACADEMIC_IMPACT_LLM_API_KEY`（本地无鉴权模型可留空；API 模型需填写）
 - `ACADEMIC_IMPACT_DOWNLOAD_DIR`
+- `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS`（可选；让学者影响力分析先扫本地论文库，不用逐篇上传）
 
 ### 必改 2：端口
 

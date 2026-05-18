@@ -112,6 +112,7 @@ ELSEVIER_INSTTOKEN=
 - `ACADEMIC_IMPACT_CONTEXTS_ENABLED`：可选，是否拉取 Semantic Scholar citation contexts；默认 `false`，因为 contexts 只是排序/快速置信度辅助，全文分析不依赖它
 - `ELSEVIER_API_KEY`：可选，仅 `ACADEMIC_IMPACT_CITATION_SOURCE=scopus` 时需要；只放在服务端 `.env`，不要提交到 git 或写进前端
 - `ELSEVIER_INSTTOKEN`：可选；如果学校订阅权限无法通过机构 IP 自动识别，Elsevier/学校可能会提供 Institutional Token
+- `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS`：可选，本地论文库目录列表；使用系统路径分隔符连接多个目录（Linux/macOS 用 `:`，Windows 用 `;`）。学者影响力分析会在这些目录和 `ACADEMIC_IMPACT_DOWNLOAD_DIR` 中自动尝试匹配已有 PDF
 
 说明：
 
@@ -124,6 +125,9 @@ ELSEVIER_INSTTOKEN=
 - 如果 URL 是 DeepSeek 且未设置 `ACADEMIC_IMPACT_LLM_API_KEY`，会兼容读取 `DEEPSEEK_API_KEY`
 - 临时回退旧两段链路时，可设置 `ACADEMIC_IMPACT_ANALYSIS_MODE=legacy_two_stage`
 - `ACADEMIC_IMPACT_DOWNLOAD_DIR`：推荐显式配置为你自己有写权限的 PDF 存储目录
+- `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS` 示例：
+  - Linux/macOS：`/data/papers:/data/archive_pdfs`
+  - Windows：`D:\\papers;E:\\pdf_archive`
 
 ### Scopus 试验来源
 

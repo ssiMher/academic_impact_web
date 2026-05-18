@@ -629,6 +629,8 @@
                   <span class="chip">{{ edge.analysis_status or 'not_analyzed' }}</span>
                   {% if edge.readiness_label %}<br /><span class="chip">{{ edge.readiness_label }}</span>{% endif %}
                   {% if edge.download_source %}<br /><span class="muted">{{ edge.download_source }}</span>{% endif %}
+                  {% if edge.library_pdf_path %}<br /><span class="muted">本地库 PDF：{{ edge.library_pdf_path }}</span>{% endif %}
+                  {% if edge.manual_pdf_path %}<br /><span class="muted">已绑定 PDF：{{ edge.manual_pdf_path }}</span>{% endif %}
                   {% if edge.analysis_failure_message %}<br /><span class="muted">{{ edge.analysis_failure_message }}</span>{% endif %}
                   {% if edge.queue_id %}
                   <form action="/scholars/{{ session_id }}/attach-queue-pdf" method="post" enctype="multipart/form-data" class="inline-actions compact-form">

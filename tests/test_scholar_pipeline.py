@@ -398,6 +398,48 @@ class ScholarPipelineTestCase(unittest.TestCase):
             "/tmp/top-venue.pdf",
         )
 
+    def test_rebuild_scholar_derived_outputs_attaches_local_library_pdf(self):
+        session = {
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "citation_count": 12,
+                }
+            ],
+            "citation_edges": [
+                {
+                    "source_publication_id": "S001",
+                    "cited_publication_title": "Target Paper",
+                    "citing_paper_id": "C001",
+                    "citing_title": "Top Venue Citation",
+                    "citing_doi": "10.1000/citing",
+                    "citing_year": 2025,
+                    "citing_venue": "ACM MobiCom",
+                    "citing_authors": ["Regular Author"],
+                }
+            ],
+            "person_candidates": [],
+            "deep_analysis_queue": [],
+            "statistics": {},
+        }
+
+        with mock.patch.object(
+            self.pipeline.RUN_PIPELINE.DOWNLOAD_PDF,
+            "find_local_pdf",
+            return_value="/tmp/library/top-venue.pdf",
+        ) as find_local_pdf:
+            rebuilt = self.pipeline.rebuild_scholar_derived_outputs(
+                session,
+                queue_limit=10,
+            )
+
+        find_local_pdf.assert_called_once()
+        library_pdf = rebuilt["deep_analysis_queue"][0]["library_pdf"]
+        self.assertEqual(library_pdf["status"], "local_library_matched")
+        self.assertEqual(library_pdf["source"], "local_pdf_library")
+        self.assertEqual(library_pdf["local_file_path"], "/tmp/library/top-venue.pdf")
+
     def test_analyze_scholar_queue_records_strong_evidence_for_selected_items(self):
         session = {
             "publications": [
@@ -552,6 +594,68 @@ class ScholarPipelineTestCase(unittest.TestCase):
                 )
 
         self.assertEqual(observed_paths, ["/tmp/manual-citing.pdf"])
+
+    def test_analyze_scholar_queue_uses_library_pdf_when_manual_missing(self):
+        observed_paths = []
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            session_dir = Path(tmpdir)
+            library_pdf_path = session_dir / "library-citing.pdf"
+            library_pdf_path.write_bytes(b"%PDF-1.4\n% local library pdf\n")
+            session = {
+                "publications": [
+                    {
+                        "id": "S001",
+                        "title": "Target Paper",
+                        "year": 2024,
+                        "venue": "ACM MobiCom",
+                        "doi": "10.1000/target",
+                    }
+                ],
+                "citation_edges": [],
+                "deep_analysis_queue": [
+                    {
+                        "queue_id": "Q001",
+                        "source_publication_ids": ["S001"],
+                        "citing_paper_id": "C001",
+                        "citing_title": "Library PDF Citing Paper",
+                        "library_pdf": {
+                            "status": "local_library_matched",
+                            "local_file_path": str(library_pdf_path),
+                        },
+                    }
+                ],
+                "statistics": {},
+            }
+
+            def fake_process_citing_paper(**kwargs):
+                observed_paths.append(kwargs.get("local_pdf_path"))
+                item_dir = kwargs["item_dir"]
+                item_dir.mkdir(parents=True, exist_ok=True)
+                analysis_path = item_dir / "fulltext_analysis.json"
+                analysis_path.write_text(
+                    json.dumps({"ok": True, "findings": []}),
+                    encoding="utf-8",
+                )
+                return {
+                    "status": "fulltext_analyzed",
+                    "paths": {"analysis": str(analysis_path)},
+                    "analysis": {"findings_count": 0},
+                }
+
+            with mock.patch.object(
+                self.pipeline.RUN_PIPELINE,
+                "process_citing_paper",
+                side_effect=fake_process_citing_paper,
+            ):
+                self.pipeline.analyze_scholar_queue(
+                    session,
+                    session_dir,
+                    queue_ids=["Q001"],
+                    analysis_scope="fulltext_direct",
+                )
+
+        self.assertEqual(observed_paths, [str(library_pdf_path)])
 
     def test_analyze_scholar_queue_emits_stage_progress(self):
         session = {

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,7 @@ LIST_PAPERS = load_module("scholar_list_papers", LIST_PAPERS_PATH)
 RUN_PIPELINE = load_module("scholar_run_pipeline", RUN_PIPELINE_PATH)
 SCHOLAR_STATS = load_module("scholar_stats", SCHOLAR_STATS_PATH)
 DEFAULT_DEEP_ANALYSIS_QUEUE_LIMIT = 300
+LOCAL_PDF_LIBRARY_DIRS_ENV = "ACADEMIC_IMPACT_PDF_LIBRARY_DIRS"
 
 
 def default_task_state() -> dict[str, Any]:
@@ -305,6 +307,65 @@ def queue_item_to_citing_paper(item: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def configured_local_pdf_library_dirs(download_pdf_module) -> list[str]:
+    configured = os.getenv(LOCAL_PDF_LIBRARY_DIRS_ENV, "")
+    candidates = [
+        entry.strip()
+        for entry in configured.split(os.pathsep)
+        if entry.strip()
+    ]
+    default_dir = getattr(download_pdf_module, "DEFAULT_LOCAL_PDF_DIR", "")
+    if default_dir:
+        candidates.append(default_dir)
+
+    resolved = []
+    seen = set()
+    for entry in candidates:
+        normalized = str(Path(entry).expanduser())
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        resolved.append(normalized)
+    return resolved
+
+
+def existing_library_pdf_entry(queue_item: dict[str, Any]) -> dict[str, Any]:
+    library_pdf = queue_item.get("library_pdf") or {}
+    local_file_path = library_pdf.get("local_file_path") or ""
+    if local_file_path and Path(local_file_path).expanduser().exists():
+        return library_pdf
+    return {}
+
+
+def match_queue_item_local_pdf(queue_item: dict[str, Any], download_pdf_module) -> dict[str, Any]:
+    existing = existing_library_pdf_entry(queue_item)
+    if existing:
+        return existing
+
+    title = queue_item.get("citing_title") or ""
+    doi = queue_item.get("citing_doi") or ""
+    query = doi or title
+    if not query and not title:
+        return {}
+
+    for search_dir in configured_local_pdf_library_dirs(download_pdf_module):
+        local_file_path = download_pdf_module.find_local_pdf(
+            query=query,
+            title=title,
+            doi=doi,
+            search_dir=search_dir,
+        )
+        if local_file_path:
+            return {
+                "status": "local_library_matched",
+                "source": "local_pdf_library",
+                "local_file_path": str(Path(local_file_path).expanduser()),
+                "matched_dir": search_dir,
+                "matched_at": datetime.now().isoformat(timespec="seconds"),
+            }
+    return {}
+
+
 def finding_person_tag_labels(
     citing_authors: list[str],
     person_candidates: list[dict[str, Any]],
@@ -392,10 +453,14 @@ def rebuild_scholar_derived_outputs(
     queue_limit: int = DEFAULT_DEEP_ANALYSIS_QUEUE_LIMIT,
 ) -> dict[str, Any]:
     manual_pdf_by_key = {}
+    library_pdf_by_key = {}
     for item in session.get("deep_analysis_queue", []) or []:
         manual_pdf = item.get("manual_pdf")
         if manual_pdf:
             manual_pdf_by_key[SCHOLAR_STATS.citation_group_key(item)] = manual_pdf
+        library_pdf = existing_library_pdf_entry(item)
+        if library_pdf:
+            library_pdf_by_key[SCHOLAR_STATS.citation_group_key(item)] = library_pdf
     session["person_candidates"] = SCHOLAR_STATS.build_person_candidates_from_citation_edges(
         session.get("citation_edges", []),
         existing=session.get("person_candidates", []),
@@ -412,10 +477,18 @@ def rebuild_scholar_derived_outputs(
         session.get("person_candidates", []),
         limit=queue_limit,
     )
+    download_pdf = RUN_PIPELINE.DOWNLOAD_PDF
     for item in session["deep_analysis_queue"]:
-        manual_pdf = manual_pdf_by_key.get(SCHOLAR_STATS.citation_group_key(item))
+        group_key = SCHOLAR_STATS.citation_group_key(item)
+        manual_pdf = manual_pdf_by_key.get(group_key)
         if manual_pdf:
             item["manual_pdf"] = manual_pdf
+        library_pdf = library_pdf_by_key.get(group_key) or match_queue_item_local_pdf(
+            item,
+            download_pdf,
+        )
+        if library_pdf:
+            item["library_pdf"] = library_pdf
     return session
 
 
@@ -481,7 +554,12 @@ def analyze_scholar_queue(
             source_ids = [queue_item.get("source_publication_id")]
         citing_paper = queue_item_to_citing_paper(queue_item)
         manual_pdf = queue_item.get("manual_pdf") or {}
-        local_pdf_path = manual_pdf.get("local_file_path") or ""
+        library_pdf = existing_library_pdf_entry(queue_item)
+        local_pdf_path = (
+            manual_pdf.get("local_file_path")
+            or library_pdf.get("local_file_path")
+            or ""
+        )
         person_tag_labels = finding_person_tag_labels(
             queue_item.get("citing_authors") or [],
             session.get("person_candidates", []) or [],

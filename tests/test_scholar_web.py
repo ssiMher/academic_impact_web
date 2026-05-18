@@ -285,6 +285,46 @@ class ScholarWebTestCase(unittest.TestCase):
         )
         self.assertIn('name="pdf_file"', response.text)
 
+    def test_scholar_route_renders_local_library_ready_queue_item(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "Library Paper",
+                            "citing_doi": "10.1000/library",
+                            "priority_score": 25,
+                            "reasons": ["venue:CCF A"],
+                            "library_pdf": {
+                                "status": "local_library_matched",
+                                "source": "local_pdf_library",
+                                "local_file_path": "/tmp/library.pdf",
+                            },
+                        }
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("已命中本地论文库，可直接分析", response.text)
+        self.assertIn("本地库 PDF：/tmp/library.pdf", response.text)
+
     def test_scholar_attach_queue_pdf_route_updates_queue_item(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
         (TEST_SESSION_DIR / "session.json").write_text(
@@ -376,6 +416,11 @@ class ScholarWebTestCase(unittest.TestCase):
                     "citing_title": "Fresh Citing Paper",
                     "citing_openalex_id": "W123",
                     "reasons": ["venue:CCF A"],
+                    "library_pdf": {
+                        "status": "local_library_matched",
+                        "source": "local_pdf_library",
+                        "local_file_path": "/tmp/library.pdf",
+                    },
                 },
                 {
                     "queue_id": "Q003",
@@ -408,11 +453,12 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(failed["citing_identifier"], "DOI: 10.1000/failed")
         self.assertEqual(failed["readiness_label"], "已上传 PDF，可重试")
         self.assertEqual(failed["readiness_status"], "manual_pdf_ready")
-        self.assertEqual(fresh["analysis_status"], "not_analyzed")
-        self.assertEqual(fresh["download_source"], "点击分析时自动尝试下载 PDF")
+        self.assertEqual(fresh["analysis_status"], "local_library_matched")
+        self.assertEqual(fresh["download_source"], "local_library_matched")
         self.assertEqual(fresh["citing_identifier"], "OpenAlex: W123")
-        self.assertEqual(fresh["readiness_label"], "可自动尝试")
-        self.assertEqual(fresh["readiness_status"], "auto_try")
+        self.assertEqual(fresh["library_pdf_path"], "/tmp/library.pdf")
+        self.assertEqual(fresh["readiness_label"], "已命中本地论文库，可直接分析")
+        self.assertEqual(fresh["readiness_status"], "local_library_ready")
         self.assertEqual(missing_id["citing_identifier"], "-")
         self.assertEqual(missing_id["readiness_label"], "缺少 DOI/ID，可能失败")
         self.assertEqual(missing_id["readiness_status"], "missing_identifier")

@@ -251,6 +251,7 @@ def build_deep_analysis_queue_view(
         result = result_by_queue_id.get(item.get("queue_id"))
         decorated = dict(item)
         manual_pdf = item.get("manual_pdf") or {}
+        library_pdf = item.get("library_pdf") or {}
         decorated["citing_identifier"] = citing_identifier(item)
         if result:
             download = result.get("download") or {}
@@ -270,13 +271,22 @@ def build_deep_analysis_queue_view(
             decorated["analysis_error_type"] = ""
         decorated["manual_pdf_status"] = manual_pdf.get("status") or ""
         decorated["manual_pdf_path"] = manual_pdf.get("local_file_path") or ""
+        decorated["library_pdf_status"] = library_pdf.get("status") or ""
+        decorated["library_pdf_path"] = library_pdf.get("local_file_path") or ""
         if decorated["manual_pdf_status"]:
             decorated["download_source"] = decorated["manual_pdf_status"]
             if decorated["analysis_status"] == "not_analyzed":
                 decorated["analysis_status"] = decorated["manual_pdf_status"]
+        elif decorated["library_pdf_status"]:
+            decorated["download_source"] = decorated["library_pdf_status"]
+            if decorated["analysis_status"] == "not_analyzed":
+                decorated["analysis_status"] = decorated["library_pdf_status"]
         if decorated["manual_pdf_status"]:
             decorated["readiness_status"] = "manual_pdf_ready"
             decorated["readiness_label"] = "已上传 PDF，可重试"
+        elif decorated["library_pdf_status"]:
+            decorated["readiness_status"] = "local_library_ready"
+            decorated["readiness_label"] = "已命中本地论文库，可直接分析"
         elif (
             decorated["analysis_status"] in {"context_only", "fulltext_extract_failed"}
             or decorated["download_source"] == "manual_required"

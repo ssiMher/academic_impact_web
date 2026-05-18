@@ -262,6 +262,104 @@ python3 scripts/enrich_person_tag_registry_openalex.py \
 其中：
 
 - `--offset` 用来跳过前面已经跑过的目标，适合续跑下一批
+
+## 外部 Fellow 身份桥接
+
+如果手头已经有两类外部数据：
+
+- `xiaohk/academic-awards` 的 ACM / IEEE Fellow JSON
+- `jfloff/dblp-orcids` 的 `by_alias.csv` / `by_orcid.csv`
+
+可以走一条更稳的离线桥接链路：
+
+1. 先把外部 Fellow 名单转换成项目的标准 source-list CSV
+2. 用 `make person-registry-refresh` 或 `scripts/refresh_person_tag_registry.py` 合并到 registry
+3. 用 DBLP alias / ORCID 桥接候选
+4. 再用 ORCID 查询 OpenAlex author，产出 accepted / unresolved 和可回灌的 seed CSV
+
+推荐先跑 `acm_fellow`，因为 DBLP / ORCID 覆盖通常比全量 IEEE Fellow 更好。
+
+### 1. 导入 academic-awards JSON
+
+ACM Fellow:
+
+```bash
+python3 scripts/import_external_fellow_sources.py \
+  --dataset academic-awards-acm \
+  --input /mnt/c/Users/withe/Desktop/acm-fellow.json \
+  --output-csv /mnt/c/Users/withe/Desktop/acm_fellows_academic_awards.csv \
+  --source-url https://github.com/xiaohk/academic-awards
+```
+
+IEEE Fellow:
+
+```bash
+python3 scripts/import_external_fellow_sources.py \
+  --dataset academic-awards-ieee \
+  --input /mnt/c/Users/withe/Desktop/ieee-fellows.json \
+  --output-csv /mnt/c/Users/withe/Desktop/ieee_fellows_academic_awards.csv \
+  --source-url https://github.com/xiaohk/academic-awards
+```
+
+### 2. 合并到 registry
+
+把生成的 CSV 放进 `data/reference/source_lists/` 后，刷新 registry：
+
+```bash
+python3 scripts/refresh_person_tag_registry.py \
+  --registry-path data/reference/person_tag_registry.json \
+  --source-dir data/reference/source_lists
+```
+
+### 3. 构建 DBLP / ORCID bridge
+
+ACM Fellow 示例：
+
+```bash
+python3 scripts/build_dblp_orcid_bridge.py \
+  --registry-path data/reference/person_tag_registry.json \
+  --tag-type acm_fellow \
+  --dblp-alias-csv /mnt/c/Users/withe/Desktop/by_alias.csv \
+  --dblp-orcid-csv /mnt/c/Users/withe/Desktop/by_orcid.csv \
+  --output-csv /mnt/c/Users/withe/Desktop/acm_fellow_dblp_orcid_bridge.csv \
+  --summary-csv /mnt/c/Users/withe/Desktop/acm_fellow_dblp_orcid_bridge_summary.csv
+```
+
+输出里的 `bridge_status` 主要有：
+
+- `unique_orcid`: 一个名字目前只桥接到一个 ORCID，优先处理
+- `multi_orcid`: 一个名字桥接到多个 ORCID，后续仍需保守裁决
+
+### 4. 用 ORCID 解析 OpenAlex ID
+
+```bash
+export OPENALEX_API_KEY="你的_openalex_api_key"
+
+python3 scripts/resolve_fellow_openalex_by_orcid.py \
+  --bridge-csv /mnt/c/Users/withe/Desktop/acm_fellow_dblp_orcid_bridge.csv \
+  --resolved-csv /mnt/c/Users/withe/Desktop/acm_fellow_openalex_resolved.csv \
+  --summary-csv /mnt/c/Users/withe/Desktop/acm_fellow_openalex_resolved_summary.csv \
+  --seed-csv /mnt/c/Users/withe/Desktop/acm_fellow_openalex_seed.csv
+```
+
+产物说明：
+
+- `resolved.csv`: 每个名字一行，标记 `accepted` 或 `unresolved`
+- `summary.csv`: 统计 accepted / unresolved 数量
+- `seed.csv`: 只包含 accepted 的标准 source-list 行，可以直接放回 `data/reference/source_lists/` 再跑一次 refresh
+
+`seed.csv` 会写入这些字段：
+
+- `openalex_author_ids`
+- `orcid_ids`
+- `dblp_author_ids`
+- `known_institutions`
+
+这条链路默认很保守：
+
+- 单一 ORCID 且姓名/机构不冲突时才会自动接受
+- 多 ORCID 同名作者默认保持 `unresolved`
+- 高频姓名仍建议结合 DBLP 论文画像、机构和 Fellow citation 再看
 - `--limit` 用来限制本次处理条数
 
 例如：

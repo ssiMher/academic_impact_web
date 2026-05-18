@@ -4,6 +4,7 @@ import importlib.util
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,6 +55,55 @@ class DownloadPdfMatchingTestCase(unittest.TestCase):
             )
 
         self.assertEqual(matched, str(pdf_path))
+
+    def test_find_local_pdf_with_metadata_prefers_index_cache(self):
+        title = "A Study on Cache Friendly Congestion Control"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pdf_path = Path(tmpdir) / f"{title}.pdf"
+            pdf_path.write_bytes(b"%PDF-1.4\n% test\n")
+            index_path = Path(tmpdir) / "local_pdf_index.json"
+
+            self.module.build_local_pdf_index(
+                [tmpdir],
+                index_path=str(index_path),
+            )
+
+            with mock.patch.object(
+                self.module,
+                "list_local_pdf_files",
+                side_effect=AssertionError("index cache should avoid directory scan"),
+            ):
+                match = self.module.find_local_pdf_with_metadata(
+                    title=title,
+                    search_dirs=[tmpdir],
+                    index_path=str(index_path),
+                )
+
+        self.assertIsNotNone(match)
+        self.assertEqual(match["local_file_path"], str(pdf_path))
+        self.assertEqual(match["match_source"], "index_cache")
+
+    def test_find_local_pdf_with_metadata_falls_back_when_index_misses_directory(self):
+        title = "A Study on Directory Coverage"
+        with tempfile.TemporaryDirectory() as indexed_dir, tempfile.TemporaryDirectory() as actual_dir:
+            index_path = Path(actual_dir) / "local_pdf_index.json"
+            pdf_path = Path(actual_dir) / f"{title}.pdf"
+            pdf_path.write_bytes(b"%PDF-1.4\n% test\n")
+
+            self.module.build_local_pdf_index(
+                [indexed_dir],
+                index_path=str(index_path),
+            )
+
+            match = self.module.find_local_pdf_with_metadata(
+                title=title,
+                search_dirs=[actual_dir],
+                index_path=str(index_path),
+            )
+
+        self.assertIsNotNone(match)
+        self.assertEqual(match["local_file_path"], str(pdf_path))
+        self.assertEqual(match["match_source"], "directory_scan")
 
 
 if __name__ == "__main__":

@@ -15,9 +15,12 @@
   - 清洗常见下载噪声词
   - 清洗括号噪声片段
   - 匹配时同时比较原始文件名和清洗后的文件名
+- 把常见下载噪声词抽到 `data/reference/pdf_filename_noise_terms.txt`，后续新增站点噪声不必改代码。
+- 新增 `scripts/build_local_pdf_index.py` 和 `ACADEMIC_IMPACT_PDF_INDEX_PATH`，允许为大本地论文库预构建 JSON 索引，运行时优先查索引再回退目录扫描。
 - 新增 `tests/test_download_pdf_matching.py`，锁定两类高频场景：
   - 文件名仅大小写不同
   - 文件名带下载站点噪声但仍应命中
+  - 存在 index cache 时优先使用索引，而不是重复扫描目录
 - 新增 `docs/architecture.md`，把当前主链路、目录职责、PDF 优先级和维护边界写下来。
 - 在 `README.md` 中明确把 `architecture` / `ops` / `devlog` 作为推荐入口，避免后续只靠会话上下文理解系统。
 
@@ -30,8 +33,8 @@
   3. 自动下载
 
 后续建议：
-1. 如果本地论文库超过几万文件，优先加一个轻量索引缓存，不要直接引入数据库。
-2. 如果 PDF 命中率继续不稳定，下一步优先补“文件名前后缀噪声词字典”和更多真实样本测试。
+1. 如果 PDF 命中率继续不稳定，下一步优先补“文件名前后缀噪声词字典”和更多真实样本测试。
+2. 如果需要更细粒度命中，再考虑把 DOI / arXiv hint 直接预提取到索引里。
 3. 每次主流程变更后，都同步更新：
    - `docs/devlog.md`
    - `docs/architecture.md`

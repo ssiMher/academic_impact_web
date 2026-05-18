@@ -43,8 +43,11 @@ Local library matching checks:
 
 - `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS`
 - `ACADEMIC_IMPACT_DOWNLOAD_DIR`
+- `ACADEMIC_IMPACT_PDF_INDEX_PATH`
 
 Filename matching is case-insensitive and also strips common download noise such as `arxiv`, `preprint`, `accepted version`, and `supplementary`.
+
+If `ACADEMIC_IMPACT_PDF_INDEX_PATH` points to an existing JSON index, scholar queue matching will use that cache first and only fall back to directory scanning when needed.
 
 ## Expected Runtime
 

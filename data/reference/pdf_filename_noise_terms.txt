@@ -1,0 +1,15 @@
+# Common non-title markers that often appear in downloaded PDF filenames.
+# One term or phrase per line. Matching is case-insensitive.
+
+arxiv
+preprint
+accepted
+accepted version
+author version
+camera ready
+camera-ready
+final
+final version
+supplementary
+supplementary material
+appendix

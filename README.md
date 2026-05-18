@@ -122,6 +122,7 @@ ELSEVIER_INSTTOKEN=
 - `ELSEVIER_API_KEY`：可选，仅 `ACADEMIC_IMPACT_CITATION_SOURCE=scopus` 时需要；只放在服务端 `.env`，不要提交到 git 或写进前端
 - `ELSEVIER_INSTTOKEN`：可选；如果学校订阅权限无法通过机构 IP 自动识别，Elsevier/学校可能会提供 Institutional Token
 - `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS`：可选，本地论文库目录列表；使用系统路径分隔符连接多个目录（Linux/macOS 用 `:`，Windows 用 `;`）。学者影响力分析会在这些目录和 `ACADEMIC_IMPACT_DOWNLOAD_DIR` 中自动尝试匹配已有 PDF
+- `ACADEMIC_IMPACT_PDF_INDEX_PATH`：可选，本地 PDF 轻量索引 JSON 路径。存在时，项目会优先查索引，再回退目录扫描
 
 说明：
 
@@ -137,6 +138,24 @@ ELSEVIER_INSTTOKEN=
 - `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS` 示例：
   - Linux/macOS：`/data/papers:/data/archive_pdfs`
   - Windows：`D:\\papers;E:\\pdf_archive`
+- `ACADEMIC_IMPACT_PDF_INDEX_PATH` 示例：
+  - Linux/macOS：`/data/academic_impact/local_pdf_index.json`
+  - Windows：`D:\\academic_impact\\local_pdf_index.json`
+
+如果你的本地论文库比较大，建议先构建一次索引：
+
+```bash
+python3 scripts/build_local_pdf_index.py \
+  --search-dir /data/papers \
+  --search-dir /data/archive_pdfs \
+  --index-path /data/academic_impact/local_pdf_index.json
+```
+
+之后在 `.env` 里配置：
+
+```bash
+ACADEMIC_IMPACT_PDF_INDEX_PATH=/data/academic_impact/local_pdf_index.json
+```
 
 ### Scopus 试验来源
 

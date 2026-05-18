@@ -82,6 +82,7 @@
 
 - `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS`
 - `ACADEMIC_IMPACT_DOWNLOAD_DIR`
+- `ACADEMIC_IMPACT_PDF_INDEX_PATH`
 
 本地文件匹配策略当前是：
 
@@ -89,6 +90,7 @@
 - 再做标题规范化匹配
 - 文件名比较时忽略大小写
 - 会清洗常见下载噪声，例如 `arxiv`、`preprint`、`accepted version`、`supplementary`
+- 如果存在本地 PDF 索引，则优先查索引，再回退到目录扫描
 
 如果未来本地库规模很大，优先考虑**加本地索引缓存**，不要直接跳到数据库。
 

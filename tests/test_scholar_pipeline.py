@@ -426,15 +426,19 @@ class ScholarPipelineTestCase(unittest.TestCase):
 
         with mock.patch.object(
             self.pipeline.RUN_PIPELINE.DOWNLOAD_PDF,
-            "find_local_pdf",
-            return_value="/tmp/library/top-venue.pdf",
-        ) as find_local_pdf:
+            "find_local_pdf_with_metadata",
+            return_value={
+                "local_file_path": "/tmp/library/top-venue.pdf",
+                "matched_dir": "/tmp/library",
+                "match_source": "index_cache",
+            },
+        ) as find_local_pdf_with_metadata:
             rebuilt = self.pipeline.rebuild_scholar_derived_outputs(
                 session,
                 queue_limit=10,
             )
 
-        find_local_pdf.assert_called_once()
+        find_local_pdf_with_metadata.assert_called_once()
         library_pdf = rebuilt["deep_analysis_queue"][0]["library_pdf"]
         self.assertEqual(library_pdf["status"], "local_library_matched")
         self.assertEqual(library_pdf["source"], "local_pdf_library")

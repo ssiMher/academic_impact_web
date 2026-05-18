@@ -348,21 +348,21 @@ def match_queue_item_local_pdf(queue_item: dict[str, Any], download_pdf_module) 
     if not query and not title:
         return {}
 
-    for search_dir in configured_local_pdf_library_dirs(download_pdf_module):
-        local_file_path = download_pdf_module.find_local_pdf(
-            query=query,
-            title=title,
-            doi=doi,
-            search_dir=search_dir,
-        )
-        if local_file_path:
-            return {
-                "status": "local_library_matched",
-                "source": "local_pdf_library",
-                "local_file_path": str(Path(local_file_path).expanduser()),
-                "matched_dir": search_dir,
-                "matched_at": datetime.now().isoformat(timespec="seconds"),
-            }
+    match = download_pdf_module.find_local_pdf_with_metadata(
+        query=query,
+        title=title,
+        doi=doi,
+        search_dirs=configured_local_pdf_library_dirs(download_pdf_module),
+    )
+    if match:
+        return {
+            "status": "local_library_matched",
+            "source": "local_pdf_library",
+            "local_file_path": str(Path(match.get("local_file_path") or "").expanduser()),
+            "matched_dir": match.get("matched_dir") or "",
+            "match_source": match.get("match_source") or "",
+            "matched_at": datetime.now().isoformat(timespec="seconds"),
+        }
     return {}
 
 

@@ -7,6 +7,7 @@ import re
 import time
 import xml.etree.ElementTree as ET
 import unicodedata
+from functools import lru_cache
 from html import unescape
 from pathlib import Path
 from urllib.parse import urljoin
@@ -19,6 +20,11 @@ DEFAULT_LOCAL_PDF_DIR = os.getenv(
     "ACADEMIC_IMPACT_DOWNLOAD_DIR",
     str(ROOT / "data" / "downloads"),
 )
+DEFAULT_LOCAL_PDF_INDEX_PATH = os.getenv(
+    "ACADEMIC_IMPACT_PDF_INDEX_PATH",
+    str(ROOT / "data" / "runs" / "local_pdf_index.json"),
+)
+PDF_FILENAME_NOISE_TERMS_PATH = ROOT / "data" / "reference" / "pdf_filename_noise_terms.txt"
 
 
 def safe_get(url, timeout=15, retries=3, backoff_schedule=None):
@@ -73,17 +79,31 @@ def normalize_title(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+@lru_cache(maxsize=4)
+def load_pdf_filename_noise_terms(config_path: str = str(PDF_FILENAME_NOISE_TERMS_PATH)):
+    path = Path(config_path).expanduser()
+    if not path.exists():
+        return ()
+    terms = []
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        terms.append(line)
+    return tuple(terms)
+
+
 def normalize_local_pdf_name(text: str) -> str:
     text = unicodedata.normalize("NFKC", text or "")
     text = os.path.splitext(os.path.basename(text))[0]
     text = text.replace("_", " ")
     text = re.sub(r"[\[\(][^\]\)]*[\]\)]", " ", text)
-    text = re.sub(
-        r"\b(?:arxiv|preprint|accepted(?: version)?|author(?: s)? version|camera(?: |-)?ready|final(?: version)?|supplementary(?: material)?|appendix)\b",
-        " ",
-        text,
-        flags=re.I,
-    )
+    noise_terms = load_pdf_filename_noise_terms()
+    if noise_terms:
+        noise_pattern = r"\b(?:%s)\b" % "|".join(
+            re.escape(term) for term in sorted(noise_terms, key=len, reverse=True)
+        )
+        text = re.sub(noise_pattern, " ", text, flags=re.I)
     text = re.sub(r"\bv\d+\b", " ", text, flags=re.I)
     return re.sub(r"\s+", " ", text).strip()
 
@@ -116,46 +136,195 @@ def list_local_pdf_files(search_dir: str):
     ]
 
 
-def find_local_pdf(query: str = "", title: str = "", doi: str = "", arxiv_id: str = "", search_dir: str = DEFAULT_LOCAL_PDF_DIR):
-    pdf_files = list_local_pdf_files(search_dir)
-    if not pdf_files:
+def normalize_search_dirs(search_dirs):
+    if isinstance(search_dirs, (str, os.PathLike)):
+        search_dirs = [search_dirs]
+    normalized = []
+    seen = set()
+    for entry in search_dirs or []:
+        value = str(Path(entry).expanduser())
+        if value in seen:
+            continue
+        seen.add(value)
+        normalized.append(value)
+    return normalized
+
+
+def local_pdf_index_entry(file_path: str, search_dir: str):
+    path = Path(file_path).expanduser()
+    base_name = path.stem
+    return {
+        "file_path": str(path),
+        "search_dir": str(Path(search_dir).expanduser()),
+        "file_name": path.name,
+        "base_name": base_name,
+        "normalized_base_name": normalize_local_pdf_name(base_name),
+    }
+
+
+def build_local_pdf_index(search_dirs, index_path: str = DEFAULT_LOCAL_PDF_INDEX_PATH):
+    normalized_dirs = normalize_search_dirs(search_dirs)
+    entries = []
+    for search_dir in normalized_dirs:
+        for file_path in list_local_pdf_files(search_dir):
+            entries.append(local_pdf_index_entry(file_path, search_dir))
+
+    payload = {
+        "schema_version": "1.0",
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "search_dirs": normalized_dirs,
+        "entry_count": len(entries),
+        "entries": entries,
+    }
+    if index_path:
+        index_file = Path(index_path).expanduser()
+        index_file.parent.mkdir(parents=True, exist_ok=True)
+        index_file.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+    return payload
+
+
+def load_local_pdf_index(index_path: str = DEFAULT_LOCAL_PDF_INDEX_PATH):
+    path = Path(index_path).expanduser()
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
         return None
 
+
+def _score_local_pdf_candidate(
+    *,
+    query: str = "",
+    title: str = "",
+    doi: str = "",
+    arxiv_id: str = "",
+    file_path: str,
+    base_name: str,
+    normalized_base_name: str,
+):
+    score = 0.0
+
+    if arxiv_id:
+        normalized_arxiv = normalize_arxiv_id(arxiv_id)
+        if normalized_arxiv and (
+            normalize_title(base_name) == normalize_title(normalized_arxiv)
+            or normalize_title(normalized_base_name) == normalize_title(normalized_arxiv)
+        ):
+            score = max(score, 1.0)
+
+    for text in [title, query]:
+        if not text:
+            continue
+        if sanitize_filename(text).lower() == os.path.basename(file_path).lower().replace(".pdf", ""):
+            score = max(score, 1.0)
+        score = max(score, title_similarity(text, base_name))
+        score = max(score, title_similarity(text, normalized_base_name))
+
+    if doi:
+        doi_hint = doi.lower().replace("/", "_")
+        if doi_hint in file_path.lower():
+            score = max(score, 0.95)
+
+    return score
+
+
+def indexed_local_pdf_entries(index_data, search_dirs):
+    if not isinstance(index_data, dict):
+        return []
+    wanted_dirs = set(normalize_search_dirs(search_dirs))
+    indexed_dirs = set(normalize_search_dirs(index_data.get("search_dirs") or []))
+    if wanted_dirs and not wanted_dirs.issubset(indexed_dirs):
+        return []
+    entries = []
+    for entry in index_data.get("entries", []) or []:
+        if (entry.get("search_dir") or "") not in wanted_dirs:
+            continue
+        entries.append(entry)
+    return entries
+
+
+def find_local_pdf_with_metadata(
+    query: str = "",
+    title: str = "",
+    doi: str = "",
+    arxiv_id: str = "",
+    search_dirs=None,
+    index_path: str = DEFAULT_LOCAL_PDF_INDEX_PATH,
+):
+    normalized_dirs = normalize_search_dirs(search_dirs or [DEFAULT_LOCAL_PDF_DIR])
+    index_data = load_local_pdf_index(index_path) if index_path else None
+    indexed_entries = indexed_local_pdf_entries(index_data, normalized_dirs)
+
     candidates = []
-    for file_path in pdf_files:
-        base_name = os.path.splitext(os.path.basename(file_path))[0]
-        normalized_base_name = normalize_local_pdf_name(base_name)
-        score = 0.0
-
-        if arxiv_id:
-            normalized_arxiv = normalize_arxiv_id(arxiv_id)
-            if normalized_arxiv and (
-                normalize_title(base_name) == normalize_title(normalized_arxiv)
-                or normalize_title(normalized_base_name) == normalize_title(normalized_arxiv)
-            ):
-                score = max(score, 1.0)
-
-        for text in [title, query]:
-            if not text:
-                continue
-            if sanitize_filename(text).lower() == os.path.basename(file_path).lower().replace(".pdf", ""):
-                score = max(score, 1.0)
-            score = max(score, title_similarity(text, base_name))
-            score = max(score, title_similarity(text, normalized_base_name))
-
-        if doi:
-            doi_hint = doi.lower().replace("/", "_")
-            if doi_hint in file_path.lower():
-                score = max(score, 0.95)
-
-        if score >= 0.75:
-            candidates.append((score, file_path))
+    if indexed_entries:
+        for entry in indexed_entries:
+            file_path = entry.get("file_path") or ""
+            base_name = entry.get("base_name") or Path(file_path).stem
+            normalized_base_name = entry.get("normalized_base_name") or normalize_local_pdf_name(base_name)
+            score = _score_local_pdf_candidate(
+                query=query,
+                title=title,
+                doi=doi,
+                arxiv_id=arxiv_id,
+                file_path=file_path,
+                base_name=base_name,
+                normalized_base_name=normalized_base_name,
+            )
+            if score >= 0.75:
+                candidates.append(
+                    (
+                        score,
+                        file_path,
+                        entry.get("search_dir") or "",
+                        "index_cache",
+                    )
+                )
+    else:
+        for search_dir in normalized_dirs:
+            pdf_files = list_local_pdf_files(search_dir)
+            for file_path in pdf_files:
+                base_name = os.path.splitext(os.path.basename(file_path))[0]
+                normalized_base_name = normalize_local_pdf_name(base_name)
+                score = _score_local_pdf_candidate(
+                    query=query,
+                    title=title,
+                    doi=doi,
+                    arxiv_id=arxiv_id,
+                    file_path=file_path,
+                    base_name=base_name,
+                    normalized_base_name=normalized_base_name,
+                )
+                if score >= 0.75:
+                    candidates.append((score, file_path, search_dir, "directory_scan"))
 
     if not candidates:
         return None
 
     candidates.sort(key=lambda item: (item[0], len(item[1])), reverse=True)
-    return candidates[0][1]
+    _, file_path, matched_dir, match_source = candidates[0]
+    return {
+        "local_file_path": str(Path(file_path).expanduser()),
+        "matched_dir": matched_dir,
+        "match_source": match_source,
+    }
+
+
+def find_local_pdf(query: str = "", title: str = "", doi: str = "", arxiv_id: str = "", search_dir: str = DEFAULT_LOCAL_PDF_DIR, index_path: str = DEFAULT_LOCAL_PDF_INDEX_PATH):
+    match = find_local_pdf_with_metadata(
+        query=query,
+        title=title,
+        doi=doi,
+        arxiv_id=arxiv_id,
+        search_dirs=[search_dir],
+        index_path=index_path,
+    )
+    if not match:
+        return None
+    return match["local_file_path"]
 
 
 def inspect_pdf_file(file_path: str):

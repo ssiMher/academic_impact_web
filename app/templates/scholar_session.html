@@ -23,6 +23,7 @@
     {% set guidance = demo_guidance or {} %}
     {% set guide_complete = guidance.completeness or {} %}
     {% set person = person_view or {} %}
+    {% set local_pdf_index = local_pdf_index_status or {} %}
     {% set person_pagination = person.pagination or {} %}
     {% set person_status_counts = person.status_counts or {} %}
     {% set pending_people = person_status_counts.pending or 0 %}
@@ -95,6 +96,21 @@
           </label>
           <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>重建统计和队列</button>
         </form>
+        <div class="callout info">
+          <strong>本地 PDF 索引</strong>
+          <p>当前索引条目：{{ local_pdf_index.entry_count or 0 }}</p>
+          <p>队列命中本地 PDF：{{ local_pdf_index.queue_matched_count or 0 }}</p>
+          <p class="muted">索引文件：{{ local_pdf_index.index_path or '未配置' }}</p>
+          {% if local_pdf_index.generated_at %}
+          <p class="muted">最近刷新：{{ local_pdf_index.generated_at }}</p>
+          {% endif %}
+          {% if local_pdf_index.search_dirs %}
+          <p class="muted">扫描目录：{{ local_pdf_index.search_dirs | join('；') }}</p>
+          {% endif %}
+          <form action="/scholars/{{ session_id }}/refresh-local-pdf-index" method="post" class="inline-actions">
+            <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>刷新本地 PDF 索引</button>
+          </form>
+        </div>
       </section>
 
       {% if guidance.steps %}

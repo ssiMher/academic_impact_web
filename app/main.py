@@ -124,6 +124,13 @@ async def scholar_detail(
         payload = scholar_core.load_scholar_status(session_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    local_pdf_index_status = scholar_core.load_local_pdf_index_status(payload)
+    if "queue_matched_count" not in local_pdf_index_status:
+        local_pdf_index_status["queue_matched_count"] = sum(
+            1
+            for item in (payload.get("deep_analysis_queue", []) or [])
+            if ((item.get("library_pdf") or {}).get("status") or "") == "local_library_matched"
+        )
     queue_view = scholar_core.build_deep_analysis_queue_view(
         payload,
         active_reason=queue_reason,
@@ -168,6 +175,7 @@ async def scholar_detail(
             "analysis_summary": analysis_summary,
             "demo_guidance": demo_guidance,
             "report_payload": report_payload,
+            "local_pdf_index_status": local_pdf_index_status,
             "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),
         },
     )
@@ -230,6 +238,20 @@ def rebuild_scholar_derived_outputs(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     return RedirectResponse(
         url=f"/scholars/{session_id}#deep-analysis-queue",
+        status_code=303,
+    )
+
+
+@app.post("/scholars/{session_id}/refresh-local-pdf-index")
+def refresh_scholar_local_pdf_index(session_id: str):
+    try:
+        scholar_core.refresh_scholar_local_pdf_index(session_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return RedirectResponse(
+        url=f"/scholars/{session_id}#scholar-actions",
         status_code=303,
     )
 

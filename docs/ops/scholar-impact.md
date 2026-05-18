@@ -49,6 +49,24 @@ Filename matching is case-insensitive and also strips common download noise such
 
 If `ACADEMIC_IMPACT_PDF_INDEX_PATH` points to an existing JSON index, scholar queue matching will use that cache first and only fall back to directory scanning when needed.
 
+## Local PDF Index Refresh
+
+The scholar detail page now shows a local PDF index status panel with:
+
+- current index entry count
+- current deep-analysis queue matches resolved from the local library
+- index path
+- refresh button for rebuilding the JSON index and refreshing the current scholar queue
+
+Use the refresh button after:
+
+- adding new PDFs into the local library
+- rebuilding a large local library index offline
+- changing `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS`
+- changing `ACADEMIC_IMPACT_PDF_INDEX_PATH`
+
+The refresh action intentionally reuses the current scholar session's queue limit and rebuilds derived outputs immediately, so the page reflects newly matched local PDFs without a separate manual rebuild step.
+
 ## Expected Runtime
 
 Metadata-only statistics should finish in minutes for tens of publications.

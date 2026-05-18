@@ -195,6 +195,28 @@ def load_scholar_status(session_id: str) -> dict[str, Any]:
     return session
 
 
+def load_local_pdf_index_status(session: dict[str, Any] | None = None) -> dict[str, Any]:
+    pipeline = scholar_pipeline()
+    download_pdf = pipeline.RUN_PIPELINE.DOWNLOAD_PDF
+    search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
+    index_path = str(Path(download_pdf.DEFAULT_LOCAL_PDF_INDEX_PATH).expanduser())
+    index_data = download_pdf.load_local_pdf_index(index_path=index_path) or {}
+    queue = (session or {}).get("deep_analysis_queue", []) or []
+    queue_matched_count = sum(
+        1
+        for item in queue
+        if ((item.get("library_pdf") or {}).get("status") or "") == "local_library_matched"
+    )
+    return {
+        "exists": bool(index_data),
+        "entry_count": int(index_data.get("entry_count") or 0),
+        "generated_at": index_data.get("generated_at") or "",
+        "index_path": index_path,
+        "search_dirs": index_data.get("search_dirs") or search_dirs,
+        "queue_matched_count": queue_matched_count,
+    }
+
+
 def build_deep_analysis_queue_view(
     session: dict[str, Any],
     *,
@@ -1362,6 +1384,28 @@ def rebuild_scholar_derived_outputs(
         )
         write_scholar_status(session_id, rebuilt)
         return rebuilt
+
+
+def refresh_scholar_local_pdf_index(session_id: str) -> dict[str, Any]:
+    with _task_lock(session_id):
+        session = load_scholar_status(session_id)
+        task_state = ensure_task_state(session)
+        if task_state.get("active"):
+            raise ValueError("当前后台任务仍在运行，暂时不能刷新本地 PDF 索引。")
+
+        pipeline = scholar_pipeline()
+        download_pdf = pipeline.RUN_PIPELINE.DOWNLOAD_PDF
+        search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
+        index_path = download_pdf.DEFAULT_LOCAL_PDF_INDEX_PATH
+        download_pdf.build_local_pdf_index(search_dirs, index_path=index_path)
+
+        queue_limit = len(session.get("deep_analysis_queue", []) or []) or 300
+        rebuilt = pipeline.rebuild_scholar_derived_outputs(
+            session,
+            queue_limit=queue_limit,
+        )
+        write_scholar_status(session_id, rebuilt)
+        return load_local_pdf_index_status(rebuilt)
 
 
 def review_person_candidate(

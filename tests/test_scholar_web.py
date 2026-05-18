@@ -77,6 +77,52 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Chen Tian", response.text)
 
+    def test_scholar_route_renders_local_pdf_index_controls(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "Library Paper",
+                            "library_pdf": {"status": "local_library_matched"},
+                        }
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        with mock.patch.object(
+            scholar_core,
+            "load_local_pdf_index_status",
+            return_value={
+                "exists": True,
+                "entry_count": 128,
+                "generated_at": "2026-05-18T10:00:00",
+                "index_path": "/tmp/local_pdf_index.json",
+                "search_dirs": ["/papers"],
+            },
+        ):
+            response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("刷新本地 PDF 索引", response.text)
+        self.assertIn("当前索引条目：128", response.text)
+        self.assertIn("队列命中本地 PDF：1", response.text)
+        self.assertIn("/tmp/local_pdf_index.json", response.text)
+
     def test_scholar_route_renders_expansion_controls_and_queue(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
         (TEST_SESSION_DIR / "session.json").write_text(
@@ -748,6 +794,77 @@ class ScholarWebTestCase(unittest.TestCase):
         payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
         self.assertEqual(payload["deep_analysis_queue"][0]["citing_title"], "Citing Paper")
 
+    def test_refresh_scholar_local_pdf_index_rebuilds_session_queue(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [{"queue_id": "Q001"}],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        class FakeDownloadPdf:
+            DEFAULT_LOCAL_PDF_INDEX_PATH = "/tmp/local_pdf_index.json"
+
+            @staticmethod
+            def build_local_pdf_index(search_dirs, index_path=""):
+                return {
+                    "search_dirs": list(search_dirs),
+                    "entry_count": 42,
+                    "generated_at": "2026-05-18T11:00:00",
+                }
+
+            @staticmethod
+            def load_local_pdf_index(index_path=""):
+                return {
+                    "entry_count": 42,
+                    "generated_at": "2026-05-18T11:00:00",
+                    "search_dirs": ["/papers"],
+                }
+
+        class FakePipeline:
+            RUN_PIPELINE = type("RunPipeline", (), {"DOWNLOAD_PDF": FakeDownloadPdf})()
+
+            @staticmethod
+            def configured_local_pdf_library_dirs(download_pdf_module):
+                return ["/papers"]
+
+            @staticmethod
+            def rebuild_scholar_derived_outputs(session, queue_limit=300):
+                session["deep_analysis_queue"] = [
+                    {
+                        "queue_id": "Q002",
+                        "citing_title": "Matched from rebuilt queue",
+                        "library_pdf": {"status": "local_library_matched"},
+                    }
+                ]
+                return session
+
+        with mock.patch.object(
+            scholar_core,
+            "scholar_pipeline",
+            return_value=FakePipeline(),
+        ), mock.patch.object(
+            scholar_core,
+            "_decorate_publication_venue_tiers",
+        ):
+            result = scholar_core.refresh_scholar_local_pdf_index(TEST_SESSION_ID)
+
+        self.assertEqual(result["entry_count"], 42)
+        payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
+        self.assertEqual(payload["deep_analysis_queue"][0]["queue_id"], "Q002")
+
     def test_expand_scholar_citations_route_redirects(self):
         client = TestClient(app)
         with mock.patch.object(scholar_core, "start_expand_citations_task", return_value=(True, {})) as start_task:
@@ -807,6 +924,25 @@ class ScholarWebTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 400)
         rebuild.assert_not_called()
+
+    def test_refresh_scholar_local_pdf_index_route_redirects(self):
+        client = TestClient(app)
+        with mock.patch.object(
+            scholar_core,
+            "refresh_scholar_local_pdf_index",
+            return_value={},
+        ) as refresh_index:
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/refresh-local-pdf-index",
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(
+            response.headers["location"],
+            f"/scholars/{TEST_SESSION_ID}#scholar-actions",
+        )
+        refresh_index.assert_called_once_with(TEST_SESSION_ID)
 
     def test_analyze_scholar_queue_route_redirects(self):
         client = TestClient(app)

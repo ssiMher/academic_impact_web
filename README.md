@@ -23,6 +23,15 @@ academic_impact_web/
 └── README.md
 ```
 
+## 先看哪些文档
+
+如果你是第一次接手这个仓库，推荐顺序：
+
+1. [`README.md`](README.md)：启动、测试、环境变量
+2. [`docs/architecture.md`](docs/architecture.md)：当前系统结构和主链路
+3. [`docs/ops/scholar-impact.md`](docs/ops/scholar-impact.md)：学者影响力分析操作流程
+4. [`docs/devlog.md`](docs/devlog.md)：近期关键改动和决策背景
+
 ## 复用来源
 
 当前主要复用了这些旧脚本：

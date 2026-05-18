@@ -31,6 +31,21 @@ export ACADEMIC_IMPACT_CITATION_SOURCE=openalex
 6. Select high-value citation cases for PDF upload or download.
 7. Run fulltext analysis only for selected cases.
 
+## PDF Source Priority
+
+For scholar queue items, the current PDF priority is:
+
+1. manually uploaded PDF
+2. matched local library PDF
+3. auto-downloaded PDF
+
+Local library matching checks:
+
+- `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS`
+- `ACADEMIC_IMPACT_DOWNLOAD_DIR`
+
+Filename matching is case-insensitive and also strips common download noise such as `arxiv`, `preprint`, `accepted version`, and `supplementary`.
+
 ## Expected Runtime
 
 Metadata-only statistics should finish in minutes for tens of publications.

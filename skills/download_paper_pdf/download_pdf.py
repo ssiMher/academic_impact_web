@@ -6,6 +6,7 @@ import json
 import re
 import time
 import xml.etree.ElementTree as ET
+import unicodedata
 from html import unescape
 from pathlib import Path
 from urllib.parse import urljoin
@@ -66,8 +67,24 @@ def looks_like_arxiv_id(query: str) -> bool:
 
 
 def normalize_title(text: str) -> str:
+    text = unicodedata.normalize("NFKC", text or "")
     text = (text or "").strip().lower()
     text = re.sub(r"[^a-z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def normalize_local_pdf_name(text: str) -> str:
+    text = unicodedata.normalize("NFKC", text or "")
+    text = os.path.splitext(os.path.basename(text))[0]
+    text = text.replace("_", " ")
+    text = re.sub(r"[\[\(][^\]\)]*[\]\)]", " ", text)
+    text = re.sub(
+        r"\b(?:arxiv|preprint|accepted(?: version)?|author(?: s)? version|camera(?: |-)?ready|final(?: version)?|supplementary(?: material)?|appendix)\b",
+        " ",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(r"\bv\d+\b", " ", text, flags=re.I)
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -107,11 +124,15 @@ def find_local_pdf(query: str = "", title: str = "", doi: str = "", arxiv_id: st
     candidates = []
     for file_path in pdf_files:
         base_name = os.path.splitext(os.path.basename(file_path))[0]
+        normalized_base_name = normalize_local_pdf_name(base_name)
         score = 0.0
 
         if arxiv_id:
             normalized_arxiv = normalize_arxiv_id(arxiv_id)
-            if normalized_arxiv and normalize_title(base_name) == normalize_title(normalized_arxiv):
+            if normalized_arxiv and (
+                normalize_title(base_name) == normalize_title(normalized_arxiv)
+                or normalize_title(normalized_base_name) == normalize_title(normalized_arxiv)
+            ):
                 score = max(score, 1.0)
 
         for text in [title, query]:
@@ -120,6 +141,7 @@ def find_local_pdf(query: str = "", title: str = "", doi: str = "", arxiv_id: st
             if sanitize_filename(text).lower() == os.path.basename(file_path).lower().replace(".pdf", ""):
                 score = max(score, 1.0)
             score = max(score, title_similarity(text, base_name))
+            score = max(score, title_similarity(text, normalized_base_name))
 
         if doi:
             doi_hint = doi.lower().replace("/", "_")

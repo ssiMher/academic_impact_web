@@ -1,5 +1,41 @@
 # 开发日志
 
+## 2026-05-18：补强本地 PDF 匹配规则并建立维护骨架
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 学者影响力分析已经支持从本地论文库自动命中 PDF，但原始文件名匹配仍然偏依赖“标题接近”。
+- 实际下载下来的 PDF 文件名经常带额外噪声，例如 `arxiv`、`preprint`、`accepted version`、`supplementary`。
+- 项目功能线已经变多，如果没有持续的开发记录和架构概览，后续维护会越来越依赖口头上下文和 commit 回忆。
+
+本次处理：
+- 在 `skills/download_paper_pdf/download_pdf.py` 中补了一层本地 PDF 文件名规范化：
+  - 统一大小写比较
+  - 清洗常见下载噪声词
+  - 清洗括号噪声片段
+  - 匹配时同时比较原始文件名和清洗后的文件名
+- 新增 `tests/test_download_pdf_matching.py`，锁定两类高频场景：
+  - 文件名仅大小写不同
+  - 文件名带下载站点噪声但仍应命中
+- 新增 `docs/architecture.md`，把当前主链路、目录职责、PDF 优先级和维护边界写下来。
+- 在 `README.md` 中明确把 `architecture` / `ops` / `devlog` 作为推荐入口，避免后续只靠会话上下文理解系统。
+
+当前策略：
+- 本地 PDF 匹配优先靠 DOI / arXiv ID，其次才是标题。
+- 标题匹配会忽略大小写、标点和常见下载噪声。
+- Scholar 队列里 PDF 使用优先级保持为：
+  1. 手动上传
+  2. 本地论文库命中
+  3. 自动下载
+
+后续建议：
+1. 如果本地论文库超过几万文件，优先加一个轻量索引缓存，不要直接引入数据库。
+2. 如果 PDF 命中率继续不稳定，下一步优先补“文件名前后缀噪声词字典”和更多真实样本测试。
+3. 每次主流程变更后，都同步更新：
+   - `docs/devlog.md`
+   - `docs/architecture.md`
+
 ## 2026-05-10：整合学者页主线和人物来源数据
 
 分支：`codex/organize-analysis-venue-work`

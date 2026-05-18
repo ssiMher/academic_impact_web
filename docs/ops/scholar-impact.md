@@ -54,6 +54,8 @@ If `ACADEMIC_IMPACT_PDF_INDEX_PATH` points to an existing JSON index, scholar qu
 The scholar detail page now shows a local PDF index status panel with:
 
 - current index entry count
+- last scanned PDF count
+- last index build duration
 - current deep-analysis queue matches resolved from the local library
 - index path
 - refresh button for rebuilding the JSON index and refreshing the current scholar queue

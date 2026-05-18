@@ -59,6 +59,8 @@ def main():
                 "index_path": str(Path(index_path).expanduser()),
                 "search_dirs": payload.get("search_dirs", []),
                 "entry_count": payload.get("entry_count", 0),
+                "scanned_pdf_count": payload.get("scanned_pdf_count", 0),
+                "build_elapsed_ms": payload.get("build_elapsed_ms", 0),
             },
             ensure_ascii=False,
             indent=2,

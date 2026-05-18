@@ -210,6 +210,8 @@ def load_local_pdf_index_status(session: dict[str, Any] | None = None) -> dict[s
     return {
         "exists": bool(index_data),
         "entry_count": int(index_data.get("entry_count") or 0),
+        "scanned_pdf_count": int(index_data.get("scanned_pdf_count") or index_data.get("entry_count") or 0),
+        "build_elapsed_ms": int(index_data.get("build_elapsed_ms") or 0),
         "generated_at": index_data.get("generated_at") or "",
         "index_path": index_path,
         "search_dirs": index_data.get("search_dirs") or search_dirs,

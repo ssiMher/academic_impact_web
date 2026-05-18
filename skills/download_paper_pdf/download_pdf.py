@@ -163,17 +163,21 @@ def local_pdf_index_entry(file_path: str, search_dir: str):
 
 
 def build_local_pdf_index(search_dirs, index_path: str = DEFAULT_LOCAL_PDF_INDEX_PATH):
+    started_at = time.perf_counter()
     normalized_dirs = normalize_search_dirs(search_dirs)
     entries = []
     for search_dir in normalized_dirs:
         for file_path in list_local_pdf_files(search_dir):
             entries.append(local_pdf_index_entry(file_path, search_dir))
+    build_elapsed_ms = int((time.perf_counter() - started_at) * 1000)
 
     payload = {
         "schema_version": "1.0",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "search_dirs": normalized_dirs,
         "entry_count": len(entries),
+        "scanned_pdf_count": len(entries),
+        "build_elapsed_ms": build_elapsed_ms,
         "entries": entries,
     }
     if index_path:

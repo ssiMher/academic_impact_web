@@ -110,6 +110,8 @@ class ScholarWebTestCase(unittest.TestCase):
             return_value={
                 "exists": True,
                 "entry_count": 128,
+                "scanned_pdf_count": 128,
+                "build_elapsed_ms": 240,
                 "generated_at": "2026-05-18T10:00:00",
                 "index_path": "/tmp/local_pdf_index.json",
                 "search_dirs": ["/papers"],
@@ -120,7 +122,9 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("刷新本地 PDF 索引", response.text)
         self.assertIn("当前索引条目：128", response.text)
+        self.assertIn("上次扫描 PDF：128", response.text)
         self.assertIn("队列命中本地 PDF：1", response.text)
+        self.assertIn("构建耗时：0.24 秒", response.text)
         self.assertIn("/tmp/local_pdf_index.json", response.text)
 
     def test_scholar_route_renders_expansion_controls_and_queue(self):
@@ -822,6 +826,8 @@ class ScholarWebTestCase(unittest.TestCase):
                 return {
                     "search_dirs": list(search_dirs),
                     "entry_count": 42,
+                    "scanned_pdf_count": 42,
+                    "build_elapsed_ms": 180,
                     "generated_at": "2026-05-18T11:00:00",
                 }
 
@@ -829,6 +835,8 @@ class ScholarWebTestCase(unittest.TestCase):
             def load_local_pdf_index(index_path=""):
                 return {
                     "entry_count": 42,
+                    "scanned_pdf_count": 42,
+                    "build_elapsed_ms": 180,
                     "generated_at": "2026-05-18T11:00:00",
                     "search_dirs": ["/papers"],
                 }
@@ -862,6 +870,8 @@ class ScholarWebTestCase(unittest.TestCase):
             result = scholar_core.refresh_scholar_local_pdf_index(TEST_SESSION_ID)
 
         self.assertEqual(result["entry_count"], 42)
+        self.assertEqual(result["scanned_pdf_count"], 42)
+        self.assertEqual(result["build_elapsed_ms"], 180)
         payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
         self.assertEqual(payload["deep_analysis_queue"][0]["queue_id"], "Q002")
 

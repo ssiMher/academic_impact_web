@@ -99,7 +99,9 @@
         <div class="callout info">
           <strong>本地 PDF 索引</strong>
           <p>当前索引条目：{{ local_pdf_index.entry_count or 0 }}</p>
+          <p>上次扫描 PDF：{{ local_pdf_index.scanned_pdf_count or local_pdf_index.entry_count or 0 }}</p>
           <p>队列命中本地 PDF：{{ local_pdf_index.queue_matched_count or 0 }}</p>
+          <p>构建耗时：{{ ((local_pdf_index.build_elapsed_ms or 0) / 1000) | round(2) }} 秒</p>
           <p class="muted">索引文件：{{ local_pdf_index.index_path or '未配置' }}</p>
           {% if local_pdf_index.generated_at %}
           <p class="muted">最近刷新：{{ local_pdf_index.generated_at }}</p>

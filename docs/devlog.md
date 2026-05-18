@@ -12,11 +12,15 @@
 本次处理：
 - 在 `app/services/scholar_core.py` 中新增本地 PDF 索引状态读取和刷新入口：
   - 汇总索引条目数
+  - 汇总上次扫描到的 PDF 数量
+  - 汇总索引构建耗时
   - 汇总当前 scholar 队列命中的本地 PDF 数量
   - 重建本地索引后，立即重建当前 scholar 会话的派生统计和高价值队列
 - 在 `app/main.py` 中新增 `/scholars/{session_id}/refresh-local-pdf-index` 路由，并把索引状态注入学者详情页模板。
 - 在 `app/templates/scholar_session.html` 中新增“本地 PDF 索引”状态面板，显示：
   - 当前索引条目数
+  - 上次扫描 PDF 数量
+  - 索引构建耗时
   - 队列命中本地 PDF 数量
   - 索引路径
   - 最近刷新时间和扫描目录（如果可用）

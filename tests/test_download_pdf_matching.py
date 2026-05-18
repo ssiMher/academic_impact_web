@@ -105,6 +105,20 @@ class DownloadPdfMatchingTestCase(unittest.TestCase):
         self.assertEqual(match["local_file_path"], str(pdf_path))
         self.assertEqual(match["match_source"], "directory_scan")
 
+    def test_build_local_pdf_index_records_scan_stats(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pdf_one = Path(tmpdir) / "Paper One.pdf"
+            pdf_two = Path(tmpdir) / "Paper Two.pdf"
+            pdf_one.write_bytes(b"%PDF-1.4\n% test\n")
+            pdf_two.write_bytes(b"%PDF-1.4\n% test\n")
+
+            payload = self.module.build_local_pdf_index([tmpdir], index_path="")
+
+        self.assertEqual(payload["entry_count"], 2)
+        self.assertEqual(payload["scanned_pdf_count"], 2)
+        self.assertIn("build_elapsed_ms", payload)
+        self.assertGreaterEqual(payload["build_elapsed_ms"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

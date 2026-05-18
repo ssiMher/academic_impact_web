@@ -59,6 +59,39 @@ def create_scholar_session(author: dict[str, Any]) -> str:
     return session_id
 
 
+def list_scholar_sessions(limit: int = 20) -> list[dict[str, Any]]:
+    if not SCHOLAR_SESSIONS_ROOT.exists():
+        return []
+
+    sessions: list[dict[str, Any]] = []
+    for session_dir in sorted(SCHOLAR_SESSIONS_ROOT.iterdir(), reverse=True):
+        if not session_dir.is_dir():
+            continue
+        session_path = session_dir / "session.json"
+        if not session_path.exists():
+            continue
+        try:
+            session = json.loads(session_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        publications = session.get("publications") or []
+        statistics = session.get("statistics") or {}
+        selected_author = session.get("selected_author") or {}
+        sessions.append(
+            {
+                "id": session_dir.name,
+                "query": selected_author.get("display_name", ""),
+                "updated_at": session.get("updated_at") or session.get("created_at"),
+                "paper_count": statistics.get("publication_count", len(publications)),
+                "session_type": "scholar_impact",
+                "detail_url": f"/scholars/{session_dir.name}",
+            }
+        )
+        if len(sessions) >= limit:
+            break
+    return sessions
+
+
 def default_task_state() -> dict[str, Any]:
     return {
         "active": False,

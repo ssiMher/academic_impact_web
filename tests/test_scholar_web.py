@@ -10,7 +10,7 @@ from unittest import mock
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.services import scholar_core
+from app.services import impact_core, scholar_core
 
 
 TEST_SESSION_ID = "test_scholar_session"
@@ -600,6 +600,29 @@ class ScholarWebTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 400)
         create_session.assert_not_called()
+
+    def test_home_recent_sessions_includes_scholar_sessions(self):
+        client = TestClient(app)
+        with mock.patch.object(impact_core, "list_sessions", return_value=[]), mock.patch.object(
+            scholar_core,
+            "list_scholar_sessions",
+            return_value=[
+                {
+                    "id": TEST_SESSION_ID,
+                    "query": "Chen Tian",
+                    "updated_at": "2026-05-18T12:00:00",
+                    "paper_count": 12,
+                    "session_type": "scholar_impact",
+                    "detail_url": f"/scholars/{TEST_SESSION_ID}",
+                }
+            ],
+        ):
+            response = client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(TEST_SESSION_ID, response.text)
+        self.assertIn("/scholars/test_scholar_session", response.text)
+        self.assertIn("Chen Tian", response.text)
 
     def test_make_scholar_session_id_avoids_fast_duplicate(self):
         first = scholar_core.make_scholar_session_id("Chen Tian")

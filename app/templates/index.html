@@ -93,7 +93,7 @@
           <tbody>
             {% for item in sessions %}
             <tr>
-              <td><a href="/sessions/{{ item.id }}">{{ item.id }}</a></td>
+              <td><a href="{{ item.detail_url }}">{{ item.id }}</a></td>
               <td>{{ item.query }}</td>
               <td>{{ item.paper_count }}</td>
               <td>{{ item.updated_at or "-" }}</td>

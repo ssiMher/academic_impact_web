@@ -15,6 +15,23 @@ templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
+def merged_recent_sessions(limit: int = 20) -> list[dict[str, object]]:
+    sessions = []
+    sessions.extend(impact_core.list_sessions(limit=limit))
+    sessions.extend(scholar_core.list_scholar_sessions(limit=limit))
+    for item in sessions:
+        item.setdefault("detail_url", f"/sessions/{item.get('id', '')}")
+        item.setdefault("session_type", "citation_impact")
+    sessions.sort(
+        key=lambda item: (
+            str(item.get("updated_at") or ""),
+            str(item.get("id") or ""),
+        ),
+        reverse=True,
+    )
+    return sessions[:limit]
+
+
 def redirect_to_session(session_id: str) -> RedirectResponse:
     return RedirectResponse(url=f"/sessions/{session_id}", status_code=303)
 
@@ -26,7 +43,7 @@ async def home(request: Request):
         "index.html",
         {
             "request": request,
-            "sessions": impact_core.list_sessions(),
+            "sessions": merged_recent_sessions(),
         },
     )
 

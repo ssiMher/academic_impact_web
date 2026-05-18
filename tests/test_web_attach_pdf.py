@@ -103,6 +103,36 @@ class WebAttachPdfTestCase(unittest.TestCase):
 
         self.assertIn("downloaded_non_pdf", str(ctx.exception))
 
+    def test_list_sessions_reads_lightweight_summary_without_loading_derivatives(self):
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "ok": True,
+                    "query": "Lightweight Query",
+                    "created_at": "2026-05-18T12:00:00",
+                    "updated_at": "2026-05-18T12:05:00",
+                    "papers": [{"id": "P001"}, {"id": "P002"}],
+                    "paper_count": 2,
+                    "analysis": {"status": "ready"},
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        class FakeCli:
+            @staticmethod
+            def load_session(session_dir):
+                raise AssertionError("list_sessions should not load heavy session derivatives")
+
+        with mock.patch.object(impact_core, "impact_cli", return_value=FakeCli()):
+            rows = impact_core.list_sessions(limit=20)
+
+        row = next(item for item in rows if item["id"] == TEST_SESSION_ID)
+        self.assertEqual(row["query"], "Lightweight Query")
+        self.assertEqual(row["paper_count"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -258,9 +258,11 @@ def find_local_pdf_with_metadata(
     arxiv_id: str = "",
     search_dirs=None,
     index_path: str = DEFAULT_LOCAL_PDF_INDEX_PATH,
+    index_data=None,
 ):
     normalized_dirs = normalize_search_dirs(search_dirs or [DEFAULT_LOCAL_PDF_DIR])
-    index_data = load_local_pdf_index(index_path) if index_path else None
+    if index_data is None and index_path:
+        index_data = load_local_pdf_index(index_path)
     indexed_entries = indexed_local_pdf_entries(index_data, normalized_dirs)
 
     candidates = []

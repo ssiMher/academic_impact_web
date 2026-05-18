@@ -112,6 +112,8 @@ class ScholarWebTestCase(unittest.TestCase):
                 "entry_count": 128,
                 "scanned_pdf_count": 128,
                 "build_elapsed_ms": 240,
+                "refresh_total_ms": 840,
+                "queue_rematch_elapsed_ms": 600,
                 "generated_at": "2026-05-18T10:00:00",
                 "index_path": "/tmp/local_pdf_index.json",
                 "search_dirs": ["/papers"],
@@ -125,6 +127,8 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("上次扫描 PDF：128", response.text)
         self.assertIn("队列命中本地 PDF：1", response.text)
         self.assertIn("构建耗时：0.24 秒", response.text)
+        self.assertIn("本次刷新总耗时：0.84 秒", response.text)
+        self.assertIn("队列重匹配耗时：0.6 秒", response.text)
         self.assertIn("/tmp/local_pdf_index.json", response.text)
 
     def test_scholar_route_renders_expansion_controls_and_queue(self):
@@ -849,15 +853,23 @@ class ScholarWebTestCase(unittest.TestCase):
                 return ["/papers"]
 
             @staticmethod
-            def rebuild_scholar_derived_outputs(session, queue_limit=300):
-                session["deep_analysis_queue"] = [
-                    {
-                        "queue_id": "Q002",
-                        "citing_title": "Matched from rebuilt queue",
-                        "library_pdf": {"status": "local_library_matched"},
+            def match_queue_item_local_pdf(
+                queue_item,
+                download_pdf_module,
+                *,
+                search_dirs=None,
+                index_data=None,
+            ):
+                if queue_item.get("queue_id") == "Q001":
+                    return {
+                        "status": "local_library_matched",
+                        "local_file_path": "/papers/matched.pdf",
                     }
-                ]
-                return session
+                return {}
+
+            @staticmethod
+            def rebuild_scholar_derived_outputs(session, queue_limit=300):
+                raise AssertionError("refresh_local_pdf_index should not rebuild scholar derived outputs")
 
         with mock.patch.object(
             scholar_core,
@@ -872,8 +884,14 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(result["entry_count"], 42)
         self.assertEqual(result["scanned_pdf_count"], 42)
         self.assertEqual(result["build_elapsed_ms"], 180)
+        self.assertIn("refresh_total_ms", result)
+        self.assertIn("queue_rematch_elapsed_ms", result)
         payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
-        self.assertEqual(payload["deep_analysis_queue"][0]["queue_id"], "Q002")
+        self.assertEqual(payload["deep_analysis_queue"][0]["queue_id"], "Q001")
+        self.assertEqual(
+            payload["deep_analysis_queue"][0]["library_pdf"]["status"],
+            "local_library_matched",
+        )
 
     def test_expand_scholar_citations_route_redirects(self):
         client = TestClient(app)

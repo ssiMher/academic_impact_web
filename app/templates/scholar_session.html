@@ -102,9 +102,14 @@
           <p>上次扫描 PDF：{{ local_pdf_index.scanned_pdf_count or local_pdf_index.entry_count or 0 }}</p>
           <p>队列命中本地 PDF：{{ local_pdf_index.queue_matched_count or 0 }}</p>
           <p>构建耗时：{{ ((local_pdf_index.build_elapsed_ms or 0) / 1000) | round(2) }} 秒</p>
+          <p>本次刷新总耗时：{{ ((local_pdf_index.refresh_total_ms or 0) / 1000) | round(2) }} 秒</p>
+          <p>队列重匹配耗时：{{ ((local_pdf_index.queue_rematch_elapsed_ms or 0) / 1000) | round(2) }} 秒</p>
           <p class="muted">索引文件：{{ local_pdf_index.index_path or '未配置' }}</p>
           {% if local_pdf_index.generated_at %}
           <p class="muted">最近刷新：{{ local_pdf_index.generated_at }}</p>
+          {% endif %}
+          {% if local_pdf_index.last_refreshed_at %}
+          <p class="muted">上次点按钮刷新：{{ local_pdf_index.last_refreshed_at }}</p>
           {% endif %}
           {% if local_pdf_index.search_dirs %}
           <p class="muted">扫描目录：{{ local_pdf_index.search_dirs | join('；') }}</p>

@@ -1,5 +1,39 @@
 # 开发日志
 
+## 2026-05-18：把首页 recent sessions 和本地 PDF 刷新链路从重型路径上挪开
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 首页“最近会话”返回很慢，实测大头并不在 scholar 会话，而在普通 citation impact 会话列表。
+- `impact_core.list_sessions()` 之前会对每个 session 调 `impact_cli.load_session()`，而 `load_session()` 又会触发 `sync_session_derivatives()` 和 `rebuild_person_candidates()`，导致首页只是列摘要也会重算人物候选。
+- “刷新本地 PDF 索引”按钮之前除了重建索引，还会整套重跑 scholar 派生统计、人物候选和高价值队列，和按钮语义不符，也是长耗时来源。
+
+本次处理：
+- 在 `app/services/impact_core.py` 中新增轻量摘要读取逻辑，`list_sessions()` 只直接读取 `session.json` 中已有字段，不再触发 `impact_cli.load_session()`。
+- 在 `app/services/scholar_core.py` 中把 `refresh_scholar_local_pdf_index()` 改成真正的轻量刷新：
+  - 只重建本地 PDF 索引
+  - 只对当前高价值队列做本地 PDF 重匹配
+  - 不再重跑人物候选、venue 统计和高价值队列生成
+- 在 scholar 索引状态面板中补充分阶段耗时：
+  - 索引构建耗时
+  - 队列重匹配耗时
+  - 本次刷新总耗时
+  - 上次按钮刷新时间
+- 在 `download_pdf.py` 中允许 `find_local_pdf_with_metadata()` 直接复用已加载的 `index_data`，避免队列重匹配时每条记录重复从磁盘读索引文件。
+
+实测结果：
+- 优化前：首页 `impact_core.list_sessions(limit=20)` 约 `7.3s ~ 8.1s`。
+- 优化后：首页 `impact_core.list_sessions(limit=20)` 约 `0.18s ~ 0.20s`，`merged_recent_sessions(limit=20)` 约 `0.18s`。
+- 合成 300 条高价值队列场景下：
+  - 旧版 refresh 路径重建整套派生，profile 显示时间主要花在 `build_person_candidates_from_citation_edges()` / `person_candidates.build_candidates()`。
+  - 新版 refresh 路径只做索引 + 队列重匹配，实测总耗时约 `0.47s ~ 1.12s`，其中索引构建约 `3ms`，队列重匹配约 `1.07s`。
+
+当前策略：
+- 首页只读最近会话摘要；真正进入详情页时再走重型会话加载。
+- “刷新本地 PDF 索引”只刷新本地 PDF 相关状态，不再顺带刷新无关统计。
+- 队列重匹配优先复用内存里的本地索引，减少重复文件读取。
+
 ## 2026-05-18：给学者页补上本地 PDF 索引状态和一键刷新
 
 分支：`codex/organize-analysis-venue-work`

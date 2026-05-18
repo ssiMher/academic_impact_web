@@ -56,6 +56,8 @@ The scholar detail page now shows a local PDF index status panel with:
 - current index entry count
 - last scanned PDF count
 - last index build duration
+- last queue rematch duration
+- last refresh total duration
 - current deep-analysis queue matches resolved from the local library
 - index path
 - refresh button for rebuilding the JSON index and refreshing the current scholar queue
@@ -67,7 +69,13 @@ Use the refresh button after:
 - changing `ACADEMIC_IMPACT_PDF_LIBRARY_DIRS`
 - changing `ACADEMIC_IMPACT_PDF_INDEX_PATH`
 
-The refresh action intentionally reuses the current scholar session's queue limit and rebuilds derived outputs immediately, so the page reflects newly matched local PDFs without a separate manual rebuild step.
+The refresh action intentionally stays local-PDF-scoped:
+
+- rebuild the JSON index
+- rematch the current deep-analysis queue against the refreshed index
+- preserve the rest of the scholar-derived statistics
+
+It does **not** rebuild person candidates or regenerate the queue from citation edges. That keeps the button aligned with its name and avoids paying the full scholar-derivation cost when the user only added or renamed local PDFs.
 
 ## Expected Runtime
 

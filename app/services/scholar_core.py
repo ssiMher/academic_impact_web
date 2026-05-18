@@ -201,6 +201,7 @@ def load_local_pdf_index_status(session: dict[str, Any] | None = None) -> dict[s
     search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
     index_path = str(Path(download_pdf.DEFAULT_LOCAL_PDF_INDEX_PATH).expanduser())
     index_data = download_pdf.load_local_pdf_index(index_path=index_path) or {}
+    refresh_meta = (session or {}).get("local_pdf_index_refresh") or {}
     queue = (session or {}).get("deep_analysis_queue", []) or []
     queue_matched_count = sum(
         1
@@ -216,6 +217,11 @@ def load_local_pdf_index_status(session: dict[str, Any] | None = None) -> dict[s
         "index_path": index_path,
         "search_dirs": index_data.get("search_dirs") or search_dirs,
         "queue_matched_count": queue_matched_count,
+        "refresh_total_ms": int(refresh_meta.get("refresh_total_ms") or 0),
+        "queue_rematch_elapsed_ms": int(refresh_meta.get("queue_rematch_elapsed_ms") or 0),
+        "queue_items_scanned": int(refresh_meta.get("queue_items_scanned") or 0),
+        "queue_items_updated": int(refresh_meta.get("queue_items_updated") or 0),
+        "last_refreshed_at": refresh_meta.get("last_refreshed_at") or "",
     }
 
 
@@ -1390,6 +1396,7 @@ def rebuild_scholar_derived_outputs(
 
 def refresh_scholar_local_pdf_index(session_id: str) -> dict[str, Any]:
     with _task_lock(session_id):
+        refresh_started = time.perf_counter()
         session = load_scholar_status(session_id)
         task_state = ensure_task_state(session)
         if task_state.get("active"):
@@ -1400,14 +1407,37 @@ def refresh_scholar_local_pdf_index(session_id: str) -> dict[str, Any]:
         search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
         index_path = download_pdf.DEFAULT_LOCAL_PDF_INDEX_PATH
         download_pdf.build_local_pdf_index(search_dirs, index_path=index_path)
-
-        queue_limit = len(session.get("deep_analysis_queue", []) or []) or 300
-        rebuilt = pipeline.rebuild_scholar_derived_outputs(
-            session,
-            queue_limit=queue_limit,
-        )
-        write_scholar_status(session_id, rebuilt)
-        return load_local_pdf_index_status(rebuilt)
+        index_data = download_pdf.load_local_pdf_index(index_path=index_path)
+        queue_started = time.perf_counter()
+        queue_items_scanned = 0
+        queue_items_updated = 0
+        for item in session.get("deep_analysis_queue", []) or []:
+            if item.get("manual_pdf"):
+                continue
+            queue_items_scanned += 1
+            existing = item.get("library_pdf")
+            matched = pipeline.match_queue_item_local_pdf(
+                item,
+                download_pdf,
+                search_dirs=search_dirs,
+                index_data=index_data,
+            )
+            if matched:
+                item["library_pdf"] = matched
+            else:
+                item.pop("library_pdf", None)
+            if item.get("library_pdf") != existing:
+                queue_items_updated += 1
+        queue_rematch_elapsed_ms = int((time.perf_counter() - queue_started) * 1000)
+        session["local_pdf_index_refresh"] = {
+            "refresh_total_ms": int((time.perf_counter() - refresh_started) * 1000),
+            "queue_rematch_elapsed_ms": queue_rematch_elapsed_ms,
+            "queue_items_scanned": queue_items_scanned,
+            "queue_items_updated": queue_items_updated,
+            "last_refreshed_at": datetime.now().isoformat(timespec="seconds"),
+        }
+        write_scholar_status(session_id, session)
+        return load_local_pdf_index_status(session)
 
 
 def review_person_candidate(

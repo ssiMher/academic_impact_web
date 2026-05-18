@@ -88,6 +88,26 @@ def _session_json_path(session_id: str) -> Path:
     return resolve_session_dir(session_id) / "session.json"
 
 
+def load_session_summary_record(session_dir: Path) -> dict[str, Any]:
+    session_path = session_dir / "session.json"
+    if not session_path.exists():
+        raise FileNotFoundError(f"未找到 session.json: {session_path}")
+    session = json.loads(session_path.read_text(encoding="utf-8"))
+    papers = session.get("papers")
+    if not isinstance(papers, list):
+        papers = []
+    analysis = session.get("analysis")
+    if not isinstance(analysis, dict):
+        analysis = {}
+    return {
+        "id": session_dir.name,
+        "query": session.get("query", ""),
+        "updated_at": session.get("updated_at") or session.get("created_at"),
+        "paper_count": session.get("paper_count", len(papers)),
+        "analysis": analysis,
+    }
+
+
 def load_session_record(session_id: str) -> dict[str, Any]:
     session_dir = resolve_session_dir(session_id)
     session_path = session_dir / "session.json"
@@ -287,18 +307,10 @@ def list_sessions(limit: int = 20) -> list[dict[str, Any]]:
         if not session_path.exists():
             continue
         try:
-            session = impact_cli().load_session(session_dir)
+            session = load_session_summary_record(session_dir)
         except Exception:
             continue
-        sessions.append(
-            {
-                "id": session_dir.name,
-                "query": session.get("query", ""),
-                "updated_at": session.get("updated_at") or session.get("created_at"),
-                "paper_count": session.get("paper_count", 0),
-                "analysis": session.get("analysis", {}),
-            }
-        )
+        sessions.append(session)
         if len(sessions) >= limit:
             break
     return sessions

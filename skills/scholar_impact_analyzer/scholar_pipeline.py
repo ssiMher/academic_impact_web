@@ -337,7 +337,13 @@ def existing_library_pdf_entry(queue_item: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
-def match_queue_item_local_pdf(queue_item: dict[str, Any], download_pdf_module) -> dict[str, Any]:
+def match_queue_item_local_pdf(
+    queue_item: dict[str, Any],
+    download_pdf_module,
+    *,
+    search_dirs=None,
+    index_data=None,
+) -> dict[str, Any]:
     existing = existing_library_pdf_entry(queue_item)
     if existing:
         return existing
@@ -352,7 +358,8 @@ def match_queue_item_local_pdf(queue_item: dict[str, Any], download_pdf_module) 
         query=query,
         title=title,
         doi=doi,
-        search_dirs=configured_local_pdf_library_dirs(download_pdf_module),
+        search_dirs=search_dirs or configured_local_pdf_library_dirs(download_pdf_module),
+        index_data=index_data,
     )
     if match:
         return {

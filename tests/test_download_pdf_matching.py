@@ -119,6 +119,28 @@ class DownloadPdfMatchingTestCase(unittest.TestCase):
         self.assertIn("build_elapsed_ms", payload)
         self.assertGreaterEqual(payload["build_elapsed_ms"], 0)
 
+    def test_find_local_pdf_with_metadata_reuses_preloaded_index_data(self):
+        title = "A Study on Reusing Loaded Index Data"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pdf_path = Path(tmpdir) / f"{title}.pdf"
+            pdf_path.write_bytes(b"%PDF-1.4\n% test\n")
+            index_data = self.module.build_local_pdf_index([tmpdir], index_path="")
+
+            with mock.patch.object(
+                self.module,
+                "load_local_pdf_index",
+                side_effect=AssertionError("preloaded index data should avoid reloading from disk"),
+            ):
+                match = self.module.find_local_pdf_with_metadata(
+                    title=title,
+                    search_dirs=[tmpdir],
+                    index_data=index_data,
+                )
+
+        self.assertIsNotNone(match)
+        self.assertEqual(match["local_file_path"], str(pdf_path))
+        self.assertEqual(match["match_source"], "index_cache")
+
 
 if __name__ == "__main__":
     unittest.main()

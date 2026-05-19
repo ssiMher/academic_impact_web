@@ -1,5 +1,21 @@
 # 开发日志
 
+## 2026-05-19：识别 ACM ePDF 的 DOI 后缀文件名
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- ACM Digital Library 的 ePDF 下载文件名常见为 DOI 后缀，例如 `3689031.3696065.pdf`。
+- 手动上传 PDF 时文件名不影响绑定，因为上传动作按队列项保存；但本地论文库自动识别依赖 DOI / arXiv / 标题等线索，旧规则只覆盖 `10.1145_3689031.3696065` 这类完整 DOI 文件名，容易漏掉 ACM 的默认命名。
+
+本次处理：
+- 在 `download_pdf.py` 中补充 DOI 文件名 hint：
+  - 完整 DOI
+  - `/` 替换为 `_` 的完整 DOI
+  - DOI suffix
+  - `/` 替换为 `_` 的 DOI suffix
+- 增加回归测试，确保 `10.1145/3689031.3696065` 能命中本地文件 `3689031.3696065.pdf`。
+
 ## 2026-05-18：把首页 recent sessions 和本地 PDF 刷新链路从重型路径上挪开
 
 分支：`codex/organize-analysis-venue-work`

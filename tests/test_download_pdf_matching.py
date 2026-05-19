@@ -56,6 +56,18 @@ class DownloadPdfMatchingTestCase(unittest.TestCase):
 
         self.assertEqual(matched, str(pdf_path))
 
+    def test_find_local_pdf_matches_acm_epdf_doi_suffix_filename(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pdf_path = Path(tmpdir) / "3689031.3696065.pdf"
+            pdf_path.write_bytes(b"%PDF-1.4\n% test\n")
+
+            matched = self.module.find_local_pdf(
+                doi="10.1145/3689031.3696065",
+                search_dir=tmpdir,
+            )
+
+        self.assertEqual(matched, str(pdf_path))
+
     def test_find_local_pdf_with_metadata_prefers_index_cache(self):
         title = "A Study on Cache Friendly Congestion Control"
         with tempfile.TemporaryDirectory() as tmpdir:

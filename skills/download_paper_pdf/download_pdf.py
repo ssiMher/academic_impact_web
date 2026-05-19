@@ -125,6 +125,29 @@ def title_similarity(query: str, candidate_title: str) -> float:
     return overlap / max(len(q_words), len(c_words))
 
 
+def doi_filename_hints(doi: str):
+    normalized = (doi or "").strip().lower()
+    normalized = re.sub(r"^https?://(?:dx\.)?doi\.org/", "", normalized)
+    normalized = re.sub(r"^doi\s*:\s*", "", normalized)
+    normalized = normalized.strip()
+    if not normalized:
+        return ()
+    suffix = normalized.split("/", 1)[1] if "/" in normalized else ""
+    hints = [
+        normalized,
+        normalized.replace("/", "_"),
+        suffix,
+        suffix.replace("/", "_") if suffix else "",
+    ]
+    result = []
+    for hint in hints:
+        hint = hint.strip("._- ")
+        if len(hint) < 6 or hint in result:
+            continue
+        result.append(hint)
+    return tuple(result)
+
+
 def list_local_pdf_files(search_dir: str):
     base = os.path.expanduser(search_dir)
     if not os.path.isdir(base):
@@ -229,9 +252,11 @@ def _score_local_pdf_candidate(
         score = max(score, title_similarity(text, normalized_base_name))
 
     if doi:
-        doi_hint = doi.lower().replace("/", "_")
-        if doi_hint in file_path.lower():
-            score = max(score, 0.95)
+        lower_file_path = file_path.lower()
+        lower_base_name = base_name.lower()
+        for doi_hint in doi_filename_hints(doi):
+            if doi_hint in lower_file_path or doi_hint == lower_base_name:
+                score = max(score, 0.95)
 
     return score
 

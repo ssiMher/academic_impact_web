@@ -1,5 +1,26 @@
 # 开发日志
 
+## 2026-05-19：导出待补 PDF 清单
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 高价值引用队列里逐篇手动上传 PDF 很慢。
+- 更合理的流程是先刷新本地 PDF 索引，让本地库自动命中；剩余未命中的项目再导出清单，批量去 arXiv、DOI 页面、机构权限入口或开放获取源查找 PDF。
+
+本次处理：
+- 新增 `missing_pdfs.csv` 导出，位于 scholar 会话导出区。
+- CSV 只包含当前高价值引用队列中尚未绑定手动 PDF、也尚未命中本地库 PDF 的项目。
+- 导出字段包括 `queue_id`、优先级、原因、标题、DOI、DOI URL、建议文件名、arXiv URL、venue、年份、作者、命中目标论文、source URL 和下载优先级。
+- 对 ACM ePDF 常见的 DOI suffix 文件名，建议文件名会给出类似 `3689031.3696065.pdf`，方便批量下载后直接放入本地论文库。
+
+推荐流程：
+1. 先点击“刷新本地 PDF 索引”，让本地库尽量自动命中。
+2. 再导出 `missing_pdfs.csv`。
+3. 根据 `download_priority` 批量找 PDF。
+4. 下载后放入本地库，再刷新索引。
+5. 只对仍未命中的少量论文手动上传。
+
 ## 2026-05-19：识别 ACM ePDF 的 DOI 后缀文件名
 
 分支：`codex/organize-analysis-venue-work`

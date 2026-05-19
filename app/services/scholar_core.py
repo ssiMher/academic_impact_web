@@ -1280,6 +1280,127 @@ def write_scholar_raw_citing_authors_csv(session_id: str) -> Path:
     return path
 
 
+def _queue_item_has_bound_pdf(item: dict[str, Any]) -> bool:
+    manual_pdf = item.get("manual_pdf") or {}
+    library_pdf = item.get("library_pdf") or {}
+    return bool(
+        manual_pdf.get("local_file_path")
+        or manual_pdf.get("status")
+        or library_pdf.get("local_file_path")
+        or library_pdf.get("status")
+    )
+
+
+def _arxiv_id_from_queue_item(item: dict[str, Any]) -> str:
+    candidates = [
+        item.get("citing_arxiv_id") or "",
+        item.get("arxiv_id") or "",
+        item.get("citing_doi") or "",
+        item.get("citing_paper_id") or "",
+    ]
+    for candidate in candidates:
+        text = str(candidate or "").strip()
+        if not text:
+            continue
+        text = re.sub(r"^https?://arxiv\.org/(?:abs|pdf)/", "", text, flags=re.I)
+        text = re.sub(r"^doi\s*:\s*", "", text, flags=re.I)
+        text = re.sub(r"^10\.48550/arxiv\.", "", text, flags=re.I)
+        text = re.sub(r"^arxiv\s*:\s*", "", text, flags=re.I)
+        text = re.sub(r"\.pdf$", "", text, flags=re.I)
+        text = re.sub(r"v\d+$", "", text, flags=re.I)
+        if re.fullmatch(r"\d{4}\.\d{4,5}", text):
+            return text
+    return ""
+
+
+def _doi_suffix_filename(doi: str) -> str:
+    normalized = re.sub(r"^https?://(?:dx\.)?doi\.org/", "", doi or "", flags=re.I)
+    normalized = re.sub(r"^doi\s*:\s*", "", normalized, flags=re.I).strip()
+    suffix = normalized.split("/", 1)[1] if "/" in normalized else normalized
+    suffix = suffix.strip("._- ")
+    return f"{suffix}.pdf" if suffix else ""
+
+
+def build_scholar_missing_pdfs_csv(session: dict[str, Any]) -> str:
+    headers = [
+        "queue_id",
+        "priority_score",
+        "reasons",
+        "citing_title",
+        "citing_doi",
+        "doi_url",
+        "suggested_filename",
+        "arxiv_id",
+        "arxiv_url",
+        "citing_year",
+        "citing_venue",
+        "citing_authors",
+        "cited_publication_count",
+        "cited_publication_titles",
+        "source_publication_ids",
+        "provider",
+        "citing_paper_id",
+        "citing_openalex_id",
+        "citing_scopus_id",
+        "source_url",
+        "download_priority",
+    ]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=headers)
+    writer.writeheader()
+
+    for item in session.get("deep_analysis_queue", []) or []:
+        if not isinstance(item, dict) or _queue_item_has_bound_pdf(item):
+            continue
+        doi = (item.get("citing_doi") or "").strip()
+        arxiv_id = _arxiv_id_from_queue_item(item)
+        if arxiv_id:
+            priority = "arxiv"
+        elif doi:
+            priority = "doi"
+        elif item.get("source_url"):
+            priority = "source_url"
+        else:
+            priority = "title_search"
+        writer.writerow(
+            {
+                "queue_id": item.get("queue_id") or "",
+                "priority_score": item.get("priority_score") or "",
+                "reasons": " | ".join(item.get("reasons") or []),
+                "citing_title": item.get("citing_title") or "",
+                "citing_doi": doi,
+                "doi_url": f"https://doi.org/{doi}" if doi else "",
+                "suggested_filename": _doi_suffix_filename(doi),
+                "arxiv_id": arxiv_id,
+                "arxiv_url": f"https://arxiv.org/pdf/{arxiv_id}" if arxiv_id else "",
+                "citing_year": item.get("citing_year") or "",
+                "citing_venue": item.get("citing_venue") or "",
+                "citing_authors": " | ".join(item.get("citing_authors") or []),
+                "cited_publication_count": item.get("cited_publication_count") or "",
+                "cited_publication_titles": " | ".join(item.get("cited_publication_titles") or []),
+                "source_publication_ids": " | ".join(item.get("source_publication_ids") or []),
+                "provider": item.get("provider") or "",
+                "citing_paper_id": item.get("citing_paper_id") or "",
+                "citing_openalex_id": item.get("citing_openalex_id") or "",
+                "citing_scopus_id": item.get("citing_scopus_id") or "",
+                "source_url": item.get("source_url") or "",
+                "download_priority": priority,
+            }
+        )
+
+    return buffer.getvalue()
+
+
+def write_scholar_missing_pdfs_csv(session_id: str) -> Path:
+    session = load_scholar_status(session_id)
+    csv_text = build_scholar_missing_pdfs_csv(session)
+    export_dir = resolve_scholar_session_dir(session_id) / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    path = export_dir / "missing_pdfs.csv"
+    path.write_text(csv_text, encoding="utf-8-sig")
+    return path
+
+
 def update_task_state(session_id: str, **updates) -> dict[str, Any]:
     with _task_lock(session_id):
         session = load_scholar_status(session_id)

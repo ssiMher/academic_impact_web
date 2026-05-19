@@ -208,6 +208,17 @@ def load_local_pdf_index_status(session: dict[str, Any] | None = None) -> dict[s
         for item in queue
         if ((item.get("library_pdf") or {}).get("status") or "") == "local_library_matched"
     )
+    queue_manual_pdf_count = sum(
+        1
+        for item in queue
+        if (item.get("manual_pdf") or {}).get("local_file_path")
+        or (item.get("manual_pdf") or {}).get("status")
+    )
+    queue_ready_pdf_count = sum(
+        1
+        for item in queue
+        if _queue_item_has_bound_pdf(item)
+    )
     return {
         "exists": bool(index_data),
         "entry_count": int(index_data.get("entry_count") or 0),
@@ -217,6 +228,8 @@ def load_local_pdf_index_status(session: dict[str, Any] | None = None) -> dict[s
         "index_path": index_path,
         "search_dirs": index_data.get("search_dirs") or search_dirs,
         "queue_matched_count": queue_matched_count,
+        "queue_manual_pdf_count": queue_manual_pdf_count,
+        "queue_ready_pdf_count": queue_ready_pdf_count,
         "refresh_total_ms": int(refresh_meta.get("refresh_total_ms") or 0),
         "queue_rematch_elapsed_ms": int(refresh_meta.get("queue_rematch_elapsed_ms") or 0),
         "queue_items_scanned": int(refresh_meta.get("queue_items_scanned") or 0),

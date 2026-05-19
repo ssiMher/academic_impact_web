@@ -101,6 +101,8 @@
           <p>当前索引条目：{{ local_pdf_index.entry_count or 0 }}</p>
           <p>上次扫描 PDF：{{ local_pdf_index.scanned_pdf_count or local_pdf_index.entry_count or 0 }}</p>
           <p>队列命中本地 PDF：{{ local_pdf_index.queue_matched_count or 0 }}</p>
+          <p>队列已上传 PDF：{{ local_pdf_index.queue_manual_pdf_count or 0 }}</p>
+          <p>队列可直接分析 PDF：{{ local_pdf_index.queue_ready_pdf_count or 0 }}</p>
           <p>构建耗时：{{ ((local_pdf_index.build_elapsed_ms or 0) / 1000) | round(2) }} 秒</p>
           <p>本次刷新总耗时：{{ ((local_pdf_index.refresh_total_ms or 0) / 1000) | round(2) }} 秒</p>
           <p>队列重匹配耗时：{{ ((local_pdf_index.queue_rematch_elapsed_ms or 0) / 1000) | round(2) }} 秒</p>

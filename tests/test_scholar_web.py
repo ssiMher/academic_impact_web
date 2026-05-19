@@ -93,6 +93,14 @@ class ScholarWebTestCase(unittest.TestCase):
                             "queue_id": "Q001",
                             "citing_title": "Library Paper",
                             "library_pdf": {"status": "local_library_matched"},
+                        },
+                        {
+                            "queue_id": "Q002",
+                            "citing_title": "Uploaded Paper",
+                            "manual_pdf": {
+                                "status": "manual_pdf_attached",
+                                "local_file_path": "/tmp/uploaded.pdf",
+                            },
                         }
                     ],
                     "statistics": {"publication_count": 0},
@@ -126,6 +134,8 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("当前索引条目：128", response.text)
         self.assertIn("上次扫描 PDF：128", response.text)
         self.assertIn("队列命中本地 PDF：1", response.text)
+        self.assertIn("队列已上传 PDF：1", response.text)
+        self.assertIn("队列可直接分析 PDF：2", response.text)
         self.assertIn("构建耗时：0.24 秒", response.text)
         self.assertIn("本次刷新总耗时：0.84 秒", response.text)
         self.assertIn("队列重匹配耗时：0.6 秒", response.text)

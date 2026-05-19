@@ -131,6 +131,22 @@ async def scholar_detail(
             for item in (payload.get("deep_analysis_queue", []) or [])
             if ((item.get("library_pdf") or {}).get("status") or "") == "local_library_matched"
         )
+    if "queue_manual_pdf_count" not in local_pdf_index_status:
+        local_pdf_index_status["queue_manual_pdf_count"] = sum(
+            1
+            for item in (payload.get("deep_analysis_queue", []) or [])
+            if (item.get("manual_pdf") or {}).get("local_file_path")
+            or (item.get("manual_pdf") or {}).get("status")
+        )
+    if "queue_ready_pdf_count" not in local_pdf_index_status:
+        local_pdf_index_status["queue_ready_pdf_count"] = sum(
+            1
+            for item in (payload.get("deep_analysis_queue", []) or [])
+            if (item.get("manual_pdf") or {}).get("local_file_path")
+            or (item.get("manual_pdf") or {}).get("status")
+            or (item.get("library_pdf") or {}).get("local_file_path")
+            or (item.get("library_pdf") or {}).get("status")
+        )
     queue_view = scholar_core.build_deep_analysis_queue_view(
         payload,
         active_reason=queue_reason,

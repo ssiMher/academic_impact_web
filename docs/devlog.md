@@ -1,5 +1,32 @@
 # 开发日志
 
+## 2026-05-19：优化批量下载待补 PDF
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 批量下载待补 PDF 初版是串行执行，失败论文会把多个外部源和 timeout 都跑完，整体耗时长。
+- 只有 `source_url` 的队列项会被底层下载器误判成 DOI/标题查询，既慢又容易失败。
+- `pdf_download_report.csv` 只记录成功/失败，不够解释为什么下载不到。
+
+本次处理：
+- 批量下载改为小并发执行，默认最多 4 个 worker，可通过 `ACADEMIC_IMPACT_PDF_DOWNLOAD_WORKERS` 调整，内部限制为 1 到 8。
+- 对 `source_url` 单独处理：
+  - 如果它本身像 PDF URL，直接下载。
+  - 否则解析 HTML 落地页中的 PDF 候选链接，再逐个尝试。
+- 扩展 `pdf_download_report.csv` 诊断字段：
+  - `source_strategy`
+  - `candidate_count`
+  - `attempted_count`
+  - `failure_type`
+  - `elapsed_ms`
+  - `download_errors`
+- 失败类型会粗分为无候选、超时、权限/登录需求、404、非 PDF、元数据未找到等。
+
+当前策略：
+- 并发只加在下载层，不并发写 session，避免多个线程同时改同一个会话 JSON。
+- 报告按原队列顺序输出，方便和页面上的高价值队列对照。
+
 ## 2026-05-19：批量下载待补 PDF
 
 分支：`codex/organize-analysis-venue-work`

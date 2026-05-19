@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import concurrent.futures
 import csv
 import importlib.util
 import io
 import json
+import os
 import re
 import shutil
 import threading
@@ -1480,6 +1482,12 @@ def _write_pdf_download_report(session_id: str, rows: list[dict[str, Any]]) -> P
         "citing_doi",
         "file_path",
         "pdf_url",
+        "source_strategy",
+        "candidate_count",
+        "attempted_count",
+        "failure_type",
+        "elapsed_ms",
+        "download_errors",
         "error",
     ]
     path = get_scholar_pdf_download_report_path(session_id)
@@ -1493,36 +1501,196 @@ def _write_pdf_download_report(session_id: str, rows: list[dict[str, Any]]) -> P
     return path
 
 
-def download_missing_scholar_pdfs(session_id: str) -> dict[str, Any]:
+def _pdf_download_max_workers(value: int | None = None) -> int:
+    if value is not None:
+        return max(1, min(int(value), 8))
+    raw_value = os.getenv("ACADEMIC_IMPACT_PDF_DOWNLOAD_WORKERS", "4")
+    try:
+        return max(1, min(int(raw_value), 8))
+    except ValueError:
+        return 4
+
+
+def _classify_pdf_download_failure(result: dict[str, Any]) -> str:
+    error = str(result.get("error") or "").lower()
+    if not result.get("pdf_candidates") and "开源 pdf" in error:
+        return "no_pdf_candidates"
+    if not result.get("pdf_candidates") and "pdf candidate" in error:
+        return "no_pdf_candidates"
+    if "timeout" in error or "timed out" in error:
+        return "timeout"
+    if "403" in error or "401" in error:
+        return "permission_required"
+    if "404" in error:
+        return "not_found"
+    if "不是 pdf" in error or "not pdf" in error or "html" in error:
+        return "downloaded_non_pdf"
+    if "未找到论文" in error:
+        return "metadata_not_found"
+    if error:
+        return "download_failed"
+    return ""
+
+
+def _download_pdf_from_source_url(
+    item: dict[str, Any],
+    source_url: str,
+    *,
+    download_pdf: Any,
+    pipeline: Any,
+) -> dict[str, Any]:
+    started = time.perf_counter()
+    is_probable_pdf_url = getattr(
+        download_pdf,
+        "is_probable_pdf_url",
+        lambda url: str(url).lower().split("?", 1)[0].endswith(".pdf"),
+    )
+    if is_probable_pdf_url(source_url):
+        candidates = [source_url]
+        source_strategy = "source_url_direct_pdf"
+    else:
+        extractor = getattr(download_pdf, "extract_pdf_candidates_from_html_page", None)
+        candidates = list(extractor(source_url) or []) if extractor else []
+        source_strategy = "source_url_candidate_extraction"
+
+    if not candidates:
+        return {
+            "ok": False,
+            "source_strategy": source_strategy,
+            "pdf_candidates": [],
+            "candidate_count": 0,
+            "attempted_count": 0,
+            "elapsed_ms": int((time.perf_counter() - started) * 1000),
+            "failure_type": "no_pdf_candidates",
+            "error": "source_url_no_pdf_candidates",
+        }
+
+    search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
+    fallback_dir = getattr(download_pdf, "DEFAULT_LOCAL_PDF_DIR", str(PROJECT_ROOT / "data" / "downloads"))
+    save_dir = Path(search_dirs[0] if search_dirs else fallback_dir).expanduser()
+    save_dir.mkdir(parents=True, exist_ok=True)
+    sanitize = getattr(download_pdf, "sanitize_filename", lambda value: re.sub(r"[\\/]+", "_", value).strip()[:180] or "paper")
+    target_path = _unique_pdf_path(
+        save_dir,
+        sanitize(item.get("citing_title") or item.get("queue_id") or "paper"),
+    )
+    download_file = getattr(download_pdf, "download_file", None)
+    if download_file is None:
+        return {
+            "ok": False,
+            "source_strategy": source_strategy,
+            "pdf_candidates": candidates,
+            "candidate_count": len(candidates),
+            "attempted_count": 0,
+            "elapsed_ms": int((time.perf_counter() - started) * 1000),
+            "failure_type": "download_failed",
+            "error": "download_file_not_available",
+        }
+
+    errors = []
+    for candidate in candidates:
+        ok, error = download_file(candidate, str(target_path))
+        if ok:
+            return {
+                "ok": True,
+                "file_path": str(target_path),
+                "pdf_url": candidate,
+                "pdf_candidates": candidates,
+                "source_strategy": source_strategy,
+                "candidate_count": len(candidates),
+                "attempted_count": len(errors) + 1,
+                "download_errors": errors,
+                "elapsed_ms": int((time.perf_counter() - started) * 1000),
+            }
+        errors.append({"url": candidate, "error": error or ""})
+
+    failure = {
+        "ok": False,
+        "pdf_url": candidates[-1] if candidates else "",
+        "pdf_candidates": candidates,
+        "source_strategy": source_strategy,
+        "candidate_count": len(candidates),
+        "attempted_count": len(errors),
+        "download_errors": errors,
+        "elapsed_ms": int((time.perf_counter() - started) * 1000),
+        "error": errors[-1]["error"] if errors else "download_failed",
+    }
+    failure["failure_type"] = _classify_pdf_download_failure(failure)
+    return failure
+
+
+def _download_queue_item_pdf(
+    item: dict[str, Any],
+    *,
+    query_type: str,
+    query: str,
+    download_pdf: Any,
+    pipeline: Any,
+) -> dict[str, Any]:
+    started = time.perf_counter()
+    if query_type == "source_url":
+        return _download_pdf_from_source_url(
+            item,
+            query,
+            download_pdf=download_pdf,
+            pipeline=pipeline,
+        )
+
+    result = dict(download_pdf.download_paper(query) or {})
+    result["source_strategy"] = "download_paper"
+    result["candidate_count"] = len(result.get("pdf_candidates") or [])
+    result["download_errors"] = result.get("download_errors") or []
+    if result.get("ok") and result.get("file_path"):
+        result["attempted_count"] = len(result["download_errors"]) + (1 if result.get("pdf_url") else 0)
+    else:
+        result["attempted_count"] = len(result["download_errors"])
+        result["failure_type"] = _classify_pdf_download_failure(result)
+    result["elapsed_ms"] = int((time.perf_counter() - started) * 1000)
+    return result
+
+
+def _serialize_download_errors(value: Any) -> str:
+    if not value:
+        return ""
+    return json.dumps(value, ensure_ascii=False)
+
+
+def download_missing_scholar_pdfs(
+    session_id: str,
+    *,
+    max_workers: int | None = None,
+) -> dict[str, Any]:
     session = load_scholar_status(session_id)
     pipeline = scholar_pipeline()
     download_pdf = pipeline.RUN_PIPELINE.DOWNLOAD_PDF
     queue = session.get("deep_analysis_queue", []) or []
     total = len(queue)
     rows: list[dict[str, Any]] = []
+    work_items: list[dict[str, Any]] = []
     success_count = 0
     failed_count = 0
     skipped_count = 0
 
+    update_task_state(
+        session_id,
+        processed_count=0,
+        total_count=total,
+        message=f"正在批量下载待补 PDF 0/{total}",
+        stage="downloading_missing_pdf",
+        stage_message="准备下载待补 PDF",
+        current_queue_id="",
+        current_title="",
+        current_index=0,
+    )
+
     for index, item in enumerate(queue, start=1):
         queue_id = item.get("queue_id") or ""
         title = item.get("citing_title") or ""
-        update_task_state(
-            session_id,
-            processed_count=index - 1,
-            total_count=total,
-            message=f"正在批量下载待补 PDF {index}/{total}",
-            stage="downloading_missing_pdf",
-            stage_message="正在下载待补 PDF",
-            current_queue_id=queue_id,
-            current_title=title,
-            current_index=index,
-        )
-
         row = {
             "queue_id": queue_id,
             "citing_title": title,
             "citing_doi": item.get("citing_doi") or "",
+            "_index": index,
         }
         if _queue_item_has_bound_pdf(item):
             skipped_count += 1
@@ -1533,46 +1701,113 @@ def download_missing_scholar_pdfs(session_id: str) -> dict[str, Any]:
         row.update({"query_type": query_type, "query": query})
         if not query:
             failed_count += 1
-            rows.append({**row, "status": "failed", "error": "missing_download_query"})
-            continue
-
-        try:
-            result = download_pdf.download_paper(query)
-        except Exception as exc:
-            failed_count += 1
-            rows.append({**row, "status": "failed", "error": f"{type(exc).__name__}: {exc}"})
-            continue
-
-        file_path = str(Path(result.get("file_path") or "").expanduser()) if result.get("file_path") else ""
-        if result.get("ok") and file_path and Path(file_path).exists():
-            item["library_pdf"] = {
-                "status": "local_library_matched",
-                "source": "local_pdf_library",
-                "local_file_path": file_path,
-                "matched_dir": str(Path(file_path).parent),
-                "match_source": "batch_missing_pdf_download",
-                "matched_at": datetime.now().isoformat(timespec="seconds"),
-            }
-            success_count += 1
             rows.append(
                 {
                     **row,
-                    "status": "downloaded",
-                    "file_path": file_path,
-                    "pdf_url": result.get("pdf_url") or "",
+                    "status": "failed",
+                    "failure_type": "missing_download_query",
+                    "error": "missing_download_query",
                 }
             )
             continue
-
-        failed_count += 1
-        rows.append(
+        work_items.append(
             {
-                **row,
-                "status": "failed",
-                "pdf_url": result.get("pdf_url") or "",
-                "error": result.get("error") or "download_failed",
+                "index": index,
+                "item": item,
+                "row": row,
+                "query_type": query_type,
+                "query": query,
             }
         )
+
+    completed_count = len(rows)
+    worker_count = _pdf_download_max_workers(max_workers)
+    future_map = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=worker_count) as executor:
+        for work in work_items:
+            future = executor.submit(
+                _download_queue_item_pdf,
+                work["item"],
+                query_type=work["query_type"],
+                query=work["query"],
+                download_pdf=download_pdf,
+                pipeline=pipeline,
+            )
+            future_map[future] = work
+
+        for future in concurrent.futures.as_completed(future_map):
+            work = future_map[future]
+            item = work["item"]
+            row = work["row"]
+            try:
+                result = future.result()
+            except Exception as exc:
+                result = {
+                    "ok": False,
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "failure_type": "download_failed",
+                    "source_strategy": work["query_type"],
+                    "elapsed_ms": 0,
+                }
+
+            completed_count += 1
+            update_task_state(
+                session_id,
+                processed_count=completed_count,
+                total_count=total,
+                message=f"正在批量下载待补 PDF {completed_count}/{total}",
+                stage="downloading_missing_pdf",
+                stage_message=f"并发下载待补 PDF（{worker_count} 线程）",
+                current_queue_id=item.get("queue_id") or "",
+                current_title=item.get("citing_title") or "",
+                current_index=work["index"],
+            )
+
+            file_path = str(Path(result.get("file_path") or "").expanduser()) if result.get("file_path") else ""
+            if result.get("ok") and file_path and Path(file_path).exists():
+                item["library_pdf"] = {
+                    "status": "local_library_matched",
+                    "source": "local_pdf_library",
+                    "local_file_path": file_path,
+                    "matched_dir": str(Path(file_path).parent),
+                    "match_source": "batch_missing_pdf_download",
+                    "matched_at": datetime.now().isoformat(timespec="seconds"),
+                }
+                success_count += 1
+                rows.append(
+                    {
+                        **row,
+                        "status": "downloaded",
+                        "file_path": file_path,
+                        "pdf_url": result.get("pdf_url") or "",
+                        "source_strategy": result.get("source_strategy") or "",
+                        "candidate_count": result.get("candidate_count") or 0,
+                        "attempted_count": result.get("attempted_count") or 0,
+                        "elapsed_ms": result.get("elapsed_ms") or 0,
+                        "download_errors": _serialize_download_errors(result.get("download_errors")),
+                    }
+                )
+                continue
+
+            failed_count += 1
+            rows.append(
+                {
+                    **row,
+                    "status": "failed",
+                    "pdf_url": result.get("pdf_url") or "",
+                    "source_strategy": result.get("source_strategy") or "",
+                    "candidate_count": result.get("candidate_count") or 0,
+                    "attempted_count": result.get("attempted_count") or 0,
+                    "failure_type": result.get("failure_type") or _classify_pdf_download_failure(result),
+                    "elapsed_ms": result.get("elapsed_ms") or 0,
+                    "download_errors": _serialize_download_errors(result.get("download_errors")),
+                    "error": result.get("error") or "download_failed",
+                }
+            )
+
+    rows.sort(key=lambda item: int(item.get("_index") or 0))
+    for row in rows:
+        row.pop("_index", None)
 
     search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
     index_path = download_pdf.DEFAULT_LOCAL_PDF_INDEX_PATH

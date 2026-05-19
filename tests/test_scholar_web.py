@@ -2263,8 +2263,98 @@ class ScholarWebTestCase(unittest.TestCase):
         report_text = report_path.read_text(encoding="utf-8-sig")
         self.assertIn("Q001", report_text)
         self.assertIn("downloaded", report_text)
+        self.assertIn("download_paper", report_text)
+        self.assertIn("candidate_count", report_text)
+        self.assertIn("failure_type", report_text)
         self.assertIn("Q002", report_text)
         self.assertIn("skipped_existing_pdf", report_text)
+
+    def test_download_missing_scholar_pdfs_handles_source_url_without_doi_lookup(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        pdf_dir = TEST_SESSION_DIR / "downloads"
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "Publisher Landing Paper",
+                            "source_url": "https://publisher.test/paper",
+                        }
+                    ],
+                    "statistics": {"publication_count": 1},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        class FakeDownloadPdf:
+            DEFAULT_LOCAL_PDF_INDEX_PATH = str(TEST_SESSION_DIR / "local_pdf_index.json")
+            DEFAULT_LOCAL_PDF_DIR = str(pdf_dir)
+
+            @staticmethod
+            def download_paper(query):
+                raise AssertionError("source_url should not be passed to DOI/title download_paper")
+
+            @staticmethod
+            def sanitize_filename(name):
+                return name
+
+            @staticmethod
+            def is_probable_pdf_url(url):
+                return False
+
+            @staticmethod
+            def extract_pdf_candidates_from_html_page(url):
+                return ["https://publisher.test/paper.pdf"]
+
+            @staticmethod
+            def download_file(pdf_url, file_path):
+                Path(file_path).write_bytes(b"%PDF-1.4\n% source url\n")
+                return True, None
+
+            @staticmethod
+            def build_local_pdf_index(search_dirs, index_path=""):
+                Path(index_path).write_text(
+                    json.dumps({"entry_count": 1, "scanned_pdf_count": 1, "entries": []}),
+                    encoding="utf-8",
+                )
+                return {"entry_count": 1}
+
+        class FakePipeline:
+            RUN_PIPELINE = type("RunPipeline", (), {"DOWNLOAD_PDF": FakeDownloadPdf})()
+
+            @staticmethod
+            def configured_local_pdf_library_dirs(download_pdf_module):
+                return [str(pdf_dir)]
+
+        with mock.patch.object(
+            scholar_core,
+            "scholar_pipeline",
+            return_value=FakePipeline(),
+        ), mock.patch.object(
+            scholar_core,
+            "_decorate_publication_venue_tiers",
+        ):
+            result = scholar_core.download_missing_scholar_pdfs(TEST_SESSION_ID, max_workers=2)
+
+        self.assertEqual(result["success_count"], 1)
+        payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
+        local_file_path = payload["deep_analysis_queue"][0]["library_pdf"]["local_file_path"]
+        self.assertTrue(Path(local_file_path).exists())
+        report_text = (TEST_SESSION_DIR / "exports" / "pdf_download_report.csv").read_text(
+            encoding="utf-8-sig"
+        )
+        self.assertIn("source_url_candidate_extraction", report_text)
+        self.assertIn("https://publisher.test/paper.pdf", report_text)
 
     def test_scholar_pdf_download_report_export_route(self):
         export_dir = TEST_SESSION_DIR / "exports"

@@ -1304,6 +1304,42 @@ def _queue_item_has_bound_pdf(item: dict[str, Any]) -> bool:
     )
 
 
+def _unique_pdf_path(directory: Path, stem: str) -> Path:
+    safe_stem = stem.strip()[:160] or "paper"
+    candidate = directory / f"{safe_stem}.pdf"
+    if not candidate.exists():
+        return candidate
+    return directory / f"{safe_stem}_{uuid4().hex[:8]}.pdf"
+
+
+def _import_uploaded_pdf_to_library(
+    *,
+    source_path: Path,
+    queue_item: dict[str, Any],
+    download_pdf: Any,
+    pipeline: Any,
+) -> dict[str, Any]:
+    search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
+    if not search_dirs:
+        return {
+            "status": "skipped",
+            "reason": "local_pdf_library_not_configured",
+        }
+
+    library_dir = Path(search_dirs[0]).expanduser()
+    library_dir.mkdir(parents=True, exist_ok=True)
+    safe_title = download_pdf.sanitize_filename(
+        queue_item.get("citing_title") or queue_item.get("queue_id") or "paper"
+    )
+    library_path = _unique_pdf_path(library_dir, safe_title)
+    shutil.copy2(source_path, library_path)
+    return {
+        "status": "imported",
+        "library_file_path": str(library_path),
+        "library_dir": str(library_dir),
+    }
+
+
 def _arxiv_id_from_queue_item(item: dict[str, Any]) -> str:
     candidates = [
         item.get("citing_arxiv_id") or "",
@@ -1669,6 +1705,12 @@ def attach_scholar_queue_pdf(
     if target_path.exists():
         target_path.unlink()
     shutil.move(str(temp_path), str(target_path))
+    library_import = _import_uploaded_pdf_to_library(
+        source_path=target_path,
+        queue_item=queue_item,
+        download_pdf=download_pdf,
+        pipeline=pipeline,
+    )
     queue_item["manual_pdf"] = {
         "status": "manual_pdf_attached",
         "source": "manual_upload",
@@ -1676,12 +1718,26 @@ def attach_scholar_queue_pdf(
         "local_file_path": str(target_path),
         "size_bytes": inspection.get("size_bytes"),
         "attached_at": datetime.now().isoformat(timespec="seconds"),
+        "library_import_status": library_import.get("status") or "",
+        "library_file_path": library_import.get("library_file_path") or "",
+        "library_import_reason": library_import.get("reason") or "",
     }
+    if library_import.get("status") == "imported":
+        queue_item["library_pdf"] = {
+            "status": "local_library_matched",
+            "source": "local_pdf_library",
+            "local_file_path": library_import.get("library_file_path") or "",
+            "matched_dir": library_import.get("library_dir") or "",
+            "match_source": "manual_upload_import",
+            "matched_at": datetime.now().isoformat(timespec="seconds"),
+        }
     write_scholar_status(session_id, session)
     return {
         "ok": True,
         "queue_id": queue_id,
         "local_file_path": str(target_path),
+        "library_file_path": library_import.get("library_file_path") or "",
+        "library_import_status": library_import.get("status") or "",
         "status": "manual_pdf_attached",
     }
 

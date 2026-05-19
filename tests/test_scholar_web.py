@@ -391,6 +391,7 @@ class ScholarWebTestCase(unittest.TestCase):
 
     def test_scholar_attach_queue_pdf_route_updates_queue_item(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        library_dir = TEST_SESSION_DIR / "library"
         (TEST_SESSION_DIR / "session.json").write_text(
             json.dumps(
                 {
@@ -417,12 +418,17 @@ class ScholarWebTestCase(unittest.TestCase):
         )
         client = TestClient(app)
 
-        response = client.post(
-            f"/scholars/{TEST_SESSION_ID}/attach-queue-pdf",
-            data={"queue_id": "Q001"},
-            files={"pdf_file": ("manual.pdf", b"%PDF-1.4\n% test pdf\n", "application/pdf")},
-            follow_redirects=False,
-        )
+        with mock.patch.object(
+            scholar_core.scholar_pipeline(),
+            "configured_local_pdf_library_dirs",
+            return_value=[str(library_dir)],
+        ):
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/attach-queue-pdf",
+                data={"queue_id": "Q001"},
+                files={"pdf_file": ("manual.pdf", b"%PDF-1.4\n% test pdf\n", "application/pdf")},
+                follow_redirects=False,
+            )
 
         self.assertEqual(response.status_code, 303)
         self.assertEqual(
@@ -434,9 +440,22 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(manual_pdf["status"], "manual_pdf_attached")
         self.assertEqual(manual_pdf["source"], "manual_upload")
         self.assertTrue(Path(manual_pdf["local_file_path"]).exists())
+        self.assertEqual(manual_pdf["library_import_status"], "imported")
+        self.assertTrue(Path(manual_pdf["library_file_path"]).exists())
+        self.assertEqual(Path(manual_pdf["library_file_path"]).parent, library_dir)
+        self.assertEqual(
+            Path(manual_pdf["library_file_path"]).read_bytes(),
+            b"%PDF-1.4\n% test pdf\n",
+        )
+        library_pdf = payload["deep_analysis_queue"][0]["library_pdf"]
+        self.assertEqual(library_pdf["status"], "local_library_matched")
+        self.assertEqual(library_pdf["source"], "local_pdf_library")
+        self.assertEqual(library_pdf["match_source"], "manual_upload_import")
+        self.assertEqual(library_pdf["local_file_path"], manual_pdf["library_file_path"])
 
         page = client.get(f"/scholars/{TEST_SESSION_ID}")
         self.assertIn("manual_pdf_attached", page.text)
+        self.assertIn("本地库 PDF：", page.text)
 
     def test_build_deep_analysis_queue_view_paginates(self):
         session = {

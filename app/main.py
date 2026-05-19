@@ -272,6 +272,18 @@ def refresh_scholar_local_pdf_index(session_id: str):
     )
 
 
+@app.post("/scholars/{session_id}/download-missing-pdfs")
+def download_missing_scholar_pdfs(session_id: str):
+    try:
+        scholar_core.start_download_missing_pdfs_task(session_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return RedirectResponse(
+        url=f"/scholars/{session_id}#scholar-actions",
+        status_code=303,
+    )
+
+
 @app.post("/scholars/{session_id}/candidates/review")
 def review_scholar_candidate(
     session_id: str,
@@ -395,6 +407,14 @@ def download_scholar_missing_pdfs_csv(session_id: str):
         path = scholar_core.write_scholar_missing_pdfs_csv(session_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return FileResponse(path, media_type="text/csv; charset=utf-8", filename=path.name)
+
+
+@app.get("/scholars/{session_id}/exports/pdf_download_report.csv")
+def download_scholar_pdf_download_report_csv(session_id: str):
+    path = scholar_core.get_scholar_pdf_download_report_path(session_id)
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="PDF 下载报告尚未生成。")
     return FileResponse(path, media_type="text/csv; charset=utf-8", filename=path.name)
 
 

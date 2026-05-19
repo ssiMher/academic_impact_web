@@ -1,5 +1,24 @@
 # 开发日志
 
+## 2026-05-19：批量下载待补 PDF
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- `missing_pdfs.csv` 只能给出待补 PDF 清单，用户仍需要自己逐条下载或上传。
+- 更顺的流程是让网页直接按队列中缺 PDF 的条目批量尝试下载，并把成功文件写入全局本地论文库。
+
+本次处理：
+- 新增“批量下载待补 PDF”按钮，触发后台任务，不阻塞页面。
+- 下载顺序按队列项可用线索选择：arXiv ID、DOI、source URL、标题。
+- 复用现有 `download_pdf.download_paper()` 下载链路，仍走 Semantic Scholar、Unpaywall、DOI 落地页、OpenAlex、arXiv、CORE 等候选源。
+- 成功下载的条目会立即写入队列 `library_pdf`，并在任务结束后重建本地 PDF 索引。
+- 新增 `pdf_download_report.csv` 导出，记录每个队列项的下载状态、查询方式、文件路径、PDF URL 和失败原因。
+
+当前策略：
+- 已有手动 PDF 或本地库 PDF 的队列项会跳过，避免重复下载。
+- 下载失败不会中断整个批次，而是写入报告，方便后续只处理失败项。
+
 ## 2026-05-19：导出待补 PDF 清单
 
 分支：`codex/organize-analysis-venue-work`

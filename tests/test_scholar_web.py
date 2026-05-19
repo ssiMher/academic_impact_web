@@ -1001,6 +1001,25 @@ class ScholarWebTestCase(unittest.TestCase):
         )
         refresh_index.assert_called_once_with(TEST_SESSION_ID)
 
+    def test_download_missing_scholar_pdfs_route_redirects(self):
+        client = TestClient(app)
+        with mock.patch.object(
+            scholar_core,
+            "start_download_missing_pdfs_task",
+            return_value=(True, {}),
+        ) as start_task:
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/download-missing-pdfs",
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(
+            response.headers["location"],
+            f"/scholars/{TEST_SESSION_ID}#scholar-actions",
+        )
+        start_task.assert_called_once_with(TEST_SESSION_ID)
+
     def test_analyze_scholar_queue_route_redirects(self):
         client = TestClient(app)
         with mock.patch.object(
@@ -2156,6 +2175,109 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("3689031.3696065.pdf", response.text)
         self.assertNotIn("Already Local", response.text)
         self.assertNotIn("Already Uploaded", response.text)
+
+    def test_download_missing_scholar_pdfs_downloads_and_records_report(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        pdf_dir = TEST_SESSION_DIR / "downloads"
+        downloaded_pdf = pdf_dir / "Needs PDF.pdf"
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "Needs PDF",
+                            "citing_doi": "10.1145/3689031.3696065",
+                        },
+                        {
+                            "queue_id": "Q002",
+                            "citing_title": "Already Local",
+                            "library_pdf": {
+                                "status": "local_library_matched",
+                                "local_file_path": "/papers/local.pdf",
+                            },
+                        },
+                    ],
+                    "statistics": {"publication_count": 1},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        class FakeDownloadPdf:
+            DEFAULT_LOCAL_PDF_INDEX_PATH = str(TEST_SESSION_DIR / "local_pdf_index.json")
+
+            @staticmethod
+            def download_paper(query):
+                pdf_dir.mkdir(parents=True, exist_ok=True)
+                downloaded_pdf.write_bytes(b"%PDF-1.4\n% downloaded\n")
+                return {
+                    "ok": True,
+                    "query": query,
+                    "file_path": str(downloaded_pdf),
+                    "pdf_url": "https://example.test/paper.pdf",
+                    "source": "auto_download",
+                }
+
+            @staticmethod
+            def build_local_pdf_index(search_dirs, index_path=""):
+                Path(index_path).write_text(
+                    json.dumps({"entry_count": 1, "scanned_pdf_count": 1, "entries": []}),
+                    encoding="utf-8",
+                )
+                return {"entry_count": 1}
+
+        class FakePipeline:
+            RUN_PIPELINE = type("RunPipeline", (), {"DOWNLOAD_PDF": FakeDownloadPdf})()
+
+            @staticmethod
+            def configured_local_pdf_library_dirs(download_pdf_module):
+                return [str(pdf_dir)]
+
+        with mock.patch.object(
+            scholar_core,
+            "scholar_pipeline",
+            return_value=FakePipeline(),
+        ), mock.patch.object(
+            scholar_core,
+            "_decorate_publication_venue_tiers",
+        ):
+            result = scholar_core.download_missing_scholar_pdfs(TEST_SESSION_ID)
+
+        self.assertEqual(result["success_count"], 1)
+        self.assertEqual(result["skipped_count"], 1)
+        payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
+        library_pdf = payload["deep_analysis_queue"][0]["library_pdf"]
+        self.assertEqual(library_pdf["status"], "local_library_matched")
+        self.assertEqual(library_pdf["local_file_path"], str(downloaded_pdf))
+        report_path = TEST_SESSION_DIR / "exports" / "pdf_download_report.csv"
+        self.assertTrue(report_path.exists())
+        report_text = report_path.read_text(encoding="utf-8-sig")
+        self.assertIn("Q001", report_text)
+        self.assertIn("downloaded", report_text)
+        self.assertIn("Q002", report_text)
+        self.assertIn("skipped_existing_pdf", report_text)
+
+    def test_scholar_pdf_download_report_export_route(self):
+        export_dir = TEST_SESSION_DIR / "exports"
+        export_dir.mkdir(parents=True, exist_ok=True)
+        report_path = export_dir / "pdf_download_report.csv"
+        report_path.write_text("queue_id,status\nQ001,downloaded\n", encoding="utf-8-sig")
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}/exports/pdf_download_report.csv")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/csv", response.headers["content-type"])
+        self.assertIn("Q001,downloaded", response.text)
 
 
 if __name__ == "__main__":

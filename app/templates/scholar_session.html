@@ -163,9 +163,13 @@
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/citation_statistics.csv">Export Citation Statistics CSV</a>
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/raw_citing_authors.csv">Export Raw Citing Authors CSV</a>
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/missing_pdfs.csv">Export Missing PDFs CSV</a>
+            <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/pdf_download_report.csv">Export PDF Download Report CSV</a>
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/report.md">下载 Markdown 报告</a>
           </div>
         </div>
+        <form action="/scholars/{{ session_id }}/download-missing-pdfs" method="post" class="inline-actions">
+          <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>批量下载待补 PDF</button>
+        </form>
         <p>{{ report.summary_text }}</p>
         <h3>可复制结论</h3>
         <div class="report-block">

@@ -1450,6 +1450,168 @@ def write_scholar_missing_pdfs_csv(session_id: str) -> Path:
     return path
 
 
+def get_scholar_pdf_download_report_path(session_id: str) -> Path:
+    return resolve_scholar_session_dir(session_id) / "exports" / "pdf_download_report.csv"
+
+
+def _queue_item_download_query(item: dict[str, Any]) -> tuple[str, str]:
+    arxiv_id = _arxiv_id_from_queue_item(item)
+    if arxiv_id:
+        return "arxiv", arxiv_id
+    doi = (item.get("citing_doi") or "").strip()
+    if doi:
+        return "doi", doi
+    source_url = (item.get("source_url") or "").strip()
+    if source_url:
+        return "source_url", source_url
+    title = (item.get("citing_title") or "").strip()
+    if title:
+        return "title", title
+    return "", ""
+
+
+def _write_pdf_download_report(session_id: str, rows: list[dict[str, Any]]) -> Path:
+    headers = [
+        "queue_id",
+        "status",
+        "query_type",
+        "query",
+        "citing_title",
+        "citing_doi",
+        "file_path",
+        "pdf_url",
+        "error",
+    ]
+    path = get_scholar_pdf_download_report_path(session_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=headers)
+    writer.writeheader()
+    for row in rows:
+        writer.writerow({key: row.get(key) or "" for key in headers})
+    path.write_text(buffer.getvalue(), encoding="utf-8-sig")
+    return path
+
+
+def download_missing_scholar_pdfs(session_id: str) -> dict[str, Any]:
+    session = load_scholar_status(session_id)
+    pipeline = scholar_pipeline()
+    download_pdf = pipeline.RUN_PIPELINE.DOWNLOAD_PDF
+    queue = session.get("deep_analysis_queue", []) or []
+    total = len(queue)
+    rows: list[dict[str, Any]] = []
+    success_count = 0
+    failed_count = 0
+    skipped_count = 0
+
+    for index, item in enumerate(queue, start=1):
+        queue_id = item.get("queue_id") or ""
+        title = item.get("citing_title") or ""
+        update_task_state(
+            session_id,
+            processed_count=index - 1,
+            total_count=total,
+            message=f"正在批量下载待补 PDF {index}/{total}",
+            stage="downloading_missing_pdf",
+            stage_message="正在下载待补 PDF",
+            current_queue_id=queue_id,
+            current_title=title,
+            current_index=index,
+        )
+
+        row = {
+            "queue_id": queue_id,
+            "citing_title": title,
+            "citing_doi": item.get("citing_doi") or "",
+        }
+        if _queue_item_has_bound_pdf(item):
+            skipped_count += 1
+            rows.append({**row, "status": "skipped_existing_pdf"})
+            continue
+
+        query_type, query = _queue_item_download_query(item)
+        row.update({"query_type": query_type, "query": query})
+        if not query:
+            failed_count += 1
+            rows.append({**row, "status": "failed", "error": "missing_download_query"})
+            continue
+
+        try:
+            result = download_pdf.download_paper(query)
+        except Exception as exc:
+            failed_count += 1
+            rows.append({**row, "status": "failed", "error": f"{type(exc).__name__}: {exc}"})
+            continue
+
+        file_path = str(Path(result.get("file_path") or "").expanduser()) if result.get("file_path") else ""
+        if result.get("ok") and file_path and Path(file_path).exists():
+            item["library_pdf"] = {
+                "status": "local_library_matched",
+                "source": "local_pdf_library",
+                "local_file_path": file_path,
+                "matched_dir": str(Path(file_path).parent),
+                "match_source": "batch_missing_pdf_download",
+                "matched_at": datetime.now().isoformat(timespec="seconds"),
+            }
+            success_count += 1
+            rows.append(
+                {
+                    **row,
+                    "status": "downloaded",
+                    "file_path": file_path,
+                    "pdf_url": result.get("pdf_url") or "",
+                }
+            )
+            continue
+
+        failed_count += 1
+        rows.append(
+            {
+                **row,
+                "status": "failed",
+                "pdf_url": result.get("pdf_url") or "",
+                "error": result.get("error") or "download_failed",
+            }
+        )
+
+    search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
+    index_path = download_pdf.DEFAULT_LOCAL_PDF_INDEX_PATH
+    if search_dirs:
+        download_pdf.build_local_pdf_index(search_dirs, index_path=index_path)
+    report_path = _write_pdf_download_report(session_id, rows)
+
+    with _task_lock(session_id):
+        current = load_scholar_status(session_id)
+        session["task_state"] = ensure_task_state(current)
+        session["pdf_download_report"] = {
+            "report_path": str(report_path),
+            "success_count": success_count,
+            "failed_count": failed_count,
+            "skipped_count": skipped_count,
+            "generated_at": datetime.now().isoformat(timespec="seconds"),
+        }
+        write_scholar_status(session_id, session)
+
+    update_task_state(
+        session_id,
+        processed_count=total,
+        total_count=total,
+        message=f"批量下载待补 PDF 完成：成功 {success_count}，失败 {failed_count}，跳过 {skipped_count}",
+        stage="downloading_missing_pdf",
+        stage_message="待补 PDF 下载完成",
+        current_queue_id="",
+        current_title="",
+        current_index=total,
+    )
+    return {
+        "ok": True,
+        "success_count": success_count,
+        "failed_count": failed_count,
+        "skipped_count": skipped_count,
+        "report_path": str(report_path),
+    }
+
+
 def update_task_state(session_id: str, **updates) -> dict[str, Any]:
     with _task_lock(session_id):
         session = load_scholar_status(session_id)
@@ -1820,6 +1982,33 @@ def start_analyze_queue_task(
         target=_run_background_task,
         args=(session_id, "analyze_queue", worker),
         kwargs={"success_message": "高价值引用分析完成"},
+        daemon=True,
+    )
+    thread.start()
+    return True, task_state
+
+
+def start_download_missing_pdfs_task(session_id: str) -> tuple[bool, dict[str, Any]]:
+    started, task_state = mark_task_running(
+        session_id,
+        "download_missing_pdfs",
+        message="正在批量下载待补 PDF…",
+    )
+    if not started:
+        return False, task_state
+    session = load_scholar_status(session_id)
+    update_task_state(
+        session_id,
+        total_count=len(session.get("deep_analysis_queue", []) or []),
+    )
+
+    def worker():
+        download_missing_scholar_pdfs(session_id)
+
+    thread = threading.Thread(
+        target=_run_background_task,
+        args=(session_id, "download_missing_pdfs", worker),
+        kwargs={"success_message": "待补 PDF 批量下载完成"},
         daemon=True,
     )
     thread.start()

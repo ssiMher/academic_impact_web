@@ -367,6 +367,7 @@ def build_deep_analysis_queue_view(
             "previous_url": page_url(page - 1) if page > 1 else "",
             "next_url": page_url(page + 1) if page < total_pages else "",
             "start_index": start + 1 if total_count else 0,
+            "active_reason": active_reason,
         },
     }
 

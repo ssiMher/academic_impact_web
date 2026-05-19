@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from urllib.parse import urlencode
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
@@ -341,6 +342,10 @@ async def analyze_scholar_queue(
 async def attach_scholar_queue_pdf(
     session_id: str,
     queue_id: str = Form(...),
+    return_queue_page: int = Form(1),
+    return_queue_page_size: int = Form(20),
+    return_queue_reason: str = Form(""),
+    return_anchor: str = Form("deep-analysis-queue"),
     pdf_file: UploadFile = File(...),
 ):
     filename = pdf_file.filename or ""
@@ -360,8 +365,15 @@ async def attach_scholar_queue_pdf(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    query = {
+        "queue_page": max(1, return_queue_page),
+        "queue_page_size": min(max(1, return_queue_page_size), 100),
+    }
+    if return_queue_reason:
+        query["queue_reason"] = return_queue_reason
+    anchor = return_anchor.strip() or "deep-analysis-queue"
     return RedirectResponse(
-        url=f"/scholars/{session_id}#deep-analysis-queue",
+        url=f"/scholars/{session_id}?{urlencode(query)}#{anchor}",
         status_code=303,
     )
 

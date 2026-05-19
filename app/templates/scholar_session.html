@@ -640,7 +640,8 @@
             </thead>
             <tbody>
               {% for edge in queue["items"] or [] %}
-              <tr>
+              {% set row_anchor = 'queue-' ~ (edge.queue_id or ((queue_pagination.start_index or 1) + loop.index0)) %}
+              <tr id="{{ row_anchor }}">
                 <td>
                   <input type="checkbox" name="queue_ids" value="{{ edge.queue_id }}" form="scholar-analyze-queue-form" {% if not edge.queue_id or task_active %}disabled{% endif %} data-scholar-task-control />
                 </td>
@@ -665,6 +666,10 @@
                   {% if edge.queue_id %}
                   <form action="/scholars/{{ session_id }}/attach-queue-pdf" method="post" enctype="multipart/form-data" class="inline-actions compact-form">
                     <input type="hidden" name="queue_id" value="{{ edge.queue_id }}" />
+                    <input type="hidden" name="return_queue_page" value="{{ queue_pagination.page or 1 }}" />
+                    <input type="hidden" name="return_queue_page_size" value="{{ queue_pagination.page_size or 20 }}" />
+                    <input type="hidden" name="return_queue_reason" value="{{ queue_pagination.active_reason or queue.active_reason or '' }}" />
+                    <input type="hidden" name="return_anchor" value="{{ row_anchor }}" />
                     <input type="file" name="pdf_file" accept="application/pdf,.pdf" required {% if task_active %}disabled{% endif %} data-scholar-task-control />
                     <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>上传 PDF</button>
                   </form>

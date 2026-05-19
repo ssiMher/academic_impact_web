@@ -433,7 +433,7 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 303)
         self.assertEqual(
             response.headers["location"],
-            f"/scholars/{TEST_SESSION_ID}#deep-analysis-queue",
+            f"/scholars/{TEST_SESSION_ID}?queue_page=1&queue_page_size=20#deep-analysis-queue",
         )
         payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
         manual_pdf = payload["deep_analysis_queue"][0]["manual_pdf"]
@@ -456,6 +456,101 @@ class ScholarWebTestCase(unittest.TestCase):
         page = client.get(f"/scholars/{TEST_SESSION_ID}")
         self.assertIn("manual_pdf_attached", page.text)
         self.assertIn("本地库 PDF：", page.text)
+
+    def test_scholar_attach_queue_pdf_returns_to_current_queue_row(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        library_dir = TEST_SESSION_DIR / "library"
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q042",
+                            "citing_title": "Paged Missing PDF Paper",
+                            "reasons": ["person_tag:ACM Fellow"],
+                        }
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        with mock.patch.object(
+            scholar_core.scholar_pipeline(),
+            "configured_local_pdf_library_dirs",
+            return_value=[str(library_dir)],
+        ):
+            response = client.post(
+                f"/scholars/{TEST_SESSION_ID}/attach-queue-pdf",
+                data={
+                    "queue_id": "Q042",
+                    "return_queue_page": "7",
+                    "return_queue_page_size": "50",
+                    "return_queue_reason": "person_tag:ACM Fellow",
+                    "return_anchor": "queue-Q042",
+                },
+                files={"pdf_file": ("manual.pdf", b"%PDF-1.4\n% test pdf\n", "application/pdf")},
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(
+            response.headers["location"],
+            "/scholars/test_scholar_session?queue_page=7&queue_page_size=50&queue_reason=person_tag%3AACM+Fellow#queue-Q042",
+        )
+
+    def test_scholar_route_renders_upload_return_state(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q042",
+                            "citing_title": "Paged Missing PDF Paper",
+                            "reasons": ["person_tag:ACM Fellow"],
+                        }
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(
+            f"/scholars/{TEST_SESSION_ID}",
+            params={
+                "queue_page": "1",
+                "queue_page_size": "20",
+                "queue_reason": "person_tag:ACM Fellow",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="queue-Q042"', response.text)
+        self.assertIn('name="return_queue_page" value="1"', response.text)
+        self.assertIn('name="return_queue_page_size" value="20"', response.text)
+        self.assertIn('name="return_queue_reason" value="person_tag:ACM Fellow"', response.text)
+        self.assertIn('name="return_anchor" value="queue-Q042"', response.text)
 
     def test_build_deep_analysis_queue_view_paginates(self):
         session = {

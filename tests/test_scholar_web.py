@@ -640,6 +640,43 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(missing_id["citing_identifier"], "-")
         self.assertEqual(missing_id["readiness_label"], "缺少 DOI/ID，可能失败")
         self.assertEqual(missing_id["readiness_status"], "missing_identifier")
+        self.assertEqual(missing_id["self_citation_label"], "自引未知")
+
+    def test_build_deep_analysis_queue_view_filters_queue_scope(self):
+        session = {
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q001",
+                    "citing_title": "Self Paper",
+                    "reasons": ["venue:CCF A"],
+                    "self_citation_status": "self_citation",
+                },
+                {
+                    "queue_id": "Q002",
+                    "citing_title": "Fellow Paper",
+                    "reasons": ["person_tag:ACM Fellow"],
+                    "self_citation_status": "non_self_citation",
+                    "manual_pdf": {"status": "manual_pdf_attached", "local_file_path": "/tmp/a.pdf"},
+                },
+            ]
+        }
+
+        non_self = scholar_core.build_deep_analysis_queue_view(
+            session,
+            active_scope="non_self",
+        )
+        person_tag = scholar_core.build_deep_analysis_queue_view(
+            session,
+            active_scope="person_tag",
+        )
+        ready = scholar_core.build_deep_analysis_queue_view(
+            session,
+            active_scope="ready",
+        )
+
+        self.assertEqual([item["citing_title"] for item in non_self["items"]], ["Fellow Paper"])
+        self.assertEqual([item["citing_title"] for item in person_tag["items"]], ["Fellow Paper"])
+        self.assertEqual([item["citing_title"] for item in ready["items"]], ["Fellow Paper"])
 
     def test_build_strong_evidence_view_filters_and_paginates(self):
         session = {
@@ -685,6 +722,41 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertTrue(view["pagination"]["has_previous"])
         self.assertIn("strong_page=1", view["pagination"]["previous_url"])
         self.assertIn("strong_aspect=method", view["pagination"]["previous_url"])
+
+    def test_build_strong_evidence_view_filters_labels_and_highlights(self):
+        session = {
+            "strong_evidence": [
+                {
+                    "citing_title": "Baseline Paper",
+                    "citation_text": "We compare against this pioneering baseline.",
+                    "evidence_labels": ["baseline", "first_or_pioneering"],
+                    "highlight_keywords": ["pioneering", "baseline"],
+                    "strong_citation_score": 91,
+                    "evidence_strength": "high",
+                    "self_citation_status": "non_self_citation",
+                },
+                {
+                    "citing_title": "Weak Paper",
+                    "citation_text": "Related work mentions this line.",
+                    "evidence_labels": ["survey_or_related_work"],
+                    "strong_citation_score": 30,
+                    "evidence_strength": "low",
+                    "self_citation_status": "unknown",
+                },
+            ]
+        }
+
+        view = scholar_core.build_strong_evidence_view(
+            session,
+            active_label="baseline",
+            active_strength="high",
+            active_self="non_self_citation",
+        )
+
+        self.assertEqual(view["total_count"], 1)
+        self.assertEqual(view["items"][0]["citing_title"], "Baseline Paper")
+        self.assertIn("<mark>pioneering</mark>", view["items"][0]["highlighted_citation_text"])
+        self.assertEqual(view["items"][0]["self_citation_label"], "非自引")
 
     def test_build_strong_evidence_view_deduplicates_same_citation(self):
         citation_text = "Partition-based methods cite several target papers together."

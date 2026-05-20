@@ -116,6 +116,11 @@ JSON 格式必须严格为：
       "keep": true,
       "aspect": "background|method|baseline|comparison|extension|application|other",
       "stance": "positive|neutral|negative",
+      "evidence_labels": ["positive_evaluation|first_or_pioneering|baseline|comparison|method_foundation|theory_foundation|large_context|survey_or_related_work|negative_or_limitation"],
+      "highlight_keywords": ["原文中最能支撑判断的关键词或短语"],
+      "evidence_strength": "high|medium|low",
+      "is_self_citation": false,
+      "why_valuable": "中文一句话说明这条证据是否值得放入汇报",
       "function": "中文一句话总结",
       "reason": "中文解释",
       "confidence": 0.0,
@@ -137,6 +142,18 @@ JSON 格式必须严格为：
 6. 如果没有找到明确引用，findings 必须是空数组。
 7. confidence 必须是 0 到 1 之间的小数。
 8. 所有 findings 都必须包含 page 和 span_index。fulltext_direct 模式下 span_index 可表示该页内第几个命中片段，从 1 开始。
+9. evidence_labels 用于标注证据价值，可多选：
+   - positive_evaluation：原文明确正向评价目标论文或其方法。
+   - first_or_pioneering：原文称目标论文 first、pioneering、seminal、首次、开创性等。
+   - baseline：引用论文把目标论文作为 baseline。
+   - comparison：引用论文与目标论文做实验/性能/方法对比。
+   - method_foundation：引用论文采用、复现、扩展或基于目标论文方法。
+   - theory_foundation：引用论文把目标论文作为理论、定理、证明或分析基础。
+   - large_context：原文对目标论文有大篇幅解释，而不是一句话带过。
+   - survey_or_related_work：主要出现在相关工作或综述中。
+   - negative_or_limitation：原文指出目标论文局限、失败或不足。
+10. highlight_keywords 必须来自 citation_text 原文，优先选择 first、pioneering、baseline、compare、outperform、based on、inspired by 等能支撑标签的词。
+11. why_valuable 要面向组会汇报，说明这条证据为什么有价值；普通弱引用可写“证据较弱，不建议用于汇报”。
 """
 
 DEEPSEEK_SYSTEM_PROMPT = """你是一个严格的JSON整理器。
@@ -156,6 +173,11 @@ JSON格式必须严格为：
       "keep": true,
       "aspect": "background|method|baseline|comparison|extension|application|other",
       "stance": "positive|neutral|negative",
+      "evidence_labels": ["positive_evaluation|first_or_pioneering|baseline|comparison|method_foundation|theory_foundation|large_context|survey_or_related_work|negative_or_limitation"],
+      "highlight_keywords": ["原文中最能支撑判断的关键词或短语"],
+      "evidence_strength": "high|medium|low",
+      "is_self_citation": false,
+      "why_valuable": "中文一句话说明这条证据是否值得放入汇报",
       "function": "中文一句话总结",
       "reason": "中文解释",
       "confidence": 0.0,
@@ -705,6 +727,20 @@ def coerce_bool(value, default: bool = False) -> bool:
     return default
 
 
+def coerce_optional_bool(value):
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "yes", "y", "1", "是"}:
+            return True
+        if normalized in {"false", "no", "n", "0", "否"}:
+            return False
+    return None
+
+
 def coerce_float(value, default: float) -> float:
     try:
         result = float(value)
@@ -720,6 +756,18 @@ def coerce_int(value):
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def coerce_string_list(value):
+    if value is None:
+        return []
+    raw_items = value if isinstance(value, list) else [value]
+    result = []
+    for item in raw_items:
+        text = str(item or "").strip()
+        if text and text not in result:
+            result.append(text)
+    return result
 
 
 def normalize_model_finding(finding: dict, index: int):
@@ -754,6 +802,26 @@ def normalize_model_finding(finding: dict, index: int):
     if keep:
         mention_type = "explicit_citation"
 
+    valid_labels = {
+        "positive_evaluation",
+        "first_or_pioneering",
+        "baseline",
+        "comparison",
+        "method_foundation",
+        "theory_foundation",
+        "large_context",
+        "survey_or_related_work",
+        "negative_or_limitation",
+    }
+    evidence_labels = [
+        label for label in coerce_string_list(finding.get("evidence_labels"))
+        if label in valid_labels
+    ]
+    highlight_keywords = coerce_string_list(finding.get("highlight_keywords"))[:12]
+    evidence_strength = str(finding.get("evidence_strength") or "").strip().lower()
+    if evidence_strength not in {"high", "medium", "low"}:
+        evidence_strength = ""
+
     return {
         "page": page,
         "span_index": span_index,
@@ -761,6 +829,11 @@ def normalize_model_finding(finding: dict, index: int):
         "keep": keep,
         "aspect": aspect,
         "stance": stance,
+        "evidence_labels": evidence_labels,
+        "highlight_keywords": highlight_keywords,
+        "evidence_strength": evidence_strength,
+        "is_self_citation": coerce_optional_bool(finding.get("is_self_citation")),
+        "why_valuable": str(finding.get("why_valuable") or "").strip(),
         "function": function,
         "reason": reason,
         "confidence": confidence,

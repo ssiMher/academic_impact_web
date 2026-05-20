@@ -10,6 +10,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 IMPACT_CLI_PATH = ROOT / "skills" / "academic_impact_analyzer" / "impact_cli.py"
 PERSON_CANDIDATES_PATH = ROOT / "skills" / "academic_impact_analyzer" / "person_candidates.py"
+SCHOLAR_EVIDENCE_PATH = ROOT / "skills" / "scholar_impact_analyzer" / "scholar_evidence.py"
 
 
 def load_module(name: str, path: Path):
@@ -25,6 +26,7 @@ IMPACT_CLI = load_module("scholar_stats_impact_cli", IMPACT_CLI_PATH)
 PERSON_CANDIDATES = load_module(
     "scholar_stats_person_candidates", PERSON_CANDIDATES_PATH
 )
+SCHOLAR_EVIDENCE = load_module("scholar_stats_evidence", SCHOLAR_EVIDENCE_PATH)
 
 
 def normalize_doi(value: str) -> str:
@@ -232,6 +234,31 @@ def reason_priority_score(reasons: list[str]) -> int:
     return score
 
 
+def edge_has_analysis_identifier(edge: dict[str, Any]) -> bool:
+    return bool(
+        edge.get("citing_doi")
+        or edge.get("citing_openalex_id")
+        or edge.get("citing_scopus_id")
+        or edge.get("source_url")
+        or edge.get("citing_paper_id")
+    )
+
+
+def classify_edge_self_citation(edge: dict[str, Any]) -> dict[str, Any]:
+    return SCHOLAR_EVIDENCE.classify_self_citation(
+        edge.get("source_publication_authors") or edge.get("target_authors") or [],
+        edge.get("citing_authors") or [],
+    )
+
+
+def merge_self_citation_status(existing: str, new_status: str) -> str:
+    if new_status == "non_self_citation" or existing == "non_self_citation":
+        return "non_self_citation"
+    if new_status == "self_citation" or existing == "self_citation":
+        return "self_citation"
+    return existing or new_status or "unknown"
+
+
 def person_tag_by_author(person_candidates: list[dict[str, Any]]) -> dict[str, str]:
     result = {}
     for candidate in person_candidates:
@@ -293,6 +320,23 @@ def build_deep_analysis_queue(
             score += 25
             reasons.append(f"venue:{tier.get('tier_label')}")
 
+        citing_citation_count = int(edge.get("citing_citation_count") or 0)
+        if citing_citation_count >= 50:
+            score += 10
+            reasons.append("citation_count:high")
+
+        self_citation = classify_edge_self_citation(edge)
+        self_status = self_citation.get("status") or "unknown"
+        if score > 0 and self_status == "non_self_citation":
+            score += 8
+            reasons.append("self_citation:non_self")
+        elif score > 0 and self_status == "self_citation":
+            score -= 30
+            reasons.append("self_citation:self")
+
+        if score > 0 and edge_has_analysis_identifier(edge):
+            score += 6
+
         if score <= 0:
             continue
 
@@ -304,11 +348,20 @@ def build_deep_analysis_queue(
             item["reasons"] = []
             item["source_publication_ids"] = []
             item["cited_publication_titles"] = []
+            item["self_citation_status"] = "unknown"
+            item["self_citation_overlap_authors"] = []
             grouped[key] = item
         item["priority_score"] = max(item.get("priority_score") or 0, score)
         for reason in reasons:
             if reason not in item["reasons"]:
                 item["reasons"].append(reason)
+        item["self_citation_status"] = merge_self_citation_status(
+            item.get("self_citation_status") or "unknown",
+            self_status,
+        )
+        for author in self_citation.get("overlap_authors") or []:
+            if author not in item["self_citation_overlap_authors"]:
+                item["self_citation_overlap_authors"].append(author)
         item["priority_score"] = max(
             item.get("priority_score") or 0,
             reason_priority_score(item["reasons"]),

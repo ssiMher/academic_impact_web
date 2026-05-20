@@ -13,6 +13,7 @@ AUTHOR_SOURCES_PATH = ROOT / "skills" / "scholar_impact_analyzer" / "author_sour
 LIST_PAPERS_PATH = ROOT / "skills" / "list_all_citations" / "list_papers.py"
 RUN_PIPELINE_PATH = ROOT / "skills" / "academic_impact_analyzer" / "run_pipeline.py"
 SCHOLAR_STATS_PATH = ROOT / "skills" / "scholar_impact_analyzer" / "scholar_stats.py"
+SCHOLAR_EVIDENCE_PATH = ROOT / "skills" / "scholar_impact_analyzer" / "scholar_evidence.py"
 
 
 def load_module(name: str, path: Path):
@@ -28,6 +29,7 @@ AUTHOR_SOURCES = load_module("scholar_author_sources", AUTHOR_SOURCES_PATH)
 LIST_PAPERS = load_module("scholar_list_papers", LIST_PAPERS_PATH)
 RUN_PIPELINE = load_module("scholar_run_pipeline", RUN_PIPELINE_PATH)
 SCHOLAR_STATS = load_module("scholar_stats", SCHOLAR_STATS_PATH)
+SCHOLAR_EVIDENCE = load_module("scholar_evidence", SCHOLAR_EVIDENCE_PATH)
 DEFAULT_DEEP_ANALYSIS_QUEUE_LIMIT = 300
 LOCAL_PDF_LIBRARY_DIRS_ENV = "ACADEMIC_IMPACT_PDF_LIBRARY_DIRS"
 
@@ -177,6 +179,9 @@ def normalize_citation_edge(
     )
     return {
         "source_publication_id": source_publication.get("id"),
+        "source_publication_authors": normalize_citation_authors(
+            source_publication.get("authors") or []
+        ),
         "source_publication_doi": source_publication.get("doi")
         or unique_ids.get("DOI")
         or "",
@@ -186,6 +191,12 @@ def normalize_citation_edge(
         "citing_doi": external_ids.get("DOI") or "",
         "citing_year": citing_paper.get("year"),
         "citing_venue": citing_paper.get("venue") or "Unknown Venue",
+        "citing_citation_count": (
+            citing_paper.get("citationCount")
+            or citing_paper.get("citedByCount")
+            or citing_paper.get("cited_by_count")
+            or 0
+        ),
         "citing_authors": citing_authors,
         "citing_author_details": author_details,
         "provider": provider,
@@ -199,6 +210,7 @@ def normalize_strong_evidence(
     person_tag_labels: list[str],
 ) -> dict[str, Any]:
     citation_text = finding.get("citation_text") or ""
+    citation_char_count = len(citation_text)
     positive = (finding.get("stance") or "").lower() == "positive"
     fellow = any(
         "Fellow" in label
@@ -207,23 +219,57 @@ def normalize_strong_evidence(
         or "Prize" in label
         for label in person_tag_labels
     )
+    self_citation = SCHOLAR_EVIDENCE.classify_self_citation(
+        edge.get("source_publication_authors") or [],
+        edge.get("citing_authors") or [],
+    )
+    if finding.get("is_self_citation") is True:
+        self_citation["status"] = "self_citation"
+    elif finding.get("is_self_citation") is False and self_citation["status"] == "unknown":
+        self_citation["status"] = "non_self_citation"
+    labels = SCHOLAR_EVIDENCE.derive_evidence_labels(
+        finding,
+        citation_char_count=citation_char_count,
+        person_tag_labels=person_tag_labels,
+    )
+    highlight_keywords = SCHOLAR_EVIDENCE.derive_highlight_keywords(finding, labels)
+    strong_score = SCHOLAR_EVIDENCE.score_strong_evidence(
+        labels=labels,
+        confidence=finding.get("confidence"),
+        citation_char_count=citation_char_count,
+        person_tag_labels=person_tag_labels,
+        self_citation_status=self_citation.get("status") or "unknown",
+    )
     return {
         "source_publication_id": edge.get("source_publication_id"),
         "citing_title": edge.get("citing_title"),
         "citing_authors": edge.get("citing_authors", []),
         "person_tag_labels": person_tag_labels,
         "citation_text": citation_text,
-        "citation_char_count": len(citation_text),
-        "long_context_100_chars": len(citation_text) >= 100,
+        "citation_char_count": citation_char_count,
+        "long_context_100_chars": citation_char_count >= 100,
         "positive_evaluation": positive,
-        "fellow_strong_citation": fellow and len(citation_text) >= 100 and positive,
+        "fellow_strong_citation": fellow and citation_char_count >= 100 and positive,
         "aspect": finding.get("aspect") or "",
         "stance": finding.get("stance") or "",
         "mention_type": finding.get("mention_type") or "",
+        "evidence_labels": labels,
+        "evidence_label_names": [
+            SCHOLAR_EVIDENCE.evidence_label_display(label) for label in labels
+        ],
+        "highlight_keywords": highlight_keywords,
+        "strong_citation_score": strong_score,
+        "evidence_strength": (
+            finding.get("evidence_strength")
+            or SCHOLAR_EVIDENCE.evidence_strength(strong_score)
+        ),
+        "self_citation_status": self_citation.get("status") or "unknown",
+        "self_citation_overlap_authors": self_citation.get("overlap_authors") or [],
         "page": finding.get("page"),
         "span_index": finding.get("span_index"),
         "function": finding.get("function") or "",
         "reason": finding.get("reason") or "",
+        "valuable_reason": finding.get("why_valuable") or finding.get("reason") or "",
         "confidence": finding.get("confidence"),
     }
 
@@ -629,6 +675,7 @@ def analyze_scholar_queue(
                 evidence = normalize_strong_evidence(
                     {
                         "source_publication_id": source_id,
+                        "source_publication_authors": publication.get("authors") or [],
                         "citing_title": queue_item.get("citing_title"),
                         "citing_authors": queue_item.get("citing_authors", []),
                     },

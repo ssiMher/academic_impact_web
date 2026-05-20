@@ -244,6 +244,7 @@ def build_deep_analysis_queue_view(
     session: dict[str, Any],
     *,
     active_reason: str = "",
+    active_scope: str = "",
     page: int = 1,
     page_size: int = 20,
 ) -> dict[str, Any]:
@@ -257,6 +258,18 @@ def build_deep_analysis_queue_view(
     if active_reason:
         filtered = [
             item for item in queue if active_reason in (item.get("reasons") or [])
+        ]
+    if active_scope == "non_self":
+        filtered = [
+            item for item in filtered
+            if (item.get("self_citation_status") or "unknown") != "self_citation"
+        ]
+    elif active_scope == "ready":
+        filtered = [item for item in filtered if _queue_item_has_bound_pdf(item)]
+    elif active_scope == "person_tag":
+        filtered = [
+            item for item in filtered
+            if any(str(reason).startswith("person_tag:") for reason in item.get("reasons") or [])
         ]
 
     result_by_queue_id = {
@@ -279,6 +292,8 @@ def build_deep_analysis_queue_view(
         }
         if active_reason:
             query["queue_reason"] = active_reason
+        if active_scope:
+            query["queue_scope"] = active_scope
         return f"?{urlencode(query)}#deep-analysis-queue"
 
     def citing_identifier(item: dict[str, Any]) -> str:
@@ -318,6 +333,11 @@ def build_deep_analysis_queue_view(
         decorated["manual_pdf_path"] = manual_pdf.get("local_file_path") or ""
         decorated["library_pdf_status"] = library_pdf.get("status") or ""
         decorated["library_pdf_path"] = library_pdf.get("local_file_path") or ""
+        decorated["self_citation_label"] = {
+            "self_citation": "自引",
+            "non_self_citation": "非自引",
+            "unknown": "自引未知",
+        }.get(decorated.get("self_citation_status") or "unknown", "自引未知")
         if decorated["manual_pdf_status"]:
             decorated["download_source"] = decorated["manual_pdf_status"]
             if decorated["analysis_status"] == "not_analyzed":
@@ -352,6 +372,30 @@ def build_deep_analysis_queue_view(
         "total_count": total_count,
         "unfiltered_count": len(queue),
         "active_reason": active_reason,
+        "active_scope": active_scope,
+        "scope_options": [
+            {
+                "scope": "non_self",
+                "label": "排除自引",
+                "count": sum(
+                    1 for item in queue
+                    if (item.get("self_citation_status") or "unknown") != "self_citation"
+                ),
+            },
+            {
+                "scope": "person_tag",
+                "label": "只看 Fellow/院士等重要人物",
+                "count": sum(
+                    1 for item in queue
+                    if any(str(reason).startswith("person_tag:") for reason in item.get("reasons") or [])
+                ),
+            },
+            {
+                "scope": "ready",
+                "label": "只看已准备 PDF",
+                "count": sum(1 for item in queue if _queue_item_has_bound_pdf(item)),
+            },
+        ],
         "reason_options": [
             {"reason": reason, "count": count}
             for reason, count in sorted(
@@ -368,6 +412,7 @@ def build_deep_analysis_queue_view(
             "next_url": page_url(page + 1) if page < total_pages else "",
             "start_index": start + 1 if total_count else 0,
             "active_reason": active_reason,
+            "active_scope": active_scope,
         },
     }
 
@@ -378,12 +423,27 @@ def build_strong_evidence_view(
     active_aspect: str = "",
     active_stance: str = "",
     active_flag: str = "",
+    active_label: str = "",
+    active_strength: str = "",
+    active_self: str = "",
     page: int = 1,
     page_size: int = 10,
 ) -> dict[str, Any]:
+    evidence_helper = scholar_pipeline().SCHOLAR_EVIDENCE
     evidence_items = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+    evidence_items = sorted(
+        evidence_items,
+        key=lambda item: (
+            -(item.get("strong_citation_score") or 0),
+            -(item.get("citation_char_count") or 0),
+            item.get("citing_title") or "",
+        ),
+    )
     aspect_counts: dict[str, int] = {}
     stance_counts: dict[str, int] = {}
+    label_counts: dict[str, int] = {}
+    strength_counts: dict[str, int] = {}
+    self_counts: dict[str, int] = {}
     flag_counts = {
         "fellow_strong": 0,
         "positive": 0,
@@ -412,8 +472,14 @@ def build_strong_evidence_view(
     for item in evidence_items:
         aspect = item.get("aspect") or "-"
         stance = item.get("stance") or "-"
+        strength = item.get("evidence_strength") or "-"
+        self_status = item.get("self_citation_status") or "unknown"
         aspect_counts[aspect] = aspect_counts.get(aspect, 0) + 1
         stance_counts[stance] = stance_counts.get(stance, 0) + 1
+        strength_counts[strength] = strength_counts.get(strength, 0) + 1
+        self_counts[self_status] = self_counts.get(self_status, 0) + 1
+        for label in item.get("evidence_labels") or []:
+            label_counts[label] = label_counts.get(label, 0) + 1
         if item.get("fellow_strong_citation"):
             flag_counts["fellow_strong"] += 1
         if is_positive(item):
@@ -428,6 +494,18 @@ def build_strong_evidence_view(
         filtered = [item for item in filtered if (item.get("stance") or "-") == active_stance]
     if active_flag:
         filtered = [item for item in filtered if matches_flag(item, active_flag)]
+    if active_label:
+        filtered = [
+            item for item in filtered if active_label in (item.get("evidence_labels") or [])
+        ]
+    if active_strength:
+        filtered = [
+            item for item in filtered if (item.get("evidence_strength") or "-") == active_strength
+        ]
+    if active_self:
+        filtered = [
+            item for item in filtered if (item.get("self_citation_status") or "unknown") == active_self
+        ]
 
     page_size = min(max(page_size, 1), 100)
     total_count = len(filtered)
@@ -447,17 +525,47 @@ def build_strong_evidence_view(
             query["strong_stance"] = active_stance
         if active_flag:
             query["strong_flag"] = active_flag
+        if active_label:
+            query["strong_label"] = active_label
+        if active_strength:
+            query["strong_strength"] = active_strength
+        if active_self:
+            query["strong_self"] = active_self
         return f"?{urlencode(query)}#strong-evidence"
 
+    def decorate_evidence(item: dict[str, Any]) -> dict[str, Any]:
+        decorated = dict(item)
+        labels = decorated.get("evidence_labels") or []
+        decorated["evidence_label_names"] = (
+            decorated.get("evidence_label_names")
+            or [evidence_helper.evidence_label_display(label) for label in labels]
+        )
+        decorated["self_citation_label"] = {
+            "self_citation": "自引",
+            "non_self_citation": "非自引",
+            "unknown": "自引未知",
+        }.get(decorated.get("self_citation_status") or "unknown", "自引未知")
+        decorated["highlighted_citation_text"] = evidence_helper.highlight_excerpt_html(
+            decorated.get("citation_text") or "",
+            decorated.get("highlight_keywords") or [],
+        )
+        return decorated
+
     return {
-        "items": filtered[start:end],
+        "items": [decorate_evidence(item) for item in filtered[start:end]],
         "total_count": total_count,
         "unfiltered_count": len(evidence_items),
         "active_aspect": active_aspect,
         "active_stance": active_stance,
         "active_flag": active_flag,
+        "active_label": active_label,
+        "active_strength": active_strength,
+        "active_self": active_self,
         "aspect_counts": aspect_counts,
         "stance_counts": stance_counts,
+        "label_counts": label_counts,
+        "strength_counts": strength_counts,
+        "self_counts": self_counts,
         "flag_counts": flag_counts,
         "aspect_options": [
             {"aspect": aspect, "count": count}
@@ -469,6 +577,28 @@ def build_strong_evidence_view(
             {"stance": stance, "count": count}
             for stance, count in sorted(
                 stance_counts.items(), key=lambda pair: (-pair[1], pair[0])
+            )
+        ],
+        "label_options": [
+            {
+                "label": label,
+                "display": evidence_helper.evidence_label_display(label),
+                "count": count,
+            }
+            for label, count in sorted(
+                label_counts.items(), key=lambda pair: (-pair[1], pair[0])
+            )
+        ],
+        "strength_options": [
+            {"strength": strength, "label": {"high": "高", "medium": "中", "low": "低"}.get(strength, strength), "count": count}
+            for strength, count in sorted(
+                strength_counts.items(), key=lambda pair: (-pair[1], pair[0])
+            )
+        ],
+        "self_options": [
+            {"self": status, "label": {"self_citation": "自引", "non_self_citation": "非自引", "unknown": "自引未知"}.get(status, status), "count": count}
+            for status, count in sorted(
+                self_counts.items(), key=lambda pair: (-pair[1], pair[0])
             )
         ],
         "flag_options": [
@@ -886,6 +1016,7 @@ def build_scholar_report_payload(
     strong_view = strong_evidence_view or build_strong_evidence_view(session)
     overview = analysis.get("overview") or {}
     flag_counts = strong_view.get("flag_counts") or {}
+    label_counts = strong_view.get("label_counts") or {}
 
     publication_count = statistics.get("publication_count") or len(
         session.get("publications", []) or []
@@ -923,6 +1054,20 @@ def build_scholar_report_payload(
         aspect_counts[aspect] = aspect_counts.get(aspect, 0) + 1
 
     narrative_bullets: list[str] = []
+    label_names = scholar_pipeline().SCHOLAR_EVIDENCE.LABEL_DISPLAY_NAMES
+    for label in [
+        "first_or_pioneering",
+        "baseline",
+        "comparison",
+        "method_foundation",
+        "theory_foundation",
+        "positive_evaluation",
+        "large_context",
+        "important_person",
+    ]:
+        count = label_counts.get(label, 0)
+        if count:
+            narrative_bullets.append(f"{label_names.get(label, label)}证据 {count} 条。")
     method_count = aspect_counts.get("method", 0)
     if method_count:
         narrative_bullets.append(f"方法采用类证据 {method_count} 条，说明目标工作被后续论文直接使用或复现。")
@@ -940,9 +1085,9 @@ def build_scholar_report_payload(
 
     def evidence_score(evidence: dict[str, Any]) -> tuple[int, int, int, int]:
         return (
+            evidence.get("strong_citation_score") or 0,
             1 if evidence.get("fellow_strong_citation") else 0,
             1 if evidence.get("positive_evaluation") or (evidence.get("stance") or "").lower() == "positive" else 0,
-            1 if evidence.get("long_context_100_chars") or (evidence.get("citation_char_count") or 0) >= 100 else 0,
             evidence.get("citation_char_count") or len(evidence.get("citation_text") or ""),
         )
 
@@ -950,7 +1095,7 @@ def build_scholar_report_payload(
         strong_evidence,
         key=evidence_score,
         reverse=True,
-    )[:3]
+    )[:10]
 
     limitations: list[str] = []
     if remaining_queue_count:
@@ -985,6 +1130,15 @@ def build_scholar_report_payload(
             f"{fellow_strong_count} 条、正向评价 {positive_count} 条、"
             f"长引用 {long_context_count} 条。"
         ),
+        (
+            "高质量证据标签："
+            + "，".join(
+                f"{label_names.get(label, label)} {count} 条"
+                for label, count in sorted(label_counts.items(), key=lambda pair: (-pair[1], pair[0]))[:6]
+            )
+            if label_counts
+            else "高质量证据标签：暂无。"
+        ),
         f"当前最强目标论文：{top_target_title}",
         f"下一步建议：{next_action}",
     ]
@@ -1013,7 +1167,11 @@ def build_scholar_report_payload(
                     f"{index}. {evidence.get('citing_title') or '未知引用论文'}",
                     f"   - 命中目标：{evidence.get('cited_publication_title') or '-'}",
                     f"   - 类型/态度：{evidence.get('aspect') or '-'} / {evidence.get('stance') or '-'}",
+                    f"   - 证据标签：{' / '.join(evidence.get('evidence_label_names') or [label_names.get(label, label) for label in evidence.get('evidence_labels') or []]) or '-'}",
+                    f"   - 强度分：{evidence.get('strong_citation_score') if evidence.get('strong_citation_score') is not None else '-'}",
+                    f"   - 自引：{ {'self_citation': '是', 'non_self_citation': '否', 'unknown': '未知'}.get(evidence.get('self_citation_status') or 'unknown', '未知') }",
                     f"   - Fellow 强引用：{'是' if evidence.get('fellow_strong_citation') else '否'}",
+                    f"   - 汇报价值：{evidence.get('valuable_reason') or evidence.get('reason') or '-'}",
                     f"   - 摘录：{excerpt}",
                 ]
             )
@@ -1052,6 +1210,9 @@ def build_scholar_report_payload(
                     f"{evidence.get('stance') or '-'}"
                 ),
                 f"- Fellow 强引用：{'是' if evidence.get('fellow_strong_citation') else '否'}",
+                f"- 证据标签：{' / '.join(evidence.get('evidence_label_names') or [label_names.get(label, label) for label in evidence.get('evidence_labels') or []]) or '-'}",
+                f"- 强度分：{evidence.get('strong_citation_score') if evidence.get('strong_citation_score') is not None else '-'}",
+                f"- 汇报价值：{evidence.get('valuable_reason') or evidence.get('reason') or '-'}",
                 "",
                 str(evidence.get("citation_text") or "").strip(),
                 "",

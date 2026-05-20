@@ -252,6 +252,33 @@
             </select>
           </label>
           <label>
+            证据标签
+            <select name="strong_label">
+              <option value="">全部标签</option>
+              {% for option in strong.label_options or [] %}
+              <option value="{{ option.label }}" {% if option.label == strong.active_label %}selected{% endif %}>{{ option.display }} ({{ option.count }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            证据强度
+            <select name="strong_strength">
+              <option value="">全部强度</option>
+              {% for option in strong.strength_options or [] %}
+              <option value="{{ option.strength }}" {% if option.strength == strong.active_strength %}selected{% endif %}>{{ option.label }} ({{ option.count }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            自引
+            <select name="strong_self">
+              <option value="">全部</option>
+              {% for option in strong.self_options or [] %}
+              <option value="{{ option.self }}" {% if option.self == strong.active_self %}selected{% endif %}>{{ option.label }} ({{ option.count }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
             每页
             <input type="number" name="strong_page_size" value="{{ strong_pagination.page_size or 10 }}" min="1" max="100" />
           </label>
@@ -268,6 +295,9 @@
           {% if option.count %}
           <span class="chip">{{ option.label }}: {{ option.count }}</span>
           {% endif %}
+          {% endfor %}
+          {% for option in strong.label_options or [] %}
+          <span class="chip">{{ option.display }}: {{ option.count }}</span>
           {% endfor %}
         </div>
         <p class="muted">当前显示 {{ strong.total_count or 0 }} / {{ strong.unfiltered_count or 0 }} 条强引用证据。</p>
@@ -287,7 +317,13 @@
               <span class="chip">态度：{{ evidence.stance or '-' }}</span>
               <span class="chip">类型：{{ evidence.mention_type or '-' }}</span>
               <span class="chip">置信度：{{ evidence.confidence if evidence.confidence is not none else '-' }}</span>
+              <span class="chip">强度分：{{ evidence.strong_citation_score if evidence.strong_citation_score is not none else '-' }}</span>
+              <span class="chip">证据强度：{{ evidence.evidence_strength or '-' }}</span>
+              <span class="chip">{{ evidence.self_citation_label or '自引未知' }}</span>
             </div>
+            {% if evidence.evidence_label_names %}
+            <p class="muted">证据标签：{{ (evidence.evidence_label_names or []) | join(' / ') }}</p>
+            {% endif %}
             {% if evidence.cited_publication_title %}
             <p class="muted">命中目标：{{ evidence.cited_publication_title }}</p>
             {% endif %}
@@ -298,10 +334,16 @@
             <p class="muted">人物标签：{{ (evidence.person_tag_labels or []) | join(' / ') }}</p>
             {% endif %}
             <p>{{ evidence.function }}</p>
+            {% if evidence.valuable_reason %}
+            <p><strong>汇报价值：</strong>{{ evidence.valuable_reason }}</p>
+            {% endif %}
             {% if evidence.reason %}
             <p><strong>判断理由：</strong>{{ evidence.reason }}</p>
             {% endif %}
-            <p class="evidence-excerpt">{{ evidence.citation_text }}</p>
+            {% if evidence.highlight_keywords %}
+            <p class="muted">高亮词：{{ (evidence.highlight_keywords or []) | join(' / ') }}</p>
+            {% endif %}
+            <p class="evidence-excerpt">{{ evidence.highlighted_citation_text | safe }}</p>
           </article>
           {% else %}
           <p class="muted">当前筛选条件下没有强引用证据。</p>
@@ -605,6 +647,15 @@
             </select>
           </label>
           <label>
+            队列范围
+            <select name="queue_scope">
+              <option value="">全部范围</option>
+              {% for option in queue.scope_options or [] %}
+              <option value="{{ option.scope }}" {% if option.scope == queue.active_scope %}selected{% endif %}>{{ option.label }} ({{ option.count }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
             每页
             <input type="number" name="queue_page_size" value="{{ queue_pagination.page_size or 20 }}" min="1" max="100" />
           </label>
@@ -659,6 +710,8 @@
                 <td>
                   <span class="chip">{{ edge.analysis_status or 'not_analyzed' }}</span>
                   {% if edge.readiness_label %}<br /><span class="chip">{{ edge.readiness_label }}</span>{% endif %}
+                  {% if edge.self_citation_label %}<br /><span class="chip">{{ edge.self_citation_label }}</span>{% endif %}
+                  {% if edge.self_citation_overlap_authors %}<br /><span class="muted">重叠作者：{{ (edge.self_citation_overlap_authors or []) | join(', ') }}</span>{% endif %}
                   {% if edge.download_source %}<br /><span class="muted">{{ edge.download_source }}</span>{% endif %}
                   {% if edge.library_pdf_path %}<br /><span class="muted">本地库 PDF：{{ edge.library_pdf_path }}</span>{% endif %}
                   {% if edge.manual_pdf_path %}<br /><span class="muted">已绑定 PDF：{{ edge.manual_pdf_path }}</span>{% endif %}
@@ -669,6 +722,7 @@
                     <input type="hidden" name="return_queue_page" value="{{ queue_pagination.page or 1 }}" />
                     <input type="hidden" name="return_queue_page_size" value="{{ queue_pagination.page_size or 20 }}" />
                     <input type="hidden" name="return_queue_reason" value="{{ queue_pagination.active_reason or queue.active_reason or '' }}" />
+                    <input type="hidden" name="return_queue_scope" value="{{ queue_pagination.active_scope or queue.active_scope or '' }}" />
                     <input type="hidden" name="return_anchor" value="{{ row_anchor }}" />
                     <input type="file" name="pdf_file" accept="application/pdf,.pdf" required {% if task_active %}disabled{% endif %} data-scholar-task-control />
                     <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>上传 PDF</button>

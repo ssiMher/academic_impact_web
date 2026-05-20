@@ -127,6 +127,7 @@ class ScholarPipelineTestCase(unittest.TestCase):
         self.assertEqual(edge["citing_paper_id"], "scopus-citing-001")
         self.assertEqual(edge["citing_title"], "Citing Paper")
         self.assertEqual(edge["cited_publication_title"], "Target Paper")
+        self.assertEqual(edge["source_publication_authors"], [])
         self.assertEqual(edge["citing_doi"], "10.1000/citing")
         self.assertEqual(edge["citing_year"], 2025)
         self.assertEqual(edge["citing_venue"], "ACM MobiCom")
@@ -925,6 +926,31 @@ class ScholarPipelineTestCase(unittest.TestCase):
         self.assertTrue(evidence["positive_evaluation"])
         self.assertTrue(evidence["fellow_strong_citation"])
         self.assertEqual(evidence["aspect"], "method")
+        self.assertIn("positive_evaluation", evidence["evidence_labels"])
+        self.assertIn("method_foundation", evidence["evidence_labels"])
+        self.assertIn("important_person", evidence["evidence_labels"])
+        self.assertGreaterEqual(evidence["strong_citation_score"], 75)
+        self.assertEqual(evidence["evidence_strength"], "high")
+
+    def test_normalize_strong_evidence_marks_self_citation(self):
+        edge = {
+            "source_publication_id": "S001",
+            "source_publication_authors": ["Chen Tian"],
+            "citing_title": "Self Citation",
+            "citing_authors": ["Tian Chen"],
+        }
+        finding = {
+            "citation_text": "This work is used as a baseline.",
+            "aspect": "baseline",
+            "stance": "positive",
+            "confidence": 0.9,
+        }
+
+        evidence = self.pipeline.normalize_strong_evidence(edge, finding, person_tag_labels=[])
+
+        self.assertEqual(evidence["self_citation_status"], "self_citation")
+        self.assertEqual(evidence["self_citation_overlap_authors"], ["Tian Chen"])
+        self.assertIn("baseline", evidence["evidence_labels"])
 
 
 if __name__ == "__main__":

@@ -389,6 +389,35 @@ class ScholarStatsTestCase(unittest.TestCase):
         self.assertEqual(queue[0]["citing_title"], "Confirmed Fellow Citation")
         self.assertGreater(queue[0]["priority_score"], queue[1]["priority_score"])
 
+    def test_build_deep_analysis_queue_marks_and_downranks_self_citations(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "source_publication_authors": ["Chen Tian"],
+                "citing_title": "Self Citation",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["Chen Tian"],
+                "citing_doi": "10.1000/self",
+            },
+            {
+                "source_publication_id": "S001",
+                "source_publication_authors": ["Chen Tian"],
+                "citing_title": "External Citation",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["Grace Hopper"],
+                "citing_doi": "10.1000/external",
+            },
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges, [], limit=10
+        )
+
+        self.assertEqual(len(queue), 1)
+        self.assertEqual(queue[0]["citing_title"], "External Citation")
+        self.assertEqual(queue[0]["self_citation_status"], "non_self_citation")
+        self.assertIn("self_citation:non_self", queue[0]["reasons"])
+
     def test_build_deep_analysis_queue_groups_duplicate_citing_papers(self):
         citation_edges = [
             {

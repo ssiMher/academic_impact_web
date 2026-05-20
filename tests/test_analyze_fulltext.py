@@ -23,6 +23,30 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.module = load_analyze_fulltext_module()
 
+    def test_normalize_model_finding_preserves_evidence_metadata(self):
+        finding = {
+            "page": 4,
+            "span_index": 2,
+            "citation_text": "We compare against the pioneering baseline.",
+            "keep": True,
+            "aspect": "baseline",
+            "stance": "positive",
+            "evidence_labels": ["baseline", "first_or_pioneering", "not_valid"],
+            "highlight_keywords": ["compare", "pioneering"],
+            "evidence_strength": "high",
+            "is_self_citation": True,
+            "why_valuable": "可用于说明目标工作被作为开创性基线比较。",
+            "confidence": 0.91,
+        }
+
+        result = self.module.normalize_model_finding(finding, 0)
+
+        self.assertEqual(result["evidence_labels"], ["baseline", "first_or_pioneering"])
+        self.assertEqual(result["highlight_keywords"], ["compare", "pioneering"])
+        self.assertEqual(result["evidence_strength"], "high")
+        self.assertIs(result["is_self_citation"], True)
+        self.assertEqual(result["why_valuable"], "可用于说明目标工作被作为开创性基线比较。")
+
     def test_analyze_payload_prefers_message_content(self):
         payload = {
             'target_title': 'LoRA: Low-Rank Adaptation of Large Language Models',

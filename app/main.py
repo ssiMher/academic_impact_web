@@ -109,11 +109,15 @@ async def scholar_detail(
     request: Request,
     session_id: str,
     queue_reason: str = "",
+    queue_scope: str = "",
     queue_page: int = 1,
     queue_page_size: int = 20,
     strong_aspect: str = "",
     strong_stance: str = "",
     strong_flag: str = "",
+    strong_label: str = "",
+    strong_strength: str = "",
+    strong_self: str = "",
     strong_page: int = 1,
     strong_page_size: int = 10,
     person_status: str = "",
@@ -151,6 +155,7 @@ async def scholar_detail(
     queue_view = scholar_core.build_deep_analysis_queue_view(
         payload,
         active_reason=queue_reason,
+        active_scope=queue_scope,
         page=queue_page,
         page_size=queue_page_size,
     )
@@ -159,6 +164,9 @@ async def scholar_detail(
         active_aspect=strong_aspect,
         active_stance=strong_stance,
         active_flag=strong_flag,
+        active_label=strong_label,
+        active_strength=strong_strength,
+        active_self=strong_self,
         page=strong_page,
         page_size=strong_page_size,
     )
@@ -345,6 +353,7 @@ async def attach_scholar_queue_pdf(
     return_queue_page: int = Form(1),
     return_queue_page_size: int = Form(20),
     return_queue_reason: str = Form(""),
+    return_queue_scope: str = Form(""),
     return_anchor: str = Form("deep-analysis-queue"),
     pdf_file: UploadFile = File(...),
 ):
@@ -371,6 +380,8 @@ async def attach_scholar_queue_pdf(
     }
     if return_queue_reason:
         query["queue_reason"] = return_queue_reason
+    if return_queue_scope:
+        query["queue_scope"] = return_queue_scope
     anchor = return_anchor.strip() or "deep-analysis-queue"
     return RedirectResponse(
         url=f"/scholars/{session_id}?{urlencode(query)}#{anchor}",

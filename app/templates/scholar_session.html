@@ -713,6 +713,7 @@
                   {% if edge.self_citation_label %}<br /><span class="chip">{{ edge.self_citation_label }}</span>{% endif %}
                   {% if edge.self_citation_overlap_authors %}<br /><span class="muted">重叠作者：{{ (edge.self_citation_overlap_authors or []) | join(', ') }}</span>{% endif %}
                   {% if edge.download_source %}<br /><span class="muted">{{ edge.download_source }}</span>{% endif %}
+                  {% if edge.publisher_url %}<br /><a href="{{ edge.publisher_url }}" target="_blank" rel="noopener">打开出版社页面</a>{% endif %}
                   {% if edge.library_pdf_path %}<br /><span class="muted">本地库 PDF：{{ edge.library_pdf_path }}</span>{% endif %}
                   {% if edge.manual_pdf_path %}<br /><span class="muted">已绑定 PDF：{{ edge.manual_pdf_path }}</span>{% endif %}
                   {% if edge.analysis_failure_message %}<br /><span class="muted">{{ edge.analysis_failure_message }}</span>{% endif %}

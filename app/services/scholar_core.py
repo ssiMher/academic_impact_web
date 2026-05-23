@@ -313,12 +313,16 @@ def build_deep_analysis_queue_view(
             return f"ID: {item.get('citing_paper_id')}"
         return "-"
 
+    def publisher_url(item: dict[str, Any]) -> str:
+        return _queue_item_publisher_url(item)
+
     def decorate_queue_item(item: dict[str, Any]) -> dict[str, Any]:
         result = result_by_queue_id.get(item.get("queue_id"))
         decorated = dict(item)
         manual_pdf = item.get("manual_pdf") or {}
         library_pdf = item.get("library_pdf") or {}
         decorated["citing_identifier"] = citing_identifier(item)
+        decorated["publisher_url"] = publisher_url(item)
         if result:
             download = result.get("download") or {}
             analysis = result.get("analysis") or {}
@@ -330,11 +334,13 @@ def build_deep_analysis_queue_view(
             decorated["download_source"] = download.get("source") or "-"
             decorated["analysis_failure_message"] = _result_failure_message(result)
             decorated["analysis_error_type"] = analysis.get("error_type") or ""
+            decorated["download_failure_type"] = download.get("failure_type") or ""
         else:
             decorated["analysis_status"] = "not_analyzed"
             decorated["download_source"] = "点击分析时自动尝试下载 PDF"
             decorated["analysis_failure_message"] = ""
             decorated["analysis_error_type"] = ""
+            decorated["download_failure_type"] = ""
         decorated["manual_pdf_status"] = manual_pdf.get("status") or ""
         decorated["manual_pdf_path"] = manual_pdf.get("local_file_path") or ""
         decorated["library_pdf_status"] = library_pdf.get("status") or ""
@@ -358,6 +364,9 @@ def build_deep_analysis_queue_view(
         elif decorated["library_pdf_status"]:
             decorated["readiness_status"] = "local_library_ready"
             decorated["readiness_label"] = "已命中本地论文库，可直接分析"
+        elif decorated["download_failure_type"] == "requires_institution_login":
+            decorated["readiness_status"] = "institution_login_required"
+            decorated["readiness_label"] = "需要机构登录下载 PDF"
         elif (
             decorated["analysis_status"] in {"context_only", "fulltext_extract_failed"}
             or decorated["download_source"] == "manual_required"
@@ -1624,6 +1633,16 @@ def get_scholar_pdf_download_report_path(session_id: str) -> Path:
     return resolve_scholar_session_dir(session_id) / "exports" / "pdf_download_report.csv"
 
 
+def _queue_item_publisher_url(item: dict[str, Any]) -> str:
+    source_url = (item.get("source_url") or "").strip()
+    if source_url:
+        return source_url
+    doi = (item.get("citing_doi") or "").strip()
+    if doi:
+        return f"https://doi.org/{doi}"
+    return ""
+
+
 def _queue_item_download_query(item: dict[str, Any]) -> tuple[str, str]:
     arxiv_id = _arxiv_id_from_queue_item(item)
     if arxiv_id:
@@ -1650,6 +1669,7 @@ def _write_pdf_download_report(session_id: str, rows: list[dict[str, Any]]) -> P
         "citing_doi",
         "file_path",
         "pdf_url",
+        "publisher_url",
         "source_strategy",
         "candidate_count",
         "attempted_count",
@@ -1679,7 +1699,58 @@ def _pdf_download_max_workers(value: int | None = None) -> int:
         return 4
 
 
+INSTITUTION_LOGIN_HOST_HINTS = (
+    "ieeexplore.ieee.org",
+    "dl.acm.org",
+    "acm.org",
+    "sciencedirect.com",
+    "link.springer.com",
+    "springer.com",
+    "wiley.com",
+    "tandfonline.com",
+    "worldscientific.com",
+)
+
+
+def _download_failure_text(result: dict[str, Any]) -> str:
+    values: list[Any] = [
+        result.get("error"),
+        result.get("pdf_url"),
+        result.get("source_url"),
+        result.get("publisher_url"),
+        result.get("query"),
+        result.get("source_strategy"),
+    ]
+    values.extend(result.get("pdf_candidates") or [])
+    for error in result.get("download_errors") or []:
+        if isinstance(error, dict):
+            values.extend([error.get("url"), error.get("error")])
+        else:
+            values.append(error)
+    return " ".join(str(value or "") for value in values).lower()
+
+
+def _looks_like_institution_login_required(result: dict[str, Any]) -> bool:
+    text = _download_failure_text(result)
+    if not text:
+        return False
+    login_markers = (
+        "denied",
+        "institutional sign in",
+        "institution login",
+        "institutional login",
+        "subscribe to access",
+        "access denied",
+        "permission_required",
+    )
+    return any(marker in text for marker in login_markers) or any(
+        host in text for host in INSTITUTION_LOGIN_HOST_HINTS
+    )
+
+
 def _classify_pdf_download_failure(result: dict[str, Any]) -> str:
+    if _looks_like_institution_login_required(result):
+        return "requires_institution_login"
     error = str(result.get("error") or "").lower()
     if not result.get("pdf_candidates") and "开源 pdf" in error:
         return "no_pdf_candidates"
@@ -1722,15 +1793,20 @@ def _download_pdf_from_source_url(
         source_strategy = "source_url_candidate_extraction"
 
     if not candidates:
-        return {
+        failure = {
             "ok": False,
             "source_strategy": source_strategy,
+            "source_url": source_url,
+            "publisher_url": _queue_item_publisher_url(item) or source_url,
             "pdf_candidates": [],
             "candidate_count": 0,
             "attempted_count": 0,
             "elapsed_ms": int((time.perf_counter() - started) * 1000),
-            "failure_type": "no_pdf_candidates",
             "error": "source_url_no_pdf_candidates",
+        }
+        failure["failure_type"] = _classify_pdf_download_failure(failure)
+        return {
+            **failure,
         }
 
     search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
@@ -1763,6 +1839,7 @@ def _download_pdf_from_source_url(
                 "ok": True,
                 "file_path": str(target_path),
                 "pdf_url": candidate,
+                "publisher_url": _queue_item_publisher_url(item) or source_url,
                 "pdf_candidates": candidates,
                 "source_strategy": source_strategy,
                 "candidate_count": len(candidates),
@@ -1775,6 +1852,8 @@ def _download_pdf_from_source_url(
     failure = {
         "ok": False,
         "pdf_url": candidates[-1] if candidates else "",
+        "publisher_url": _queue_item_publisher_url(item) or source_url,
+        "source_url": source_url,
         "pdf_candidates": candidates,
         "source_strategy": source_strategy,
         "candidate_count": len(candidates),
@@ -1806,6 +1885,7 @@ def _download_queue_item_pdf(
 
     result = dict(download_pdf.download_paper(query) or {})
     result["source_strategy"] = "download_paper"
+    result["publisher_url"] = _queue_item_publisher_url(item)
     result["candidate_count"] = len(result.get("pdf_candidates") or [])
     result["download_errors"] = result.get("download_errors") or []
     if result.get("ok") and result.get("file_path"):
@@ -1858,6 +1938,7 @@ def download_missing_scholar_pdfs(
             "queue_id": queue_id,
             "citing_title": title,
             "citing_doi": item.get("citing_doi") or "",
+            "publisher_url": _queue_item_publisher_url(item),
             "_index": index,
         }
         if _queue_item_has_bound_pdf(item):
@@ -1948,6 +2029,7 @@ def download_missing_scholar_pdfs(
                         "status": "downloaded",
                         "file_path": file_path,
                         "pdf_url": result.get("pdf_url") or "",
+                        "publisher_url": result.get("publisher_url") or row.get("publisher_url") or "",
                         "source_strategy": result.get("source_strategy") or "",
                         "candidate_count": result.get("candidate_count") or 0,
                         "attempted_count": result.get("attempted_count") or 0,
@@ -1963,6 +2045,7 @@ def download_missing_scholar_pdfs(
                     **row,
                     "status": "failed",
                     "pdf_url": result.get("pdf_url") or "",
+                    "publisher_url": result.get("publisher_url") or row.get("publisher_url") or "",
                     "source_strategy": result.get("source_strategy") or "",
                     "candidate_count": result.get("candidate_count") or 0,
                     "attempted_count": result.get("attempted_count") or 0,

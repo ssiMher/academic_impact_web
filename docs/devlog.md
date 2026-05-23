@@ -1,5 +1,24 @@
 # 开发日志
 
+## 2026-05-23：机构登录下载辅助流程
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- IEEE Xplore、ACM DL 等出版社页面常返回登录/订阅页，系统不能也不应保存学校账号并自动登录。
+- 之前自动下载失败后只显示通用失败原因，用户需要自己判断是不是机构权限问题。
+
+本次处理：
+- PDF 下载失败分类新增 `requires_institution_login`，识别 IEEE/ACM/Springer/Elsevier 等常见受限页面、`denied`、`access denied`、`institutional sign in` 等信号。
+- 高价值引用队列新增出版社入口链接，优先使用 `source_url`，否则使用 DOI 页面。
+- 队列准备状态对机构登录失败显示“需要机构登录下载 PDF”，方便用户打开出版社页、手动登录下载，再刷新本地 PDF 索引自动命中。
+- `pdf_download_report.csv` 增加 `publisher_url` 字段，方便批量整理需要人工登录处理的论文。
+
+当前策略：
+- 不自动保存账号、密码或浏览器 cookie。
+- 不批量模拟机构登录下载付费 PDF。
+- 系统只负责识别“需要机构登录”、提供入口、下载后本地匹配和绑定。
+
 ## 2026-05-23：修复高价值队列自引误标排查结果
 
 分支：`codex/organize-analysis-venue-work`

@@ -583,6 +583,7 @@ class ScholarWebTestCase(unittest.TestCase):
                     "citing_title": "Failed Citing Paper",
                     "citing_doi": "10.1000/failed",
                     "citing_scopus_id": "2-s2.0-123",
+                    "source_url": "https://ieeexplore.ieee.org/document/11407475?denied=",
                     "reasons": ["venue:CCF A"],
                     "manual_pdf": {
                         "status": "manual_pdf_attached",
@@ -631,6 +632,10 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(failed["citing_identifier"], "DOI: 10.1000/failed")
         self.assertEqual(failed["readiness_label"], "已上传 PDF，可重试")
         self.assertEqual(failed["readiness_status"], "manual_pdf_ready")
+        self.assertEqual(
+            failed["publisher_url"],
+            "https://ieeexplore.ieee.org/document/11407475?denied=",
+        )
         self.assertEqual(fresh["analysis_status"], "local_library_matched")
         self.assertEqual(fresh["download_source"], "local_library_matched")
         self.assertEqual(fresh["citing_identifier"], "OpenAlex: W123")
@@ -641,6 +646,41 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(missing_id["readiness_label"], "缺少 DOI/ID，可能失败")
         self.assertEqual(missing_id["readiness_status"], "missing_identifier")
         self.assertEqual(missing_id["self_citation_label"], "自引未知")
+
+    def test_build_deep_analysis_queue_view_marks_institution_login_failures(self):
+        session = {
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q001",
+                    "citing_title": "IEEE Citing Paper",
+                    "citing_doi": "10.1109/TMC.2025.3590801",
+                    "source_url": "https://ieeexplore.ieee.org/document/11407475?denied=",
+                    "reasons": ["venue:CCF A"],
+                }
+            ],
+            "scholar_fulltext_results": [
+                {
+                    "queue_id": "Q001",
+                    "status": "context_only",
+                    "download": {
+                        "source": "manual_required",
+                        "failure_type": "requires_institution_login",
+                        "error": "publisher access denied",
+                    },
+                    "analysis": {"error_type": "download_failed"},
+                }
+            ],
+        }
+
+        view = scholar_core.build_deep_analysis_queue_view(session)
+
+        item = view["items"][0]
+        self.assertEqual(item["readiness_status"], "institution_login_required")
+        self.assertEqual(item["readiness_label"], "需要机构登录下载 PDF")
+        self.assertEqual(
+            item["publisher_url"],
+            "https://ieeexplore.ieee.org/document/11407475?denied=",
+        )
 
     def test_build_deep_analysis_queue_view_filters_queue_scope(self):
         session = {
@@ -2554,6 +2594,81 @@ class ScholarWebTestCase(unittest.TestCase):
         )
         self.assertIn("source_url_candidate_extraction", report_text)
         self.assertIn("https://publisher.test/paper.pdf", report_text)
+
+    def test_download_missing_scholar_pdfs_marks_institution_login_source_url(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        pdf_dir = TEST_SESSION_DIR / "downloads"
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "IEEE Login Paper",
+                            "source_url": "https://ieeexplore.ieee.org/document/11407475?denied=",
+                        }
+                    ],
+                    "statistics": {"publication_count": 1},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        class FakeDownloadPdf:
+            DEFAULT_LOCAL_PDF_INDEX_PATH = str(TEST_SESSION_DIR / "local_pdf_index.json")
+            DEFAULT_LOCAL_PDF_DIR = str(pdf_dir)
+
+            @staticmethod
+            def sanitize_filename(name):
+                return name
+
+            @staticmethod
+            def is_probable_pdf_url(url):
+                return False
+
+            @staticmethod
+            def extract_pdf_candidates_from_html_page(url):
+                return []
+
+            @staticmethod
+            def build_local_pdf_index(search_dirs, index_path=""):
+                Path(index_path).write_text(
+                    json.dumps({"entry_count": 0, "scanned_pdf_count": 0, "entries": []}),
+                    encoding="utf-8",
+                )
+                return {"entry_count": 0}
+
+        class FakePipeline:
+            RUN_PIPELINE = type("RunPipeline", (), {"DOWNLOAD_PDF": FakeDownloadPdf})()
+
+            @staticmethod
+            def configured_local_pdf_library_dirs(download_pdf_module):
+                return [str(pdf_dir)]
+
+        with mock.patch.object(
+            scholar_core,
+            "scholar_pipeline",
+            return_value=FakePipeline(),
+        ), mock.patch.object(
+            scholar_core,
+            "_decorate_publication_venue_tiers",
+        ):
+            result = scholar_core.download_missing_scholar_pdfs(TEST_SESSION_ID, max_workers=1)
+
+        self.assertEqual(result["failed_count"], 1)
+        report_text = (TEST_SESSION_DIR / "exports" / "pdf_download_report.csv").read_text(
+            encoding="utf-8-sig"
+        )
+        self.assertIn("requires_institution_login", report_text)
+        self.assertIn("https://ieeexplore.ieee.org/document/11407475?denied=", report_text)
 
     def test_scholar_pdf_download_report_export_route(self):
         export_dir = TEST_SESSION_DIR / "exports"

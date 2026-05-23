@@ -31,6 +31,15 @@ class ScholarEvidenceTestCase(unittest.TestCase):
         self.assertEqual(result["status"], "self_citation")
         self.assertEqual(result["overlap_authors"], ["Tian Chen"])
 
+    def test_classify_self_citation_detects_inverted_initial_name(self):
+        result = self.evidence.classify_self_citation(
+            ["Jingyi Ning", "Lei Xie 0004"],
+            ["Ning J."],
+        )
+
+        self.assertEqual(result["status"], "self_citation")
+        self.assertEqual(result["overlap_authors"], ["Ning J."])
+
     def test_classify_self_citation_marks_non_self(self):
         result = self.evidence.classify_self_citation(
             ["Chen Tian"],

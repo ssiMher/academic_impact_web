@@ -80,13 +80,28 @@ def normalize_name(value: str) -> str:
     return "".join(ch for ch in (value or "").lower() if ch.isalnum())
 
 
+def name_without_numeric_suffix(value: str) -> str:
+    return re.sub(r"\s+\d{4}$", "", str(value or "").strip())
+
+
 def name_signatures(value: str) -> set[str]:
-    text = str(value or "").strip().lower()
+    text = name_without_numeric_suffix(value).lower()
     direct = normalize_name(text)
     tokens = [token for token in re.split(r"[^a-z0-9\u4e00-\u9fff]+", text) if token]
     signatures = {direct} if direct else set()
     if len(tokens) > 1:
         signatures.add("".join(sorted(tokens)))
+    latin_tokens = [
+        token
+        for token in tokens
+        if token.isascii() and token.isalpha()
+    ]
+    if len(latin_tokens) >= 2:
+        given = latin_tokens[0]
+        surname = latin_tokens[-1]
+        if len(surname) > 1:
+            signatures.add(f"{surname}{given[0]}")
+            signatures.add(f"{given[0]}{surname}")
     return signatures
 
 

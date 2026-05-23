@@ -1,6 +1,7 @@
 import sys
 import json
 import os
+import re
 import time
 import requests
 import urllib.parse
@@ -195,6 +196,72 @@ def parse_int(value, default=0):
         return int(value)
     except (TypeError, ValueError):
         return default
+
+
+def paper_doi(paper: dict) -> str:
+    return ((paper.get("externalIds") or {}).get("DOI") or "").strip()
+
+
+def author_name(author) -> str:
+    if isinstance(author, dict):
+        return (author.get("name") or "").strip()
+    return str(author or "").strip()
+
+
+def looks_like_abbreviated_author(name: str) -> bool:
+    parts = [part for part in re.split(r"\s+", (name or "").strip()) if part]
+    if len(parts) != 2:
+        return False
+    first, second = parts
+    return (
+        len(first.rstrip(".")) > 1
+        and len(second.rstrip(".")) == 1
+        and second.rstrip(".").isalpha()
+    )
+
+
+def should_enrich_authors(authors) -> bool:
+    names = [author_name(author) for author in authors or [] if author_name(author)]
+    if not names:
+        return True
+    if len(names) == 1 and looks_like_abbreviated_author(names[0]):
+        return True
+    return False
+
+
+def fetch_semantic_scholar_paper_by_doi(doi: str) -> Optional[dict]:
+    doi = (doi or "").strip()
+    if not doi:
+        return None
+    url = (
+        f"https://api.semanticscholar.org/graph/v1/paper/DOI:{urllib.parse.quote(doi, safe='')}"
+        "?fields=paperId,title,year,venue,externalIds,authors"
+    )
+    try:
+        data = safe_get(url).json()
+    except Exception:
+        return None
+    if not data.get("paperId"):
+        return None
+    return data
+
+
+def enrich_scopus_citing_paper_authors(citing: dict) -> dict:
+    if not should_enrich_authors(citing.get("authors") or []):
+        return citing
+    doi = paper_doi(citing)
+    if not doi:
+        return citing
+    enriched = fetch_semantic_scholar_paper_by_doi(doi)
+    authors = (enriched or {}).get("authors") or []
+    full_names = [author_name(author) for author in authors if author_name(author)]
+    if not full_names:
+        return citing
+    citing = dict(citing)
+    citing["authors"] = [{"name": name} for name in full_names]
+    citing["author_details"] = build_semantic_scholar_author_details({"authors": authors})
+    citing["author_enrichment_source"] = "Semantic Scholar DOI"
+    return citing
 
 
 def normalize_scopus_entry(entry: dict) -> dict:
@@ -630,6 +697,8 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
         citing = item.get("citingPaper")
         if not citing:
             continue
+        if used_source.startswith("Scopus"):
+            citing = enrich_scopus_citing_paper_authors(citing)
 
         papers.append({
             "title": citing.get("title", "Unknown Title"),
@@ -638,6 +707,9 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
             "externalIds": citing.get("externalIds", {}),
             "authors": [a.get("name") for a in citing.get("authors", []) if a.get("name")],
             "author_details": (
+                citing.get("author_details")
+                if citing.get("author_details")
+                else
                 build_openalex_author_details(citing)
                 if used_source.startswith("OpenAlex")
                 else build_scopus_author_details(citing)

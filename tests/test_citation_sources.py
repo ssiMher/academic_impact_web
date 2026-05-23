@@ -148,6 +148,53 @@ class CitationSourcesTestCase(unittest.TestCase):
         self.assertEqual(payload["papers"][0]["title"], "Scopus Citing Paper")
         self.assertEqual(payload["papers"][0]["author_details"][0]["name"], "Grace Hopper")
 
+    def test_scopus_source_enriches_abbreviated_authors_by_doi(self):
+        target = {
+            "paperId": "2-s2.0-1",
+            "title": "Target",
+            "year": 2024,
+            "venue": "Venue",
+            "externalIds": {"DOI": "10.1000/demo", "EID": "2-s2.0-1"},
+            "citationCount": 12,
+            "source_url": "https://www.scopus.com/record/display.uri?eid=2-s2.0-1",
+        }
+        rows = [
+            {
+                "citingPaper": {
+                    "title": "MoiréTracker",
+                    "year": 2024,
+                    "venue": "IEEE JSAC",
+                    "externalIds": {"DOI": "10.1109/JSAC.2024.3414619"},
+                    "authors": [{"name": "Ning J."}],
+                    "source_url": "https://www.scopus.com/record/display.uri?eid=2-s2.0-2",
+                    "citedby_count": 2,
+                }
+            }
+        ]
+        s2_paper = {
+            "paperId": "S2-1",
+            "title": "MoiréTracker",
+            "authors": [
+                {"name": "Jingyi Ning", "authorId": "2218797021"},
+                {"name": "Lei Xie", "authorId": "2262126646"},
+            ],
+        }
+
+        with mock.patch.dict(os.environ, {"ACADEMIC_IMPACT_CITATION_SOURCE": "scopus"}), \
+                mock.patch.object(self.list_papers, "resolve_paper_scopus", return_value=target), \
+                mock.patch.object(self.list_papers, "fetch_citations_scopus", return_value=rows), \
+                mock.patch.object(self.list_papers, "fetch_semantic_scholar_paper_by_doi", return_value=s2_paper):
+            payload = self.list_papers.list_all_citations("Target", limit=1)
+
+        self.assertEqual(
+            payload["papers"][0]["authors"],
+            ["Jingyi Ning", "Lei Xie"],
+        )
+        self.assertEqual(
+            payload["papers"][0]["author_details"][0]["source_url"],
+            "https://www.semanticscholar.org/author/2218797021",
+        )
+
     def test_scopus_fetch_tries_reference_queries_until_results(self):
         target = {
             "paperId": "2-s2.0-1",

@@ -25,6 +25,30 @@
 排查建议：
 - 如果页面仍显示异常，优先查看对应 session 的 `data/scholar_sessions/<session_id>/session.json` 中该队列项的 `citing_authors`、`source_publication_authors`、`self_citation_status` 和 `self_citation_overlap_authors`，确认问题是在作者元数据缺失、重建未生效，还是页面缓存。
 
+## 2026-05-23：Scopus 缩写作者补全为全称
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- Scopus cited-by 列表常只返回 `dc:creator`，作者名可能是 `Ning J.` 这类缩写。
+- 这种缩写既影响页面可读性，也会增加自引判断和作者标签匹配的复杂度。
+
+本次处理：
+- 在引用列表清洗阶段，如果 Scopus 结果只有明显缩写作者且引用论文有 DOI，自动用 Semantic Scholar DOI 详情补全作者全称。
+- 补全成功后，`authors` 和 `author_details` 都使用全称作者，后续高价值队列、人物候选和自引判断直接受益。
+- 增加 `scripts/enrich_scholar_citing_authors.py`，用于修补已有 scholar session 的 `citation_edges`，修补后自动重建派生统计和高价值队列。
+
+使用方式：
+
+```bash
+python3 scripts/enrich_scholar_citing_authors.py <scholar_session_id> --dry-run
+python3 scripts/enrich_scholar_citing_authors.py <scholar_session_id>
+```
+
+注意事项：
+- 只在“作者列表明显不完整/缩写且有 DOI”时补全，避免对完整作者列表额外发请求。
+- Semantic Scholar 补全失败时保留原始 Scopus 作者，不中断引用展开。
+
 ## 2026-05-23：自引判断补充当前学者口径
 
 分支：`codex/organize-analysis-venue-work`

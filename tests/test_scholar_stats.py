@@ -413,10 +413,54 @@ class ScholarStatsTestCase(unittest.TestCase):
             citation_edges, [], limit=10
         )
 
-        self.assertEqual(len(queue), 1)
+        self.assertEqual(len(queue), 2)
         self.assertEqual(queue[0]["citing_title"], "External Citation")
         self.assertEqual(queue[0]["self_citation_status"], "non_self_citation")
         self.assertIn("self_citation:non_self", queue[0]["reasons"])
+        self.assertEqual(queue[1]["citing_title"], "Self Citation")
+        self.assertEqual(queue[1]["self_citation_status"], "self_citation")
+        self.assertIn("self_citation:self", queue[1]["reasons"])
+
+    def test_build_deep_analysis_queue_uses_selected_author_for_self_citation(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "cited_publication_title": "Target Paper With Missing Authors",
+                "citing_title": "Scholar Self Citation",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["Jingyi Ning", "Lei Xie"],
+                "citing_doi": "10.1109/self",
+            },
+            {
+                "source_publication_id": "S001",
+                "cited_publication_title": "Target Paper With Missing Authors",
+                "citing_title": "External Citation",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["External Author"],
+                "citing_doi": "10.1109/external",
+            },
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges,
+            [],
+            limit=10,
+            selected_author_names=["Jingyi Ning"],
+        )
+
+        by_title = {item["citing_title"]: item for item in queue}
+        self.assertEqual(
+            by_title["Scholar Self Citation"]["self_citation_status"],
+            "self_citation",
+        )
+        self.assertIn(
+            "self_citation:self",
+            by_title["Scholar Self Citation"]["reasons"],
+        )
+        self.assertEqual(
+            by_title["External Citation"]["self_citation_status"],
+            "non_self_citation",
+        )
 
     def test_build_deep_analysis_queue_groups_duplicate_citing_papers(self):
         citation_edges = [

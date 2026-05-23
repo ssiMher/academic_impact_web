@@ -293,6 +293,7 @@ class ScholarPipelineTestCase(unittest.TestCase):
 
     def test_rebuild_scholar_derived_outputs_uses_existing_edges_without_provider_calls(self):
         session = {
+            "selected_author": {"display_name": "Chen Tian"},
             "publications": [
                 {
                     "id": "S001",
@@ -348,6 +349,42 @@ class ScholarPipelineTestCase(unittest.TestCase):
         self.assertIn(
             "person_tag:ACM Fellow",
             rebuilt["deep_analysis_queue"][0]["reasons"],
+        )
+
+    def test_rebuild_scholar_derived_outputs_marks_selected_author_self_citation(self):
+        session = {
+            "selected_author": {"display_name": "Jingyi Ning"},
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "citation_count": 12,
+                }
+            ],
+            "citation_edges": [
+                {
+                    "source_publication_id": "S001",
+                    "cited_publication_title": "Target Paper",
+                    "citing_paper_id": "C001",
+                    "citing_title": "MoiréTracker",
+                    "citing_year": 2025,
+                    "citing_venue": "ACM MobiCom",
+                    "citing_authors": ["Jingyi Ning", "Lei Xie"],
+                }
+            ],
+            "person_candidates": [],
+            "deep_analysis_queue": [],
+            "statistics": {},
+        }
+
+        rebuilt = self.pipeline.rebuild_scholar_derived_outputs(
+            session,
+            queue_limit=10,
+        )
+
+        self.assertEqual(
+            rebuilt["deep_analysis_queue"][0]["self_citation_status"],
+            "self_citation",
         )
 
     def test_rebuild_scholar_derived_outputs_preserves_manual_queue_pdf(self):

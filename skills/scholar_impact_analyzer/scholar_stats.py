@@ -244,9 +244,18 @@ def edge_has_analysis_identifier(edge: dict[str, Any]) -> bool:
     )
 
 
-def classify_edge_self_citation(edge: dict[str, Any]) -> dict[str, Any]:
+def classify_edge_self_citation(
+    edge: dict[str, Any],
+    selected_author_names: list[str] | None = None,
+) -> dict[str, Any]:
+    source_authors = list(
+        edge.get("source_publication_authors") or edge.get("target_authors") or []
+    )
+    for author in selected_author_names or []:
+        if author and author not in source_authors:
+            source_authors.append(author)
     return SCHOLAR_EVIDENCE.classify_self_citation(
-        edge.get("source_publication_authors") or edge.get("target_authors") or [],
+        source_authors,
         edge.get("citing_authors") or [],
     )
 
@@ -299,6 +308,7 @@ def build_deep_analysis_queue(
     citation_edges: list[dict[str, Any]],
     person_candidates: list[dict[str, Any]],
     limit: int = 100,
+    selected_author_names: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     tag_map = person_tag_info_by_author(person_candidates)
     tier_index = IMPACT_CLI.build_venue_tier_index()
@@ -325,7 +335,11 @@ def build_deep_analysis_queue(
             score += 10
             reasons.append("citation_count:high")
 
-        self_citation = classify_edge_self_citation(edge)
+        candidate_signal_score = score
+        self_citation = classify_edge_self_citation(
+            edge,
+            selected_author_names=selected_author_names,
+        )
         self_status = self_citation.get("status") or "unknown"
         if score > 0 and self_status == "non_self_citation":
             score += 8
@@ -333,6 +347,8 @@ def build_deep_analysis_queue(
         elif score > 0 and self_status == "self_citation":
             score -= 30
             reasons.append("self_citation:self")
+            if score <= 0 and candidate_signal_score > 0:
+                score = 1
 
         if score > 0 and edge_has_analysis_identifier(edge):
             score += 6

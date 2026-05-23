@@ -2218,6 +2218,9 @@ def review_person_candidate(
             session.get("citation_edges", []),
             session.get("person_candidates", []),
             limit=len(session.get("deep_analysis_queue", []) or []) or 300,
+            selected_author_names=[
+                (session.get("selected_author") or {}).get("display_name") or "",
+            ],
         )
         write_scholar_status(session_id, session)
         return {

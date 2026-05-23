@@ -529,6 +529,9 @@ def rebuild_scholar_derived_outputs(
         session.get("citation_edges", []),
         session.get("person_candidates", []),
         limit=queue_limit,
+        selected_author_names=[
+            (session.get("selected_author") or {}).get("display_name") or "",
+        ],
     )
     download_pdf = RUN_PIPELINE.DOWNLOAD_PDF
     for item in session["deep_analysis_queue"]:

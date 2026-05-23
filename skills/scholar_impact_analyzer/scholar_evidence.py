@@ -73,6 +73,8 @@ KEYWORD_PATTERNS = {
     "negative_or_limitation": ["limitation", "limited", "fail", "worse", "不足", "局限", "失败"],
 }
 
+AUTHOR_LIST_SEPARATOR_PATTERN = re.compile(r"\s*(?:;|；|\||、|\band\b)\s*")
+
 
 def normalize_name(value: str) -> str:
     return "".join(ch for ch in (value or "").lower() if ch.isalnum())
@@ -100,15 +102,45 @@ def unique_nonempty_strings(values: list[Any]) -> list[str]:
     return result
 
 
+def author_text(value: Any) -> str:
+    if isinstance(value, dict):
+        return (
+            value.get("name")
+            or value.get("display_name")
+            or value.get("text")
+            or value.get("#text")
+            or ""
+        )
+    return str(value or "")
+
+
+def expand_author_names(values: Any) -> list[str]:
+    if values is None:
+        return []
+    raw_values = values if isinstance(values, list) else [values]
+    expanded = []
+    for value in raw_values:
+        text = author_text(value).strip()
+        if not text:
+            continue
+        parts = [
+            part.strip()
+            for part in AUTHOR_LIST_SEPARATOR_PATTERN.split(text)
+            if part.strip()
+        ]
+        expanded.extend(parts or [text])
+    return unique_nonempty_strings(expanded)
+
+
 def classify_self_citation(
     source_authors: list[Any] | None,
     citing_authors: list[Any] | None,
 ) -> dict[str, Any]:
     source_signatures = set()
     citing_signatures_by_author: dict[str, set[str]] = {}
-    for author in source_authors or []:
+    for author in expand_author_names(source_authors):
         source_signatures.update(name_signatures(str(author or "")))
-    for author in citing_authors or []:
+    for author in expand_author_names(citing_authors):
         author_text = str(author or "")
         citing_signatures_by_author[author_text] = name_signatures(author_text)
     if not source_signatures or not citing_signatures_by_author:

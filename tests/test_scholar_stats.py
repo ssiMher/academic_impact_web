@@ -462,6 +462,62 @@ class ScholarStatsTestCase(unittest.TestCase):
             "non_self_citation",
         )
 
+    def test_build_deep_analysis_queue_splits_delimited_author_strings_for_self_citation(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "cited_publication_title": "Target Paper With Missing Authors",
+                "citing_title": "Delimited Author Citation",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["Jingyi Ning; Lei Xie; Yi Li"],
+                "citing_doi": "10.1109/delimited",
+            }
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges,
+            [],
+            limit=10,
+            selected_author_names=["Jingyi Ning"],
+        )
+
+        self.assertEqual(queue[0]["self_citation_status"], "self_citation")
+        self.assertEqual(queue[0]["self_citation_overlap_authors"], ["Jingyi Ning"])
+
+    def test_grouped_queue_self_citation_takes_precedence(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "cited_publication_title": "Target Paper With Missing Authors",
+                "citing_paper_id": "C001",
+                "citing_title": "Shared Citing Paper",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["Jingyi Ning", "Lei Xie"],
+                "citing_doi": "10.1109/shared",
+            },
+            {
+                "source_publication_id": "S002",
+                "source_publication_authors": ["Different Author"],
+                "cited_publication_title": "Different Target Paper",
+                "citing_paper_id": "C001",
+                "citing_title": "Shared Citing Paper",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["External Author"],
+                "citing_doi": "10.1109/shared",
+            },
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges,
+            [],
+            limit=10,
+            selected_author_names=["Jingyi Ning"],
+        )
+
+        self.assertEqual(len(queue), 1)
+        self.assertEqual(queue[0]["self_citation_status"], "self_citation")
+        self.assertIn("Jingyi Ning", queue[0]["self_citation_overlap_authors"])
+
     def test_build_deep_analysis_queue_groups_duplicate_citing_papers(self):
         citation_edges = [
             {

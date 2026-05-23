@@ -1,5 +1,23 @@
 # 开发日志
 
+## 2026-05-23：修复高价值队列自引误标排查结果
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 服务器已更新到“把当前学者加入自引判断”的版本后，部分高价值队列项仍显示 `self_citation:non_self`。
+- 典型例子是同一篇引用论文命中多篇目标论文时，页面展示的是合并后的队列项。
+
+本次处理：
+- 自引判断会先拆分 `Jingyi Ning; Lei Xie` 这类被保存成单个字符串的作者列表，避免作者元数据格式不统一导致误判。
+- 队列合并多条引用边时，只要任意一条边判为自引，合并后的队列项保守显示为自引。
+- 增加回归测试覆盖：
+  - 分号分隔作者字符串的自引识别
+  - 同一引用论文合并后自引状态优先保留
+
+排查建议：
+- 如果页面仍显示异常，优先查看对应 session 的 `data/scholar_sessions/<session_id>/session.json` 中该队列项的 `citing_authors`、`source_publication_authors`、`self_citation_status` 和 `self_citation_overlap_authors`，确认问题是在作者元数据缺失、重建未生效，还是页面缓存。
+
 ## 2026-05-23：自引判断补充当前学者口径
 
 分支：`codex/organize-analysis-venue-work`

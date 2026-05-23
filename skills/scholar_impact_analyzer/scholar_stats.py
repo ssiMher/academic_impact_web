@@ -261,10 +261,10 @@ def classify_edge_self_citation(
 
 
 def merge_self_citation_status(existing: str, new_status: str) -> str:
-    if new_status == "non_self_citation" or existing == "non_self_citation":
-        return "non_self_citation"
     if new_status == "self_citation" or existing == "self_citation":
         return "self_citation"
+    if new_status == "non_self_citation" or existing == "non_self_citation":
+        return "non_self_citation"
     return existing or new_status or "unknown"
 
 

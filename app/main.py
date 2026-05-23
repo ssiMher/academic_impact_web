@@ -214,7 +214,10 @@ def create_scholar(
     scopus_author_id: str = Form(""),
     affiliations: str = Form(""),
 ):
-    normalized_dblp_id = dblp_id.strip()
+    try:
+        normalized_dblp_id = scholar_core.normalize_scholar_dblp_id(dblp_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not normalized_dblp_id:
         raise HTTPException(status_code=400, detail="创建学者会话需要 DBLP ID")
     author = {
@@ -224,7 +227,10 @@ def create_scholar(
         "scopus_author_id": scopus_author_id.strip(),
         "affiliations": [item.strip() for item in affiliations.split("|") if item.strip()],
     }
-    session_id = scholar_core.create_scholar_session(author)
+    try:
+        session_id = scholar_core.create_scholar_session(author)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return RedirectResponse(url=f"/scholars/{session_id}", status_code=303)
 
 

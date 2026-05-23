@@ -897,6 +897,38 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         create_session.assert_not_called()
 
+    def test_create_scholar_route_rejects_orcid_as_dblp_id(self):
+        client = TestClient(app)
+        with mock.patch.object(scholar_core, "create_scholar_session") as create_session:
+            response = client.post(
+                "/scholars/create",
+                data={
+                    "display_name": "Chen Tian",
+                    "dblp_id": "0000-0001-5075-8512",
+                },
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("ORCID", response.text)
+        create_session.assert_not_called()
+
+    def test_create_scholar_route_normalizes_dblp_url(self):
+        client = TestClient(app)
+        with mock.patch.object(scholar_core, "create_scholar_session", return_value=TEST_SESSION_ID) as create_session:
+            response = client.post(
+                "/scholars/create",
+                data={
+                    "display_name": "Chen Tian",
+                    "dblp_id": "https://dblp.org/pid/94/1247-1.html",
+                },
+                follow_redirects=False,
+            )
+
+        self.assertEqual(response.status_code, 303)
+        create_session.assert_called_once()
+        self.assertEqual(create_session.call_args.args[0]["dblp_id"], "94/1247-1")
+
     def test_home_recent_sessions_includes_scholar_sessions(self):
         client = TestClient(app)
         with mock.patch.object(impact_core, "list_sessions", return_value=[]), mock.patch.object(

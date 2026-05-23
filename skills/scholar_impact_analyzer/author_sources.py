@@ -10,11 +10,37 @@ import requests
 DBLP_AUTHOR_SEARCH_URL = "https://dblp.org/search/author/api"
 DBLP_AUTHOR_PUBS_URL = "https://dblp.org/pid/{dblp_id}.xml"
 DBLP_AUTHOR_PID_PATTERN = re.compile(r"/pid/([^/.]+/[^/.]+)(?:\.html)?")
+ORCID_ID_PATTERN = re.compile(
+    r"^(?:https?://orcid\.org/|orcid:)?\d{4}-\d{4}-\d{4}-\d{3}[\dXx]$"
+)
+DBLP_ID_PATTERN = re.compile(r"^[^/\s.]+/[^/\s.]+$")
 
 
 def extract_dblp_id(url: str) -> str:
     match = DBLP_AUTHOR_PID_PATTERN.search(url or "")
     return match.group(1) if match else ""
+
+
+def looks_like_orcid(value: str) -> bool:
+    return bool(ORCID_ID_PATTERN.match((value or "").strip()))
+
+
+def normalize_dblp_id(value: str) -> str:
+    text = (value or "").strip()
+    if not text:
+        return ""
+    extracted = extract_dblp_id(text)
+    if extracted:
+        return extracted
+    if looks_like_orcid(text):
+        raise ValueError("这里需要填写 DBLP ID，例如 94/1247-1；当前输入看起来是 ORCID。")
+    if text.startswith("http://") or text.startswith("https://"):
+        raise ValueError("未能从该链接识别 DBLP ID，请填写类似 94/1247-1 的 DBLP PID。")
+    text = re.sub(r"^pid/", "", text)
+    text = re.sub(r"\.(xml|html)$", "", text)
+    if not DBLP_ID_PATTERN.match(text):
+        raise ValueError("DBLP ID 格式不正确，应类似 94/1247-1 或 h/HopperGrace。")
+    return text
 
 
 def note_text(note: Any) -> str:
@@ -197,11 +223,20 @@ def normalize_dblp_publication(
 def fetch_dblp_publications(
     dblp_id: str, selected_author_name: str
 ) -> list[dict[str, Any]]:
+    normalized_dblp_id = normalize_dblp_id(dblp_id)
     response = requests.get(
-        DBLP_AUTHOR_PUBS_URL.format(dblp_id=dblp_id),
+        DBLP_AUTHOR_PUBS_URL.format(dblp_id=normalized_dblp_id),
         timeout=20,
     )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as exc:
+        status_code = getattr(response, "status_code", None)
+        if status_code == 404:
+            raise ValueError(
+                f"DBLP 上找不到该作者 PID：{normalized_dblp_id}。请确认填写的是 DBLP ID，不是 ORCID/OpenAlex/Scopus ID。"
+            ) from exc
+        raise
     root = ET.fromstring(response.text)
     publications = []
     for record in root.findall("r"):

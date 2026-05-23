@@ -1,5 +1,26 @@
 # 开发日志
 
+## 2026-05-23：创建学者分析时识别错误的 DBLP ID
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 创建学者分析时，如果把 ORCID 填进 DBLP ID 输入框，后端会请求 `https://dblp.org/pid/<ORCID>.xml`。
+- DBLP 对这种地址返回 404，之前异常没有转换，页面表现为 500 Internal Server Error。
+
+本次处理：
+- 新增 DBLP ID 规范化：
+  - 支持直接填写 `94/1247-1`
+  - 支持粘贴 DBLP 作者主页链接并自动提取 PID
+  - 明确拒绝 ORCID 格式
+- DBLP XML 请求返回 404 时，转换为可读的 `ValueError`，提示用户确认不是 ORCID/OpenAlex/Scopus ID。
+- `/scholars/create` 捕获该错误并返回 400，不再让服务端 500。
+- 首页输入框文案明确标注“DBLP ID（不是 ORCID / OpenAlex）”。
+
+当前策略：
+- 当前学者分析仍以 DBLP 作为论文列表来源，因此创建会话必须有 DBLP PID。
+- OpenAlex / Scopus Author ID 仍作为辅助字段保存，不用于替代 DBLP 拉取论文列表。
+
 ## 2026-05-20：把高价值队列和强引用证据转向“汇报可用证据”
 
 分支：`codex/organize-analysis-venue-work`

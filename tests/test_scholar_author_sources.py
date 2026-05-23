@@ -85,6 +85,17 @@ class ScholarAuthorSourcesTestCase(unittest.TestCase):
             ],
         )
 
+    def test_normalize_dblp_id_accepts_pid_and_url(self):
+        self.assertEqual(self.sources.normalize_dblp_id("94/1247-1"), "94/1247-1")
+        self.assertEqual(
+            self.sources.normalize_dblp_id("https://dblp.org/pid/94/1247-1.html"),
+            "94/1247-1",
+        )
+
+    def test_normalize_dblp_id_rejects_orcid(self):
+        with self.assertRaisesRegex(ValueError, "ORCID"):
+            self.sources.normalize_dblp_id("0000-0001-5075-8512")
+
     def test_normalize_dblp_publication(self):
         entry = {
             "info": {
@@ -188,6 +199,20 @@ class ScholarAuthorSourcesTestCase(unittest.TestCase):
         self.assertEqual(
             publication["unique_ids"]["DOI"], "10.1145/3627703.3629574"
         )
+
+    def test_fetch_dblp_publications_reports_missing_pid(self):
+        class Response:
+            text = ""
+            status_code = 404
+
+            def raise_for_status(self):
+                raise self.sources.requests.exceptions.HTTPError("404 Not Found")
+
+        response = Response()
+        response.sources = self.sources
+        with patch.object(self.sources.requests, "get", return_value=response):
+            with self.assertRaisesRegex(ValueError, "DBLP 上找不到该作者 PID"):
+                self.sources.fetch_dblp_publications("94/does-not-exist", "Nobody")
 
 
 if __name__ == "__main__":

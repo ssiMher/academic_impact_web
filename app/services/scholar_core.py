@@ -52,7 +52,13 @@ def make_scholar_session_id(display_name: str) -> str:
     return f"{timestamp}_scholar_{slugify(display_name)}_{uuid4().hex[:8]}"
 
 
+def normalize_scholar_dblp_id(value: str) -> str:
+    return scholar_pipeline().AUTHOR_SOURCES.normalize_dblp_id(value)
+
+
 def create_scholar_session(author: dict[str, Any]) -> str:
+    author = dict(author)
+    author["dblp_id"] = normalize_scholar_dblp_id(author.get("dblp_id") or "")
     session_id = make_scholar_session_id(author.get("display_name") or "")
     session_dir = SCHOLAR_SESSIONS_ROOT / session_id
     pipeline = scholar_pipeline()

@@ -229,21 +229,35 @@ def should_enrich_authors(authors) -> bool:
     return False
 
 
-def fetch_semantic_scholar_paper_by_doi(doi: str) -> Optional[dict]:
+def fetch_openalex_work_by_doi(doi: str) -> Optional[dict]:
     doi = (doi or "").strip()
     if not doi:
         return None
-    url = (
-        f"https://api.semanticscholar.org/graph/v1/paper/DOI:{urllib.parse.quote(doi, safe='')}"
-        "?fields=paperId,title,year,venue,externalIds,authors"
-    )
-    try:
-        data = safe_get(url).json()
-    except Exception:
+    url = f"https://api.openalex.org/works/https://doi.org/{urllib.parse.quote(doi, safe='')}"
+    response = safe_get_openalex(url)
+    if not response:
         return None
-    if not data.get("paperId"):
+    data = response.json()
+    if not data.get("id"):
         return None
     return data
+
+
+def openalex_author_rows(work: dict) -> list:
+    rows = []
+    for authorship in work.get("authorships") or []:
+        author = authorship.get("author") or {}
+        name = (author.get("display_name") or author.get("name") or "").strip()
+        if not name:
+            continue
+        rows.append(
+            {
+                "name": name,
+                "id": author.get("id") or "",
+                "institutions": authorship.get("institutions") or [],
+            }
+        )
+    return rows
 
 
 def enrich_scopus_citing_paper_authors(citing: dict) -> dict:
@@ -252,15 +266,17 @@ def enrich_scopus_citing_paper_authors(citing: dict) -> dict:
     doi = paper_doi(citing)
     if not doi:
         return citing
-    enriched = fetch_semantic_scholar_paper_by_doi(doi)
-    authors = (enriched or {}).get("authors") or []
-    full_names = [author_name(author) for author in authors if author_name(author)]
+    enriched = fetch_openalex_work_by_doi(doi)
+    author_rows = openalex_author_rows(enriched or {})
+    full_names = [author["name"] for author in author_rows]
     if not full_names:
         return citing
     citing = dict(citing)
     citing["authors"] = [{"name": name} for name in full_names]
-    citing["author_details"] = build_semantic_scholar_author_details({"authors": authors})
-    citing["author_enrichment_source"] = "Semantic Scholar DOI"
+    citing["author_details"] = build_openalex_author_details(
+        {"authors": author_rows}
+    )
+    citing["author_enrichment_source"] = "OpenAlex DOI"
     return citing
 
 

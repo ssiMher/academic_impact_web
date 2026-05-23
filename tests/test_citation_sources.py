@@ -171,19 +171,31 @@ class CitationSourcesTestCase(unittest.TestCase):
                 }
             }
         ]
-        s2_paper = {
-            "paperId": "S2-1",
+        openalex_work = {
+            "id": "https://openalex.org/W1",
             "title": "MoiréTracker",
-            "authors": [
-                {"name": "Jingyi Ning", "authorId": "2218797021"},
-                {"name": "Lei Xie", "authorId": "2262126646"},
+            "authorships": [
+                {
+                    "author": {
+                        "display_name": "Jingyi Ning",
+                        "id": "https://openalex.org/A2218797021",
+                    },
+                    "institutions": [{"display_name": "Nanjing University"}],
+                },
+                {
+                    "author": {
+                        "display_name": "Lei Xie",
+                        "id": "https://openalex.org/A2262126646",
+                    },
+                    "institutions": [{"display_name": "Nanjing University"}],
+                },
             ],
         }
 
         with mock.patch.dict(os.environ, {"ACADEMIC_IMPACT_CITATION_SOURCE": "scopus"}), \
                 mock.patch.object(self.list_papers, "resolve_paper_scopus", return_value=target), \
                 mock.patch.object(self.list_papers, "fetch_citations_scopus", return_value=rows), \
-                mock.patch.object(self.list_papers, "fetch_semantic_scholar_paper_by_doi", return_value=s2_paper):
+                mock.patch.object(self.list_papers, "fetch_openalex_work_by_doi", return_value=openalex_work):
             payload = self.list_papers.list_all_citations("Target", limit=1)
 
         self.assertEqual(
@@ -192,7 +204,7 @@ class CitationSourcesTestCase(unittest.TestCase):
         )
         self.assertEqual(
             payload["papers"][0]["author_details"][0]["source_url"],
-            "https://www.semanticscholar.org/author/2218797021",
+            "https://openalex.org/A2218797021",
         )
 
     def test_scopus_fetch_tries_reference_queries_until_results(self):

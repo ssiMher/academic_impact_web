@@ -47,6 +47,47 @@ class ScholarEvidenceTestCase(unittest.TestCase):
         )
 
         self.assertEqual(result["status"], "non_self_citation")
+
+    def test_classify_third_party_citation_marks_extra_excluded_author(self):
+        result = self.evidence.classify_third_party_citation(
+            source_authors=["Jingyi Ning"],
+            citing_authors=["Lei Xie", "External Author"],
+            selected_author_names=["Jingyi Ning"],
+            extra_excluded_authors=["Lei Xie"],
+            extra_excluded_affiliations=[],
+            citing_affiliations=[],
+        )
+
+        self.assertEqual(result["status"], "excluded_collaborator")
+        self.assertEqual(result["overlap_authors"], ["Lei Xie"])
+
+    def test_classify_third_party_citation_marks_excluded_affiliation(self):
+        result = self.evidence.classify_third_party_citation(
+            source_authors=["Jingyi Ning"],
+            citing_authors=["External Author"],
+            selected_author_names=["Jingyi Ning"],
+            extra_excluded_authors=[],
+            extra_excluded_affiliations=["Nanjing University"],
+            citing_affiliations=["State Key Laboratory, Nanjing University"],
+        )
+
+        self.assertEqual(result["status"], "excluded_collaborator")
+        self.assertEqual(
+            result["overlap_affiliations"],
+            ["State Key Laboratory, Nanjing University"],
+        )
+
+    def test_classify_third_party_citation_marks_non_self_when_no_exclusion_matches(self):
+        result = self.evidence.classify_third_party_citation(
+            source_authors=["Jingyi Ning"],
+            citing_authors=["External Author"],
+            selected_author_names=["Jingyi Ning"],
+            extra_excluded_authors=["Lei Xie"],
+            extra_excluded_affiliations=["Nanjing University"],
+            citing_affiliations=["University of Example"],
+        )
+
+        self.assertEqual(result["status"], "non_self_citation")
         self.assertEqual(result["overlap_authors"], [])
 
     def test_derive_labels_and_score_high_value_evidence(self):
@@ -81,6 +122,58 @@ class ScholarEvidenceTestCase(unittest.TestCase):
         self.assertIn("pioneering", keywords)
         self.assertGreaterEqual(score, 75)
         self.assertEqual(self.evidence.evidence_strength(score), "high")
+
+    def test_refined_labels_are_derived_displayed_and_scored(self):
+        finding = {
+            "citation_text": (
+                "This state-of-the-art method is a representative work. "
+                "We extend it and provide a detailed comparison in Table 2, "
+                "showing superior results."
+            ),
+            "aspect": "extension",
+            "stance": "positive",
+            "confidence": 0.88,
+        }
+
+        labels = self.evidence.derive_evidence_labels(
+            finding,
+            citation_char_count=420,
+            person_tag_labels=[],
+        )
+        keywords = self.evidence.derive_highlight_keywords(finding, labels)
+        score = self.evidence.score_strong_evidence(
+            labels=labels,
+            confidence=finding["confidence"],
+            citation_char_count=420,
+            person_tag_labels=[],
+            self_citation_status="non_self_citation",
+        )
+
+        self.assertIn("sota_evaluation", labels)
+        self.assertIn("representative_work", labels)
+        self.assertIn("detailed_comparison", labels)
+        self.assertIn("method_extension", labels)
+        self.assertIn("large_context", labels)
+        self.assertIn("state-of-the-art", keywords)
+        self.assertEqual(self.evidence.evidence_label_display("sota_evaluation"), "最先进 / SOTA")
+        self.assertEqual(self.evidence.evidence_label_display("comparison"), "实验对比")
+        self.assertGreaterEqual(score, 75)
+
+    def test_review_comment_praise_label_is_supported(self):
+        finding = {
+            "citation_text": "Reviewer 2 praised the work as excellent and highly novel.",
+            "evidence_labels": ["review_comment_praise", "positive_evaluation"],
+            "stance": "positive",
+        }
+
+        labels = self.evidence.derive_evidence_labels(
+            finding,
+            citation_char_count=len(finding["citation_text"]),
+            person_tag_labels=[],
+        )
+
+        self.assertIn("review_comment_praise", labels)
+        self.assertEqual(self.evidence.evidence_label_display("review_comment_praise"), "审稿意见亮评")
 
 
 if __name__ == "__main__":

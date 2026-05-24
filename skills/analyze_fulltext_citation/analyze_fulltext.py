@@ -67,6 +67,24 @@ try:
 except (TypeError, ValueError):
     MAX_FULLTEXT_DIRECT_CHARS = 90000
 VALID_ANALYSIS_SCOPES = {"candidate_spans", "fulltext_direct"}
+VALID_EVIDENCE_LABELS = {
+    "positive_evaluation",
+    "sota_evaluation",
+    "first_or_pioneering",
+    "representative_work",
+    "large_context",
+    "detailed_comparison",
+    "baseline",
+    "comparison",
+    "method_foundation",
+    "method_extension",
+    "theory_foundation",
+    "sustained_followup",
+    "important_person",
+    "review_comment_praise",
+    "survey_or_related_work",
+    "negative_or_limitation",
+}
 
 LOCAL_SYSTEM_PROMPT = """你是一个论文引用语义分析助手。
 你的任务是根据候选段落，判断其中哪些段落真正引用了目标论文，并给出自然语言分析。
@@ -116,7 +134,7 @@ JSON 格式必须严格为：
       "keep": true,
       "aspect": "background|method|baseline|comparison|extension|application|other",
       "stance": "positive|neutral|negative",
-      "evidence_labels": ["positive_evaluation|first_or_pioneering|baseline|comparison|method_foundation|theory_foundation|large_context|survey_or_related_work|negative_or_limitation"],
+      "evidence_labels": ["positive_evaluation|sota_evaluation|first_or_pioneering|representative_work|large_context|detailed_comparison|baseline|comparison|method_foundation|method_extension|theory_foundation|sustained_followup|important_person|review_comment_praise|survey_or_related_work|negative_or_limitation"],
       "highlight_keywords": ["原文中最能支撑判断的关键词或短语"],
       "evidence_strength": "high|medium|low",
       "is_self_citation": false,
@@ -144,16 +162,28 @@ JSON 格式必须严格为：
 8. 所有 findings 都必须包含 page 和 span_index。fulltext_direct 模式下 span_index 可表示该页内第几个命中片段，从 1 开始。
 9. evidence_labels 用于标注证据价值，可多选：
    - positive_evaluation：原文明确正向评价目标论文或其方法。
+   - sota_evaluation：原文明确称目标工作 state-of-the-art / SOTA / best / advanced / leading / superior 或最先进。
    - first_or_pioneering：原文称目标论文 first、pioneering、seminal、首次、开创性等。
-   - baseline：引用论文把目标论文作为 baseline。
-   - comparison：引用论文与目标论文做实验/性能/方法对比。
-   - method_foundation：引用论文采用、复现、扩展或基于目标论文方法。
-   - theory_foundation：引用论文把目标论文作为理论、定理、证明或分析基础。
+   - representative_work：原文把目标论文作为 representative / canonical / unique / only example / 代表性工作。
    - large_context：原文对目标论文有大篇幅解释，而不是一句话带过。
+   - detailed_comparison：引用论文在实验、评估、表格、系统讨论中与目标论文做 detailed comparison；比泛泛 comparison 更强。
+   - baseline：引用论文把目标论文作为 baseline。
+   - comparison：旧标签兼容；引用论文与目标论文做实验/性能/方法对比，但优先使用 detailed_comparison 表示可汇报的详细对比。
+   - method_foundation：引用论文采用、复现或基于目标论文方法。
+   - method_extension：引用论文扩展、改造、适配或泛化目标论文方法。
+   - theory_foundation：引用论文把目标论文作为理论、定理、证明或分析基础。
+   - sustained_followup：同一作者/团队在多篇后续工作中持续引用目标论文；只在上下文能支撑时使用。
+   - important_person：引用作者/团队有 Fellow、院士、重要奖项或顶尖机构标签时使用。
+   - review_comment_praise：导入的审稿意见明确 praise / excellent / novel / highly rated 目标工作时使用。
    - survey_or_related_work：主要出现在相关工作或综述中。
    - negative_or_limitation：原文指出目标论文局限、失败或不足。
-10. highlight_keywords 必须来自 citation_text 原文，优先选择 first、pioneering、baseline、compare、outperform、based on、inspired by 等能支撑标签的词。
-11. why_valuable 要面向组会汇报，说明这条证据为什么有价值；普通弱引用可写“证据较弱，不建议用于汇报”。
+10. SOTA/representative/detailed comparison/template priority 判断：
+   - SOTA 只在原文有 state-of-the-art、SOTA、best、advanced、leading、superior、最先进等明确措辞时标注。
+   - representative_work 只在原文把目标工作作为代表性、典型、canonical、unique 或 only example 时标注。
+   - detailed_comparison 需要实验/评估/表格/系统设计中的具体对比；related work 中一笔带过仍应使用 survey_or_related_work 或旧 comparison。
+   - 如果用户或模板给出目标标签优先级，优先寻找这些 template priority 标签，但不要为了满足模板而捏造标签。
+11. highlight_keywords 必须来自 citation_text 原文，优先选择 SOTA、representative、first、pioneering、baseline、compare、detailed comparison、outperform、based on、inspired by、extend 等能支撑标签的词。
+12. why_valuable 要面向组会汇报，说明这条证据为什么有价值；普通弱引用可写“证据较弱，不建议用于汇报”。
 """
 
 DEEPSEEK_SYSTEM_PROMPT = """你是一个严格的JSON整理器。
@@ -173,7 +203,7 @@ JSON格式必须严格为：
       "keep": true,
       "aspect": "background|method|baseline|comparison|extension|application|other",
       "stance": "positive|neutral|negative",
-      "evidence_labels": ["positive_evaluation|first_or_pioneering|baseline|comparison|method_foundation|theory_foundation|large_context|survey_or_related_work|negative_or_limitation"],
+      "evidence_labels": ["positive_evaluation|sota_evaluation|first_or_pioneering|representative_work|large_context|detailed_comparison|baseline|comparison|method_foundation|method_extension|theory_foundation|sustained_followup|important_person|review_comment_praise|survey_or_related_work|negative_or_limitation"],
       "highlight_keywords": ["原文中最能支撑判断的关键词或短语"],
       "evidence_strength": "high|medium|low",
       "is_self_citation": false,
@@ -195,6 +225,8 @@ JSON格式必须严格为：
 6. 如果是组引用（如 [9,13,2]）且目标论文未被单独展开说明，优先设为 keep=false + grouped_literature_mention。
 7. 如果是表格/列表基线行，只有在 citation_text 内明确出现目标方法名或对应编号时，才允许 keep=true；否则优先 keep=false。
 8. 对 weak_body_mention，默认 keep=false；不要因为术语相似或邻近上下文而提升为 explicit_citation。
+9. evidence_labels 允许的标签为：positive_evaluation, sota_evaluation, first_or_pioneering, representative_work, large_context, detailed_comparison, baseline, comparison, method_foundation, method_extension, theory_foundation, sustained_followup, important_person, review_comment_praise, survey_or_related_work, negative_or_limitation。
+10. SOTA 只在原文明确写 state-of-the-art / SOTA / best / advanced / leading / superior / 最先进时使用；representative_work 只在原文表示 representative / canonical / unique / only example / 代表性时使用；detailed_comparison 需要实验、评估、表格或系统讨论中的具体对比。若模板给出 template priority，优先保留这些标签，但不得捏造。
 """
 
 def load_deepseek_key():
@@ -532,21 +564,26 @@ def build_local_prompt(payload):
 {joined}
 
 请根据这些段落判断是否真正引用了目标论文，并按指定格式输出自然语言分析。
+如果 payload 或后续模板提供 template priority / 目标标签优先级，请优先寻找这些证据类型，但仍必须以原文为准。
 """
 
 
 def build_single_model_prompt(payload):
     target_aliases = payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
+    template_prompt_fragment = str(payload.get("template_prompt_fragment") or "").strip()
     if normalize_analysis_scope(payload.get("analysis_scope")) == "fulltext_direct":
         return build_fulltext_direct_prompt(payload, target_aliases)
 
     local_prompt = build_local_prompt(payload)
+    template_section = f"\n\n{template_prompt_fragment}" if template_prompt_fragment else ""
     return f"""{local_prompt}
+{template_section}
 
 请不要输出自然语言报告。请直接输出符合 system 指定 schema 的严格 JSON。
 如果你支持 thinking 模式，请使用 /no_think，并且不要输出任何推理过程。
 最终答案必须只包含一个 JSON object。
 目标论文别名/缩写再次确认：{", ".join(target_aliases) if target_aliases else "无"}
+证据标签优先级：优先标注可用于汇报的 refined labels，包括 SOTA、representative work、detailed comparison、method extension、sustained follow-up、review comment praise；旧标签 comparison 仍兼容。
 /no_think
 """
 
@@ -577,6 +614,8 @@ def normalize_fulltext_pages(payload):
 
 def build_fulltext_direct_prompt(payload, target_aliases=None):
     target_aliases = target_aliases or payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
+    template_prompt_fragment = str(payload.get("template_prompt_fragment") or "").strip()
+    template_section = f"\n{template_prompt_fragment}" if template_prompt_fragment else ""
     pages = normalize_fulltext_pages(payload)
     chunks = []
     total_chars = 0
@@ -603,6 +642,7 @@ def build_fulltext_direct_prompt(payload, target_aliases=None):
 
 下面是引用论文全文文本，请直接通读全文判断目标论文是否被真正引用：
 {joined}
+{template_section}
 
 请输出严格 JSON，不要输出自然语言报告。
 判断时请特别注意：
@@ -614,6 +654,7 @@ def build_fulltext_direct_prompt(payload, target_aliases=None):
    如果只是说某个架构/机制/概念起源于目标论文，或把目标论文作为该领域基础文献，这属于 background finding。
 3. 对每个 finding，page 使用原始页码，span_index 使用该页内第几个命中片段，从 1 开始。
 4. 如果唯一命中来自参考文献列表，findings 必须是空数组。
+5. 证据标签优先级：优先标注可用于汇报的 refined labels，包括 SOTA、representative work、detailed comparison、method extension、sustained follow-up、review comment praise；旧标签 comparison 仍兼容。SOTA、representative、detailed comparison 必须由原文明确支撑。
 如果你支持 thinking 模式，请使用 /no_think，并且不要输出任何推理过程。
 最终答案必须只包含一个 JSON object。
 /no_think
@@ -802,20 +843,9 @@ def normalize_model_finding(finding: dict, index: int):
     if keep:
         mention_type = "explicit_citation"
 
-    valid_labels = {
-        "positive_evaluation",
-        "first_or_pioneering",
-        "baseline",
-        "comparison",
-        "method_foundation",
-        "theory_foundation",
-        "large_context",
-        "survey_or_related_work",
-        "negative_or_limitation",
-    }
     evidence_labels = [
         label for label in coerce_string_list(finding.get("evidence_labels"))
-        if label in valid_labels
+        if label in VALID_EVIDENCE_LABELS
     ]
     highlight_keywords = coerce_string_list(finding.get("highlight_keywords"))[:12]
     evidence_strength = str(finding.get("evidence_strength") or "").strip().lower()

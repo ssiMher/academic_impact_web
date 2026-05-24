@@ -420,6 +420,58 @@ class ScholarStatsTestCase(unittest.TestCase):
         self.assertEqual(queue[1]["citing_title"], "Self Citation")
         self.assertEqual(queue[1]["self_citation_status"], "self_citation")
         self.assertIn("self_citation:self", queue[1]["reasons"])
+        self.assertEqual(queue[1]["third_party_status"], "self_citation")
+
+    def test_build_deep_analysis_queue_marks_excluded_collaborator(self):
+        citation_edges = [
+            {
+                "source_publication_id": "S001",
+                "source_publication_authors": ["Jingyi Ning"],
+                "citing_title": "Collaborator Citation",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["Lei Xie"],
+                "citing_doi": "10.1000/collab",
+            },
+            {
+                "source_publication_id": "S001",
+                "source_publication_authors": ["Jingyi Ning"],
+                "citing_title": "External Citation",
+                "citing_venue": "ACM MobiCom",
+                "citing_authors": ["External Author"],
+                "citing_doi": "10.1000/external",
+            },
+        ]
+
+        queue = self.stats.build_deep_analysis_queue(
+            citation_edges,
+            [],
+            limit=10,
+            selected_author_names=["Jingyi Ning"],
+            exclusion_profile={
+                "exclude_selected_author": True,
+                "exclude_source_paper_authors": True,
+                "extra_excluded_authors": ["Lei Xie"],
+                "extra_excluded_affiliations": [],
+            },
+        )
+
+        by_title = {item["citing_title"]: item for item in queue}
+        self.assertEqual(
+            by_title["Collaborator Citation"]["third_party_status"],
+            "excluded_collaborator",
+        )
+        self.assertEqual(
+            by_title["Collaborator Citation"]["excluded_overlap_authors"],
+            ["Lei Xie"],
+        )
+        self.assertIn(
+            "third_party:excluded_collaborator",
+            by_title["Collaborator Citation"]["reasons"],
+        )
+        self.assertGreater(
+            by_title["External Citation"]["priority_score"],
+            by_title["Collaborator Citation"]["priority_score"],
+        )
 
     def test_build_deep_analysis_queue_uses_selected_author_for_self_citation(self):
         citation_edges = [

@@ -1,0 +1,60 @@
+[
+  {
+    "id": "ppt_highlight_default",
+    "name": "PPT 亮点评价",
+    "description": "优先寻找可直接写进汇报的第三方正向评价、代表性评价、SOTA、重要人物引用和大篇幅引用。",
+    "target_labels": [
+      "positive_evaluation",
+      "sota_evaluation",
+      "representative_work",
+      "large_context",
+      "important_person"
+    ],
+    "positive_keywords": [
+      "state-of-the-art",
+      "first",
+      "pioneering",
+      "representative",
+      "only",
+      "advanced",
+      "leading",
+      "首次",
+      "开创",
+      "代表性",
+      "最先进"
+    ],
+    "prompt_instruction": "优先寻找能够支撑组会/PPT亮点评价的第三方原文证据，尤其是正向评价、SOTA、唯一代表性工作、大篇幅引用和重要人物引用。"
+  },
+  {
+    "id": "first_evaluation",
+    "name": "首次 / 开创性评价",
+    "description": "寻找 first、first work、pioneering、seminal、首次、开创性等表达。",
+    "target_labels": ["first_or_pioneering"],
+    "positive_keywords": ["first", "first work", "pioneering", "seminal", "首次", "开创"],
+    "prompt_instruction": "只在原文明确表达 first、首次、pioneering、开创性或 seminal 时标注首次/开创性。"
+  },
+  {
+    "id": "detailed_comparison",
+    "name": "大量 / 详细实验比较",
+    "description": "寻找 compare、baseline、table、evaluation、outperform、实验对比等证据。",
+    "target_labels": ["detailed_comparison", "baseline"],
+    "positive_keywords": ["compare", "comparison", "baseline", "evaluation", "outperform", "Table", "对比", "基线"],
+    "prompt_instruction": "优先寻找引用论文把目标工作作为 baseline 或在实验、表格、评估章节中详细比较的证据。"
+  },
+  {
+    "id": "theory_foundation",
+    "name": "理论 / 模型基础",
+    "description": "寻找公式、理论、模型、推导、framework 被采用或拓展的证据。",
+    "target_labels": ["theory_foundation", "method_extension"],
+    "positive_keywords": ["derive", "equation", "model", "framework", "theory", "extend", "formula", "公式", "理论", "模型", "推导"],
+    "prompt_instruction": "优先寻找引用论文在理论推导、公式建模、框架构建中采用或拓展目标工作的证据。"
+  },
+  {
+    "id": "method_source",
+    "name": "方法来源 / 方法拓展",
+    "description": "寻找 based on、inspired by、adopt、extend、follow 等方法继承证据。",
+    "target_labels": ["method_foundation", "method_extension"],
+    "positive_keywords": ["based on", "inspired by", "adopt", "extend", "follow", "build on", "基于", "采用", "拓展"],
+    "prompt_instruction": "优先寻找引用论文的方法设计明确基于、采用、借鉴、拓展目标工作的证据。"
+  }
+]

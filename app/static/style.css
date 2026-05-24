@@ -107,12 +107,18 @@ button {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #bfccc4;
   background: #fff;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 88px;
 }
 
 button,
@@ -159,6 +165,40 @@ button.ghost,
 
 .checkbox input {
   width: auto;
+}
+
+.subpanel {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.subpanel h2 {
+  margin-top: 0;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.checkbox-grid label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.checkbox-grid input[type="checkbox"] {
+  width: auto;
+  margin-top: 3px;
 }
 
 .actions,
@@ -245,6 +285,17 @@ button.ghost,
   border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--line);
+}
+
+.highlight-card {
+  border-left: 4px solid var(--accent);
+}
+
+.highlight-card mark {
+  padding: 0 3px;
+  border-radius: 4px;
+  background: #fff0a6;
+  color: #1c201d;
 }
 
 .failure-item {

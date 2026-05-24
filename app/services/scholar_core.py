@@ -134,6 +134,61 @@ def ensure_task_state(session: dict[str, Any]) -> dict[str, Any]:
     return merged
 
 
+def parse_multiline_values(value: str) -> list[str]:
+    parts = re.split(r"[\n\r;；|]+", str(value or ""))
+    result = []
+    seen = set()
+    for part in parts:
+        text = part.strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        result.append(text)
+    return result
+
+
+def default_analysis_templates() -> dict[str, Any]:
+    try:
+        templates = scholar_pipeline().EVIDENCE_TEMPLATES.load_builtin_templates()
+    except Exception:
+        templates = []
+    compiled = [
+        template for template in templates if template.get("id") == "ppt_highlight_default"
+    ]
+    return {
+        "active_template_ids": ["ppt_highlight_default"],
+        "custom_requests": [],
+        "compiled_templates": compiled,
+        "builtin_templates": templates,
+    }
+
+
+def ensure_analysis_templates(session: dict[str, Any]) -> dict[str, Any]:
+    template_state = session.get("analysis_templates")
+    defaults = default_analysis_templates()
+    if not isinstance(template_state, dict):
+        session["analysis_templates"] = defaults
+        return defaults
+    template_state.setdefault("active_template_ids", defaults["active_template_ids"])
+    template_state.setdefault("custom_requests", [])
+    template_state.setdefault("compiled_templates", defaults["compiled_templates"])
+    template_state["builtin_templates"] = defaults["builtin_templates"]
+    session["analysis_templates"] = template_state
+    return template_state
+
+
+def ensure_exclusion_profile(session: dict[str, Any]) -> dict[str, Any]:
+    profile = session.get("exclusion_profile")
+    if not isinstance(profile, dict):
+        profile = {}
+    profile.setdefault("exclude_selected_author", True)
+    profile.setdefault("exclude_source_paper_authors", True)
+    profile.setdefault("extra_excluded_authors", [])
+    profile.setdefault("extra_excluded_affiliations", [])
+    session["exclusion_profile"] = profile
+    return profile
+
+
 def _task_lock(session_id: str) -> threading.Lock:
     with _SCHOLAR_TASK_LOCKS_LOCK:
         lock = _SCHOLAR_TASK_LOCKS.get(session_id)
@@ -199,6 +254,8 @@ def load_scholar_status(session_id: str) -> dict[str, Any]:
     session.setdefault("strong_evidence", [])
     session.setdefault("scholar_fulltext_results", [])
     session.setdefault("statistics", {})
+    ensure_analysis_templates(session)
+    ensure_exclusion_profile(session)
     _decorate_publication_venue_tiers(session)
     return session
 
@@ -268,7 +325,8 @@ def build_deep_analysis_queue_view(
     if active_scope == "non_self":
         filtered = [
             item for item in filtered
-            if (item.get("self_citation_status") or "unknown") != "self_citation"
+            if (item.get("third_party_status") or item.get("self_citation_status") or "unknown")
+            == "non_self_citation"
         ]
     elif active_scope == "ready":
         filtered = [item for item in filtered if _queue_item_has_bound_pdf(item)]
@@ -347,9 +405,16 @@ def build_deep_analysis_queue_view(
         decorated["library_pdf_path"] = library_pdf.get("local_file_path") or ""
         decorated["self_citation_label"] = {
             "self_citation": "自引",
+            "excluded_collaborator": "本组/合作者",
             "non_self_citation": "非自引",
             "unknown": "自引未知",
-        }.get(decorated.get("self_citation_status") or "unknown", "自引未知")
+        }.get(decorated.get("third_party_status") or decorated.get("self_citation_status") or "unknown", "自引未知")
+        decorated["third_party_label"] = {
+            "self_citation": "自引",
+            "excluded_collaborator": "本组/合作者",
+            "non_self_citation": "第三方引用",
+            "unknown": "第三方状态未知",
+        }.get(decorated.get("third_party_status") or decorated.get("self_citation_status") or "unknown", "第三方状态未知")
         if decorated["manual_pdf_status"]:
             decorated["download_source"] = decorated["manual_pdf_status"]
             if decorated["analysis_status"] == "not_analyzed":
@@ -391,10 +456,11 @@ def build_deep_analysis_queue_view(
         "scope_options": [
             {
                 "scope": "non_self",
-                "label": "排除自引",
+                "label": "只看第三方引用",
                 "count": sum(
                     1 for item in queue
-                    if (item.get("self_citation_status") or "unknown") != "self_citation"
+                    if (item.get("third_party_status") or item.get("self_citation_status") or "unknown")
+                    == "non_self_citation"
                 ),
             },
             {
@@ -1263,6 +1329,323 @@ def write_scholar_report_markdown(session_id: str) -> Path:
     export_dir.mkdir(parents=True, exist_ok=True)
     path = export_dir / "report.md"
     path.write_text(payload["markdown"], encoding="utf-8")
+    return path
+
+
+def split_review_comment_snippets(text: str) -> list[str]:
+    snippets = []
+    seen = set()
+    for chunk in re.split(r"\n\s*\n|\r\n\s*\r\n", str(text or "")):
+        normalized_lines = []
+        for line in chunk.splitlines():
+            cleaned = re.sub(r"^\s*(?:[-*>\d.)]+)\s*", "", line).strip()
+            if cleaned:
+                normalized_lines.append(cleaned)
+        snippet = re.sub(r"\s+", " ", " ".join(normalized_lines)).strip()
+        if len(snippet) < 8:
+            continue
+        key = snippet.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        snippets.append(snippet)
+    return snippets
+
+
+def _build_review_comment_evidence_items(
+    session: dict[str, Any],
+    snippets: list[str],
+    *,
+    existing_count: int,
+) -> list[dict[str, Any]]:
+    evidence_helper = scholar_pipeline().SCHOLAR_EVIDENCE
+    selected_author = session.get("selected_author") or {}
+    target_title = selected_author.get("display_name") or session.get("query") or "目标工作"
+    new_items = []
+    for index, snippet in enumerate(snippets, 1):
+        labels = evidence_helper.derive_evidence_labels(
+            {
+                "evidence_labels": ["review_comment_praise", "positive_evaluation"],
+                "citation_text": snippet,
+                "aspect": "review_comment",
+                "stance": "positive",
+            },
+            citation_char_count=len(snippet),
+        )
+        keywords = [
+            keyword
+            for keyword in REVIEW_COMMENT_KEYWORDS
+            if keyword.lower() in snippet.lower()
+        ]
+        evidence = {
+            "queue_id": f"review_comment_{existing_count + index:03d}",
+            "source_type": "review_comment",
+            "source_publication_id": "",
+            "citing_title": "审稿意见 / 外部评价",
+            "citing_venue": "Review Comment",
+            "citing_year": "",
+            "cited_publication_title": target_title,
+            "citation_text": snippet,
+            "aspect": "review_comment",
+            "stance": "positive",
+            "mention_type": "review_comment",
+            "confidence": 0.95,
+            "evidence_labels": labels,
+            "evidence_label_names": [
+                evidence_helper.evidence_label_display(label)
+                for label in labels
+            ],
+            "highlight_keywords": keywords,
+            "positive_evaluation": True,
+            "long_context_100_chars": len(snippet) >= 100,
+            "citation_char_count": len(snippet),
+            "self_citation_status": "non_self_citation",
+            "self_citation_overlap_authors": [],
+            "fellow_strong_citation": False,
+            "valuable_reason": "来自审稿意见或外部评价原文，可作为补充亮点评价证据。",
+            "reason": "review_comment_import",
+        }
+        evidence["strong_citation_score"] = evidence_helper.score_strong_evidence(
+            labels=labels,
+            confidence=evidence["confidence"],
+            citation_char_count=len(snippet),
+            person_tag_labels=[],
+            self_citation_status="non_self_citation",
+        )
+        evidence["evidence_strength"] = (
+            "high" if evidence["strong_citation_score"] >= 70
+            else "medium" if evidence["strong_citation_score"] >= 45
+            else "low"
+        )
+        new_items.append(evidence)
+    return new_items
+
+
+REVIEW_COMMENT_KEYWORDS = [
+    "excellent",
+    "novel",
+    "important",
+    "significant",
+    "state-of-the-art",
+    "first",
+    "首次",
+    "创新",
+    "重要",
+    "优秀",
+]
+
+
+def _append_review_comment_evidence(
+    session: dict[str, Any],
+    snippets: list[str],
+) -> int:
+    existing = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+    new_items = _build_review_comment_evidence_items(
+        session,
+        snippets,
+        existing_count=len(existing),
+    )
+
+    session["strong_evidence"] = _deduplicate_strong_evidence(existing + new_items)
+    session["review_comment_imports"] = (session.get("review_comment_imports") or []) + [
+        {
+            "imported_at": datetime.now().isoformat(timespec="seconds"),
+            "snippet_count": len(new_items),
+        }
+    ]
+    return len(new_items)
+
+
+def import_review_comment_evidence(session_id: str, review_comments_text: str) -> int:
+    session = load_scholar_status(session_id)
+    snippets = split_review_comment_snippets(review_comments_text)
+    if not snippets:
+        raise ValueError("请先粘贴审稿意见或外部评价原文。")
+    imported_count = _append_review_comment_evidence(session, snippets)
+    write_scholar_status(session_id, session)
+    return imported_count
+
+
+def _evidence_team_key(item: dict[str, Any]) -> str:
+    for author in item.get("person_tag_matched_authors") or []:
+        key = scholar_pipeline().SCHOLAR_STATS.normalized_name(author)
+        if key:
+            return key
+    for author in item.get("citing_authors") or []:
+        key = scholar_pipeline().SCHOLAR_STATS.normalized_name(author)
+        if key:
+            return key
+    return ""
+
+
+def _highlight_card_report_sentence(item: dict[str, Any], labels: list[str]) -> str:
+    citing_title = item.get("citing_title") or "该引用论文"
+    target_title = item.get("cited_publication_title") or "目标工作"
+    label_text = "、".join(labels[:4]) if labels else "强引用"
+    return (
+        f"{citing_title} 将 {target_title} 作为{label_text}证据；"
+        f"其原文摘录可支撑该亮点评价。"
+    )
+
+
+def build_highlight_cards(session: dict[str, Any], limit: int = 30) -> list[dict[str, Any]]:
+    evidence_items = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+    team_groups: dict[str, list[dict[str, Any]]] = {}
+    for item in evidence_items:
+        if (item.get("third_party_status") or item.get("self_citation_status") or "unknown") != "non_self_citation":
+            continue
+        key = _evidence_team_key(item)
+        if key:
+            team_groups.setdefault(key, []).append(item)
+
+    cards = []
+    evidence_helper = scholar_pipeline().SCHOLAR_EVIDENCE
+    for item in evidence_items:
+        if (item.get("third_party_status") or item.get("self_citation_status") or "unknown") != "non_self_citation":
+            continue
+        if (item.get("strong_citation_score") or 0) < 45:
+            continue
+        raw_labels = list(item.get("evidence_labels") or [])
+        labels = list(
+            item.get("evidence_label_names")
+            or [evidence_helper.evidence_label_display(label) for label in raw_labels]
+        )
+        team_key = _evidence_team_key(item)
+        followup_group = team_groups.get(team_key, []) if team_key else []
+        followup_titles = [
+            evidence.get("citing_title") or ""
+            for evidence in followup_group
+            if evidence.get("citing_title")
+        ]
+        if len(followup_titles) >= 2 and "sustained_followup" not in raw_labels:
+            raw_labels.append("sustained_followup")
+            display = evidence_helper.evidence_label_display("sustained_followup")
+            if display not in labels:
+                labels.append(display)
+        important = " / ".join(item.get("person_tag_labels") or [])
+        citing_title = item.get("citing_title") or "未知引用论文"
+        target_title = item.get("cited_publication_title") or "目标工作"
+        headline = (
+            f"{important} 团队引用并评价 {target_title}"
+            if important
+            else f"{citing_title} 引用并评价 {target_title}"
+        )
+        cards.append(
+            {
+                "headline": headline,
+                "citing_title": citing_title,
+                "citing_venue": item.get("citing_venue") or "",
+                "citing_year": item.get("citing_year") or "",
+                "target_title": target_title,
+                "labels": labels,
+                "raw_labels": raw_labels,
+                "score": item.get("strong_citation_score") or 0,
+                "self_citation_status": item.get("self_citation_status") or "unknown",
+                "important_person": important,
+                "evidence_excerpt": item.get("citation_text") or "",
+                "highlight_keywords": item.get("highlight_keywords") or [],
+                "highlighted_evidence_excerpt": evidence_helper.highlight_excerpt_html(
+                    item.get("citation_text") or "",
+                    item.get("highlight_keywords") or [],
+                ),
+                "why_valuable": item.get("valuable_reason") or item.get("why_valuable") or item.get("reason") or "",
+                "report_sentence_label": "汇报句",
+                "report_sentence": _highlight_card_report_sentence(item, labels),
+                "followup_group": team_key,
+                "followup_count": len(set(followup_titles)),
+                "followup_titles": sorted(set(followup_titles)),
+            }
+        )
+    cards = sorted(
+        cards,
+        key=lambda item: (
+            -(item.get("score") or 0),
+            -len(item.get("labels") or []),
+            item.get("citing_title") or "",
+        ),
+    )[:limit]
+    for index, card in enumerate(cards, 1):
+        card["index"] = index
+    return cards
+
+
+def build_highlight_cards_csv(session: dict[str, Any]) -> str:
+    headers = [
+        "index",
+        "headline",
+        "citing_title",
+        "citing_venue",
+        "citing_year",
+        "target_title",
+        "labels",
+        "score",
+        "self_citation_status",
+        "important_person",
+        "evidence_excerpt",
+        "highlight_keywords",
+        "why_valuable",
+        "report_sentence",
+        "followup_count",
+        "followup_titles",
+    ]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=headers)
+    writer.writeheader()
+    for card in build_highlight_cards(session):
+        row = dict(card)
+        row["labels"] = " | ".join(card.get("labels") or [])
+        row["highlight_keywords"] = " | ".join(card.get("highlight_keywords") or [])
+        row["followup_titles"] = " | ".join(card.get("followup_titles") or [])
+        writer.writerow({key: row.get(key, "") for key in headers})
+    return buffer.getvalue()
+
+
+def build_highlight_cards_markdown(session: dict[str, Any]) -> str:
+    cards = build_highlight_cards(session)
+    lines = ["# 亮点评价卡片", ""]
+    if not cards:
+        lines.append("暂无可导出的亮点评价卡片。")
+        return "\n".join(lines).rstrip() + "\n"
+    for card in cards:
+        excerpt = str(card.get("evidence_excerpt") or "").strip()
+        if len(excerpt) > 600:
+            excerpt = f"{excerpt[:600]}..."
+        lines.extend(
+            [
+                f"### {card['index']}. {card.get('headline') or '-'}",
+                "",
+                f"- 引用论文：{card.get('citing_title') or '-'}",
+                f"- 命中目标：{card.get('target_title') or '-'}",
+                f"- 证据标签：{' / '.join(card.get('labels') or []) or '-'}",
+                f"- 重要人物：{card.get('important_person') or '-'}",
+                f"- 强度分：{card.get('score') if card.get('score') is not None else '-'}",
+                f"- {card.get('report_sentence_label') or '汇报句'}：{card.get('report_sentence') or '-'}",
+                f"- 汇报价值：{card.get('why_valuable') or '-'}",
+                "",
+                "原文证据：",
+                "",
+                excerpt or "-",
+                "",
+            ]
+        )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def write_highlight_cards_csv(session_id: str) -> Path:
+    session = load_scholar_status(session_id)
+    export_dir = resolve_scholar_session_dir(session_id) / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    path = export_dir / "highlight_cards.csv"
+    path.write_text(build_highlight_cards_csv(session), encoding="utf-8-sig")
+    return path
+
+
+def write_highlight_cards_markdown(session_id: str) -> Path:
+    session = load_scholar_status(session_id)
+    export_dir = resolve_scholar_session_dir(session_id) / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    path = export_dir / "highlight_cards.md"
+    path.write_text(build_highlight_cards_markdown(session), encoding="utf-8")
     return path
 
 
@@ -2212,6 +2595,86 @@ def rebuild_scholar_derived_outputs(
         return rebuilt
 
 
+def update_scholar_exclusion_profile(
+    session_id: str,
+    *,
+    extra_excluded_authors_text: str,
+    extra_excluded_affiliations_text: str,
+    exclude_selected_author: bool = True,
+    exclude_source_paper_authors: bool = True,
+) -> dict[str, Any]:
+    with _task_lock(session_id):
+        session = load_scholar_status(session_id)
+        task_state = ensure_task_state(session)
+        if task_state.get("active"):
+            raise ValueError("当前后台任务仍在运行，暂时不能更新排除配置。")
+        session["exclusion_profile"] = {
+            "exclude_selected_author": bool(exclude_selected_author),
+            "exclude_source_paper_authors": bool(exclude_source_paper_authors),
+            "extra_excluded_authors": parse_multiline_values(extra_excluded_authors_text),
+            "extra_excluded_affiliations": parse_multiline_values(extra_excluded_affiliations_text),
+        }
+        rebuilt = scholar_pipeline().rebuild_scholar_derived_outputs(
+            session,
+            queue_limit=len(session.get("deep_analysis_queue", []) or []) or 300,
+        )
+        write_scholar_status(session_id, rebuilt)
+        return rebuilt
+
+
+def update_scholar_analysis_templates(
+    session_id: str,
+    *,
+    active_template_ids: list[str],
+    custom_requests_text: str,
+) -> dict[str, Any]:
+    with _task_lock(session_id):
+        session = load_scholar_status(session_id)
+        task_state = ensure_task_state(session)
+        if task_state.get("active"):
+            raise ValueError("当前后台任务仍在运行，暂时不能更新分析模板。")
+        template_module = scholar_pipeline().EVIDENCE_TEMPLATES
+        builtin = template_module.load_builtin_templates()
+        builtin_by_id = {item.get("id"): item for item in builtin}
+        active_ids = []
+        compiled = []
+        for template_id in active_template_ids:
+            template_id = str(template_id or "").strip()
+            if template_id and template_id in builtin_by_id and template_id not in active_ids:
+                active_ids.append(template_id)
+                compiled.append(builtin_by_id[template_id])
+        custom_requests = parse_multiline_values(custom_requests_text)
+        compiled.extend(
+            template_module.compile_custom_request(request)
+            for request in custom_requests
+        )
+        session["analysis_templates"] = {
+            "active_template_ids": active_ids,
+            "custom_requests": custom_requests,
+            "compiled_templates": compiled,
+        }
+        write_scholar_status(session_id, session)
+        return session
+
+
+def add_scholar_review_comment_evidence(
+    session_id: str,
+    *,
+    review_comments_text: str,
+) -> int:
+    with _task_lock(session_id):
+        session = load_scholar_status(session_id)
+        task_state = ensure_task_state(session)
+        if task_state.get("active"):
+            raise ValueError("当前后台任务仍在运行，暂时不能导入审稿意见。")
+        snippets = split_review_comment_snippets(review_comments_text)
+        if not snippets:
+            raise ValueError("请先粘贴审稿意见或外部评价原文。")
+        imported_count = _append_review_comment_evidence(session, snippets)
+        write_scholar_status(session_id, session)
+        return imported_count
+
+
 def refresh_scholar_local_pdf_index(session_id: str) -> dict[str, Any]:
     with _task_lock(session_id):
         refresh_started = time.perf_counter()
@@ -2304,6 +2767,7 @@ def review_person_candidate(
             selected_author_names=[
                 (session.get("selected_author") or {}).get("display_name") or "",
             ],
+            exclusion_profile=session.get("exclusion_profile") or {},
         )
         write_scholar_status(session_id, session)
         return {

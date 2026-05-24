@@ -2683,6 +2683,175 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("text/csv", response.headers["content-type"])
         self.assertIn("Q001,downloaded", response.text)
 
+    def test_build_highlight_cards_filters_third_party_and_marks_followup(self):
+        session = {
+            "strong_evidence": [
+                {
+                    "queue_id": "Q001",
+                    "citing_title": "Important Comparison Paper",
+                    "cited_publication_title": "Target Paper",
+                    "citing_authors": ["Alice Fellow"],
+                    "person_tag_labels": ["ACM Fellow"],
+                    "citation_text": "We compare against Target Paper as a strong baseline.",
+                    "highlight_keywords": ["compare", "baseline"],
+                    "evidence_labels": ["detailed_comparison", "baseline"],
+                    "strong_citation_score": 90,
+                    "self_citation_status": "non_self_citation",
+                },
+                {
+                    "queue_id": "Q002",
+                    "citing_title": "Followup Paper",
+                    "cited_publication_title": "Target Paper",
+                    "citing_authors": ["Alice Fellow"],
+                    "citation_text": "Target Paper is adopted again.",
+                    "evidence_labels": ["method_foundation"],
+                    "strong_citation_score": 70,
+                    "self_citation_status": "non_self_citation",
+                },
+                {
+                    "queue_id": "Q003",
+                    "citing_title": "Self Paper",
+                    "cited_publication_title": "Target Paper",
+                    "citing_authors": ["Chen Tian"],
+                    "citation_text": "Self citation.",
+                    "strong_citation_score": 99,
+                    "self_citation_status": "self_citation",
+                },
+            ]
+        }
+
+        cards = scholar_core.build_highlight_cards(session)
+
+        self.assertEqual([card["citing_title"] for card in cards], ["Important Comparison Paper", "Followup Paper"])
+        self.assertIn("持续跟踪引用", cards[0]["labels"])
+        self.assertIn("ACM Fellow", cards[0]["headline"])
+        self.assertIn("<mark>compare</mark>", cards[0]["highlighted_evidence_excerpt"])
+
+    def test_scholar_route_renders_highlight_cards_and_export_links(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "deep_analysis_queue": [],
+                    "strong_evidence": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "Important Comparison Paper",
+                            "cited_publication_title": "Target Paper",
+                            "person_tag_labels": ["ACM Fellow"],
+                            "citation_text": "This is a state-of-the-art baseline.",
+                            "highlight_keywords": ["state-of-the-art", "baseline"],
+                            "evidence_labels": ["sota_evaluation", "baseline"],
+                            "strong_citation_score": 88,
+                            "self_citation_status": "non_self_citation",
+                            "valuable_reason": "可用于 PPT 说明第三方正向评价。",
+                        }
+                    ],
+                    "statistics": {"publication_count": 0, "person_tag_statistics": []},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.get(f"/scholars/{TEST_SESSION_ID}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("亮点评价卡片", response.text)
+        self.assertIn("Important Comparison Paper", response.text)
+        self.assertIn("导出亮点评价 CSV", response.text)
+        self.assertIn("/exports/highlight_cards.md", response.text)
+        self.assertIn("审稿意见 / 外部评价导入", response.text)
+        self.assertIn("分析模板", response.text)
+        self.assertIn("排除作者 / 本组作者", response.text)
+
+    def test_highlight_cards_export_routes(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "strong_evidence": [
+                        {
+                            "queue_id": "Q001",
+                            "citing_title": "Important Comparison Paper",
+                            "cited_publication_title": "Target Paper",
+                            "citation_text": "Strong baseline evidence.",
+                            "evidence_labels": ["baseline"],
+                            "strong_citation_score": 80,
+                            "self_citation_status": "non_self_citation",
+                        }
+                    ],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        csv_response = client.get(f"/scholars/{TEST_SESSION_ID}/exports/highlight_cards.csv")
+        md_response = client.get(f"/scholars/{TEST_SESSION_ID}/exports/highlight_cards.md")
+
+        self.assertEqual(csv_response.status_code, 200)
+        self.assertIn("text/csv", csv_response.headers["content-type"])
+        self.assertIn("Important Comparison Paper", csv_response.text)
+        self.assertEqual(md_response.status_code, 200)
+        self.assertIn("亮点评价卡片", md_response.text)
+        self.assertIn("Important Comparison Paper", md_response.text)
+
+    def test_review_comment_import_route_adds_strong_evidence(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "strong_evidence": [],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        client = TestClient(app)
+
+        response = client.post(
+            f"/scholars/{TEST_SESSION_ID}/review-comment-evidence",
+            data={
+                "review_comments": (
+                    "The work is excellent and important.\n\n"
+                    "This is a novel state-of-the-art contribution."
+                )
+            },
+            follow_redirects=False,
+        )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(
+            response.headers["location"],
+            f"/scholars/{TEST_SESSION_ID}#highlight-cards",
+        )
+        payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
+        self.assertEqual(len(payload["strong_evidence"]), 2)
+        self.assertIn("review_comment_praise", payload["strong_evidence"][0]["evidence_labels"])
+        self.assertEqual(payload["strong_evidence"][0]["self_citation_status"], "non_self_citation")
+
 
 if __name__ == "__main__":
     unittest.main()

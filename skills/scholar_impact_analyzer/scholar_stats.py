@@ -229,6 +229,8 @@ def reason_priority_score(reasons: list[str]) -> int:
             score += 50
         elif reason.startswith("venue:"):
             score += 25
+        elif reason.startswith("self_citation:") or reason.startswith("third_party:"):
+            score += 0
         else:
             score += 10
     return score
@@ -260,12 +262,75 @@ def classify_edge_self_citation(
     )
 
 
+def edge_citing_affiliations(edge: dict[str, Any]) -> list[str]:
+    result = []
+    for detail in edge.get("citing_author_details") or []:
+        if not isinstance(detail, dict):
+            continue
+        for institution in detail.get("institutions") or []:
+            text = str(institution or "").strip()
+            if text and text not in result:
+                result.append(text)
+    return result
+
+
+def classify_edge_third_party_citation(
+    edge: dict[str, Any],
+    *,
+    selected_author_names: list[str] | None = None,
+    exclusion_profile: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    profile = exclusion_profile or {}
+    source_authors = []
+    if profile.get("exclude_source_paper_authors", True):
+        source_authors.extend(
+            edge.get("source_publication_authors") or edge.get("target_authors") or []
+        )
+    selected_names = selected_author_names or []
+    if not profile.get("exclude_selected_author", True):
+        selected_names = []
+    if not (
+        source_authors
+        or selected_names
+        or profile.get("extra_excluded_authors")
+        or profile.get("extra_excluded_affiliations")
+    ):
+        return {
+            "status": "unknown",
+            "overlap_authors": [],
+            "overlap_affiliations": [],
+        }
+    return SCHOLAR_EVIDENCE.classify_third_party_citation(
+        source_authors=source_authors,
+        citing_authors=edge.get("citing_authors") or [],
+        selected_author_names=selected_names,
+        extra_excluded_authors=profile.get("extra_excluded_authors") or [],
+        extra_excluded_affiliations=profile.get("extra_excluded_affiliations") or [],
+        citing_affiliations=edge_citing_affiliations(edge),
+    )
+
+
 def merge_self_citation_status(existing: str, new_status: str) -> str:
     if new_status == "self_citation" or existing == "self_citation":
         return "self_citation"
     if new_status == "non_self_citation" or existing == "non_self_citation":
         return "non_self_citation"
     return existing or new_status or "unknown"
+
+
+def merge_third_party_status(existing: str, new_status: str) -> str:
+    priority = {
+        "self_citation": 4,
+        "excluded_collaborator": 3,
+        "non_self_citation": 2,
+        "unknown": 1,
+        "": 0,
+    }
+    return (
+        new_status
+        if priority.get(new_status or "", 0) > priority.get(existing or "", 0)
+        else existing or new_status or "unknown"
+    )
 
 
 def person_tag_by_author(person_candidates: list[dict[str, Any]]) -> dict[str, str]:
@@ -309,6 +374,7 @@ def build_deep_analysis_queue(
     person_candidates: list[dict[str, Any]],
     limit: int = 100,
     selected_author_names: list[str] | None = None,
+    exclusion_profile: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     tag_map = person_tag_info_by_author(person_candidates)
     tier_index = IMPACT_CLI.build_venue_tier_index()
@@ -336,20 +402,27 @@ def build_deep_analysis_queue(
             reasons.append("citation_count:high")
 
         candidate_signal_score = score
-        self_citation = classify_edge_self_citation(
+        self_citation = classify_edge_third_party_citation(
             edge,
             selected_author_names=selected_author_names,
+            exclusion_profile=exclusion_profile,
         )
         self_status = self_citation.get("status") or "unknown"
         if score > 0 and self_status == "non_self_citation":
             score += 8
             reasons.append("self_citation:non_self")
+            reasons.append("third_party:non_self")
         elif score > 0 and self_status == "self_citation":
             score -= 30
             reasons.append("self_citation:self")
+            reasons.append("third_party:self")
             if score <= 0 and candidate_signal_score > 0:
                 score = 1
-
+        elif score > 0 and self_status == "excluded_collaborator":
+            score -= 18
+            reasons.append("third_party:excluded_collaborator")
+            if score <= 0 and candidate_signal_score > 0:
+                score = 1
         if score > 0 and edge_has_analysis_identifier(edge):
             score += 6
 
@@ -366,6 +439,9 @@ def build_deep_analysis_queue(
             item["cited_publication_titles"] = []
             item["self_citation_status"] = "unknown"
             item["self_citation_overlap_authors"] = []
+            item["third_party_status"] = "unknown"
+            item["excluded_overlap_authors"] = []
+            item["excluded_overlap_affiliations"] = []
             grouped[key] = item
         item["priority_score"] = max(item.get("priority_score") or 0, score)
         for reason in reasons:
@@ -378,6 +454,17 @@ def build_deep_analysis_queue(
         for author in self_citation.get("overlap_authors") or []:
             if author not in item["self_citation_overlap_authors"]:
                 item["self_citation_overlap_authors"].append(author)
+        item["third_party_status"] = merge_third_party_status(
+            item.get("third_party_status") or "unknown",
+            self_status,
+        )
+        if self_status == "excluded_collaborator":
+            for author in self_citation.get("overlap_authors") or []:
+                if author not in item["excluded_overlap_authors"]:
+                    item["excluded_overlap_authors"].append(author)
+            for affiliation in self_citation.get("overlap_affiliations") or []:
+                if affiliation not in item["excluded_overlap_affiliations"]:
+                    item["excluded_overlap_affiliations"].append(affiliation)
         item["priority_score"] = max(
             item.get("priority_score") or 0,
             reason_priority_score(item["reasons"]),

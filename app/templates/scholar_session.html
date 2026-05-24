@@ -24,6 +24,10 @@
     {% set guide_complete = guidance.completeness or {} %}
     {% set person = person_view or {} %}
     {% set local_pdf_index = local_pdf_index_status or {} %}
+    {% set exclusion_profile = payload.exclusion_profile or {} %}
+    {% set analysis_templates = payload.analysis_templates or {} %}
+    {% set active_template_ids = analysis_templates.active_template_ids or [] %}
+    {% set highlight_cards = highlight_cards or [] %}
     {% set person_pagination = person.pagination or {} %}
     {% set person_status_counts = person.status_counts or {} %}
     {% set pending_people = person_status_counts.pending or 0 %}
@@ -96,6 +100,76 @@
           </label>
           <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>重建统计和队列</button>
         </form>
+
+        <section class="subpanel" id="analysis-templates">
+          <h2>分析模板</h2>
+          <p class="muted">模板会影响后续全文分析，帮助系统优先寻找首次评价、详细对比、理论基础、方法来源等可汇报证据。</p>
+          <form action="/scholars/{{ session_id }}/analysis-templates" method="post">
+            <div class="checkbox-grid">
+              {% for template in analysis_templates.builtin_templates or [] %}
+              <label>
+                <input type="checkbox" name="template_ids" value="{{ template.id }}" {% if template.id in active_template_ids %}checked{% endif %} {% if task_active %}disabled{% endif %} />
+                <strong>{{ template.name }}</strong>
+                <span class="muted">{{ template.description }}</span>
+              </label>
+              {% endfor %}
+            </div>
+            <label>
+              自定义需求（一行一个）
+              <textarea name="custom_requests" rows="3" {% if task_active %}disabled{% endif %}>{{ (analysis_templates.custom_requests or []) | join('\n') }}</textarea>
+            </label>
+            {% if analysis_templates.compiled_templates %}
+            <details>
+              <summary>查看当前已编译模板</summary>
+              <ul>
+                {% for template in analysis_templates.compiled_templates %}
+                <li>{{ template.name }}：{{ (template.target_labels or []) | join(' / ') }}{% if template.positive_keywords %}；关键词 {{ (template.positive_keywords or []) | join(' / ') }}{% endif %}</li>
+                {% endfor %}
+              </ul>
+            </details>
+            {% endif %}
+            <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>保存分析模板</button>
+          </form>
+        </section>
+
+        <section class="subpanel" id="exclusion-profile">
+          <h2>排除作者 / 本组作者</h2>
+          <p class="muted">自引和本组合作者默认不作为高价值第三方评价，但会保留在队列中并降低优先级，方便核对。</p>
+          <form action="/scholars/{{ session_id }}/exclusion-profile" method="post">
+            <div class="checkbox-grid">
+              <label>
+                <input type="checkbox" name="exclude_selected_author" {% if exclusion_profile.exclude_selected_author is not sameas false %}checked{% endif %} {% if task_active %}disabled{% endif %} />
+                排除当前学者本人
+              </label>
+              <label>
+                <input type="checkbox" name="exclude_source_paper_authors" {% if exclusion_profile.exclude_source_paper_authors is not sameas false %}checked{% endif %} {% if task_active %}disabled{% endif %} />
+                排除被引目标论文作者
+              </label>
+            </div>
+            <label>
+              额外排除作者（一行一个）
+              <textarea name="extra_excluded_authors" rows="3" {% if task_active %}disabled{% endif %}>{{ (exclusion_profile.extra_excluded_authors or []) | join('\n') }}</textarea>
+            </label>
+            <label>
+              额外排除机构（一行一个）
+              <textarea name="extra_excluded_affiliations" rows="2" {% if task_active %}disabled{% endif %}>{{ (exclusion_profile.extra_excluded_affiliations or []) | join('\n') }}</textarea>
+            </label>
+            <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>保存排除配置并重建队列</button>
+          </form>
+        </section>
+
+        <section class="subpanel" id="review-comment-import">
+          <h2>审稿意见 / 外部评价导入</h2>
+          <p class="muted">把审稿意见、评审总结或老师整理的外部评价原文贴进来，系统会把它们转成可放进“亮点评价卡片”的证据。</p>
+          <form action="/scholars/{{ session_id }}/review-comment-evidence" method="post">
+            <label>
+              原文片段（空行分隔多条）
+              <textarea name="review_comments" rows="4" {% if task_active %}disabled{% endif %}></textarea>
+            </label>
+            <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %}>导入为亮点评价证据</button>
+          </form>
+        </section>
+
         <div class="callout info">
           <strong>本地 PDF 索引</strong>
           <p>当前索引条目：{{ local_pdf_index.entry_count or 0 }}</p>
@@ -164,6 +238,8 @@
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/raw_citing_authors.csv">Export Raw Citing Authors CSV</a>
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/missing_pdfs.csv">Export Missing PDFs CSV</a>
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/pdf_download_report.csv">Export PDF Download Report CSV</a>
+            <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/highlight_cards.csv">导出亮点评价 CSV</a>
+            <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/highlight_cards.md">导出亮点评价 Markdown</a>
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/report.md">下载 Markdown 报告</a>
           </div>
         </div>
@@ -194,6 +270,59 @@
         {% endif %}
       </section>
       {% endif %}
+
+      <section class="panel" id="highlight-cards">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Evidence Cards</p>
+            <h2>亮点评价卡片</h2>
+            <p class="muted">按导师反馈，把可汇报的第三方正向评价、详细对比、方法来源、理论基础和审稿意见整理成卡片。</p>
+          </div>
+          <div class="inline-actions">
+            <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/highlight_cards.csv">导出 CSV</a>
+            <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/highlight_cards.md">导出 Markdown</a>
+          </div>
+        </div>
+        {% if highlight_cards %}
+        <div class="cards highlight-card-grid">
+          {% for card in highlight_cards %}
+          <article class="card highlight-card">
+            <div class="card-header">
+              <div>
+                <strong>{{ card.index }}. {{ card.headline }}</strong>
+                <p class="muted">{{ card.citing_title }}{% if card.citing_year %} · {{ card.citing_year }}{% endif %}{% if card.citing_venue %} · {{ card.citing_venue }}{% endif %}</p>
+              </div>
+              <span class="chip">强度分 {{ card.score }}</span>
+            </div>
+            <div class="card-metrics">
+              {% for label in card.labels or [] %}
+              <span class="chip">{{ label }}</span>
+              {% endfor %}
+              {% if card.important_person %}<span class="chip">重要人物：{{ card.important_person }}</span>{% endif %}
+              {% if card.followup_count and card.followup_count > 1 %}<span class="chip">持续跟踪：{{ card.followup_count }} 条</span>{% endif %}
+            </div>
+            <p><strong>{{ card.report_sentence_label }}：</strong>{{ card.report_sentence }}</p>
+            {% if card.why_valuable %}<p>{{ card.why_valuable }}</p>{% endif %}
+            {% if card.highlighted_evidence_excerpt %}
+            <div class="evidence-excerpt">{{ card.highlighted_evidence_excerpt | safe }}</div>
+            {% endif %}
+            {% if card.followup_titles and card.followup_count > 1 %}
+            <details>
+              <summary>同一团队/作者的持续引用</summary>
+              <ul>
+                {% for title in card.followup_titles %}
+                <li>{{ title }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+            {% endif %}
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">暂无可汇报的亮点评价卡片。先分析高价值引用队列，或导入审稿意见/外部评价原文。</p>
+        {% endif %}
+      </section>
 
       {% if analysis.overview %}
       <section class="panel" id="impact-overview">
@@ -710,8 +839,11 @@
                 <td>
                   <span class="chip">{{ edge.analysis_status or 'not_analyzed' }}</span>
                   {% if edge.readiness_label %}<br /><span class="chip">{{ edge.readiness_label }}</span>{% endif %}
+                  {% if edge.third_party_label %}<br /><span class="chip">{{ edge.third_party_label }}</span>{% endif %}
                   {% if edge.self_citation_label %}<br /><span class="chip">{{ edge.self_citation_label }}</span>{% endif %}
                   {% if edge.self_citation_overlap_authors %}<br /><span class="muted">重叠作者：{{ (edge.self_citation_overlap_authors or []) | join(', ') }}</span>{% endif %}
+                  {% if edge.excluded_overlap_authors %}<br /><span class="muted">排除作者：{{ (edge.excluded_overlap_authors or []) | join(', ') }}</span>{% endif %}
+                  {% if edge.excluded_overlap_affiliations %}<br /><span class="muted">排除机构：{{ (edge.excluded_overlap_affiliations or []) | join(', ') }}</span>{% endif %}
                   {% if edge.download_source %}<br /><span class="muted">{{ edge.download_source }}</span>{% endif %}
                   {% if edge.publisher_url %}<br /><a href="{{ edge.publisher_url }}" target="_blank" rel="noopener">打开出版社页面</a>{% endif %}
                   {% if edge.library_pdf_path %}<br /><span class="muted">本地库 PDF：{{ edge.library_pdf_path }}</span>{% endif %}

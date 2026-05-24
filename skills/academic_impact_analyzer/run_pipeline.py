@@ -306,6 +306,7 @@ def process_citing_paper(
     top_k_spans: int,
     local_pdf_path: str = "",
     analysis_scope: str = "fulltext_direct",
+    template_prompt_fragment: str = "",
     progress_callback=None,
 ):
     analysis_scope = normalize_analysis_scope(analysis_scope)
@@ -529,6 +530,8 @@ def process_citing_paper(
         "analysis_scope": analysis_scope,
         "candidate_spans": candidate_spans,
     }
+    if template_prompt_fragment:
+        payload["template_prompt_fragment"] = template_prompt_fragment
     if analysis_scope == "fulltext_direct":
         fulltext_pages = build_fulltext_direct_pages(fulltext_result)
         payload["fulltext_pages"] = fulltext_pages

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import Optional
 from urllib.parse import urlencode
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
@@ -180,6 +181,7 @@ async def scholar_detail(
         analysis_summary=analysis_summary,
         strong_evidence_view=strong_evidence_view,
     )
+    highlight_cards = scholar_core.build_highlight_cards(payload)
     person_view = scholar_core.build_person_candidate_view(
         payload,
         active_status=person_status,
@@ -200,6 +202,7 @@ async def scholar_detail(
             "analysis_summary": analysis_summary,
             "demo_guidance": demo_guidance,
             "report_payload": report_payload,
+            "highlight_cards": highlight_cards,
             "local_pdf_index_status": local_pdf_index_status,
             "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),
         },
@@ -269,6 +272,80 @@ def rebuild_scholar_derived_outputs(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     return RedirectResponse(
         url=f"/scholars/{session_id}#deep-analysis-queue",
+        status_code=303,
+    )
+
+
+@app.post("/scholars/{session_id}/exclusion-profile")
+def update_scholar_exclusion_profile(
+    session_id: str,
+    extra_excluded_authors: str = Form(""),
+    extra_excluded_affiliations: str = Form(""),
+    exclude_selected_author: Optional[str] = Form(None),
+    exclude_source_paper_authors: Optional[str] = Form(None),
+):
+    try:
+        scholar_core.update_scholar_exclusion_profile(
+            session_id,
+            extra_excluded_authors_text=extra_excluded_authors,
+            extra_excluded_affiliations_text=extra_excluded_affiliations,
+            exclude_selected_author=exclude_selected_author == "on",
+            exclude_source_paper_authors=exclude_source_paper_authors == "on",
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return RedirectResponse(
+        url=f"/scholars/{session_id}#exclusion-profile",
+        status_code=303,
+    )
+
+
+@app.post("/scholars/{session_id}/analysis-templates")
+async def update_scholar_analysis_templates(
+    request: Request,
+    session_id: str,
+    custom_requests: str = Form(""),
+):
+    form = await request.form()
+    template_ids = [
+        str(item).strip()
+        for item in form.getlist("template_ids")
+        if str(item).strip()
+    ]
+    try:
+        scholar_core.update_scholar_analysis_templates(
+            session_id,
+            active_template_ids=template_ids,
+            custom_requests_text=custom_requests,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return RedirectResponse(
+        url=f"/scholars/{session_id}#analysis-templates",
+        status_code=303,
+    )
+
+
+@app.post("/scholars/{session_id}/review-comment-evidence")
+def add_scholar_review_comment_evidence(
+    session_id: str,
+    review_comments: str = Form(""),
+):
+    try:
+        scholar_core.add_scholar_review_comment_evidence(
+            session_id,
+            review_comments_text=review_comments,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return RedirectResponse(
+        url=f"/scholars/{session_id}#highlight-cards",
         status_code=303,
     )
 
@@ -407,6 +484,24 @@ def scholar_task_status(session_id: str):
 def download_scholar_report(session_id: str):
     try:
         path = scholar_core.write_scholar_report_markdown(session_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return FileResponse(path, media_type="text/markdown", filename=path.name)
+
+
+@app.get("/scholars/{session_id}/exports/highlight_cards.csv")
+def download_scholar_highlight_cards_csv(session_id: str):
+    try:
+        path = scholar_core.write_highlight_cards_csv(session_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return FileResponse(path, media_type="text/csv; charset=utf-8", filename=path.name)
+
+
+@app.get("/scholars/{session_id}/exports/highlight_cards.md")
+def download_scholar_highlight_cards_markdown(session_id: str):
+    try:
+        path = scholar_core.write_highlight_cards_markdown(session_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return FileResponse(path, media_type="text/markdown", filename=path.name)

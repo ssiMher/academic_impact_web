@@ -14,6 +14,7 @@ LIST_PAPERS_PATH = ROOT / "skills" / "list_all_citations" / "list_papers.py"
 RUN_PIPELINE_PATH = ROOT / "skills" / "academic_impact_analyzer" / "run_pipeline.py"
 SCHOLAR_STATS_PATH = ROOT / "skills" / "scholar_impact_analyzer" / "scholar_stats.py"
 SCHOLAR_EVIDENCE_PATH = ROOT / "skills" / "scholar_impact_analyzer" / "scholar_evidence.py"
+EVIDENCE_TEMPLATES_PATH = ROOT / "skills" / "scholar_impact_analyzer" / "evidence_templates.py"
 
 
 def load_module(name: str, path: Path):
@@ -30,6 +31,7 @@ LIST_PAPERS = load_module("scholar_list_papers", LIST_PAPERS_PATH)
 RUN_PIPELINE = load_module("scholar_run_pipeline", RUN_PIPELINE_PATH)
 SCHOLAR_STATS = load_module("scholar_stats", SCHOLAR_STATS_PATH)
 SCHOLAR_EVIDENCE = load_module("scholar_evidence", SCHOLAR_EVIDENCE_PATH)
+EVIDENCE_TEMPLATES = load_module("scholar_evidence_templates", EVIDENCE_TEMPLATES_PATH)
 DEFAULT_DEEP_ANALYSIS_QUEUE_LIMIT = 300
 LOCAL_PDF_LIBRARY_DIRS_ENV = "ACADEMIC_IMPACT_PDF_LIBRARY_DIRS"
 
@@ -80,6 +82,21 @@ def build_scholar_session(
         "citation_edges": [],
         "statistics": build_initial_statistics(publications),
         "deep_analysis_queue": [],
+        "analysis_templates": {
+            "active_template_ids": ["ppt_highlight_default"],
+            "custom_requests": [],
+            "compiled_templates": [
+                template
+                for template in EVIDENCE_TEMPLATES.load_builtin_templates()
+                if template.get("id") == "ppt_highlight_default"
+            ],
+        },
+        "exclusion_profile": {
+            "exclude_selected_author": True,
+            "exclude_source_paper_authors": True,
+            "extra_excluded_authors": [],
+            "extra_excluded_affiliations": [],
+        },
         "task_state": default_task_state(),
         "created_at": now,
         "updated_at": now,
@@ -532,6 +549,7 @@ def rebuild_scholar_derived_outputs(
         selected_author_names=[
             (session.get("selected_author") or {}).get("display_name") or "",
         ],
+        exclusion_profile=session.get("exclusion_profile") or {},
     )
     download_pdf = RUN_PIPELINE.DOWNLOAD_PDF
     for item in session["deep_analysis_queue"]:
@@ -579,6 +597,9 @@ def analyze_scholar_queue(
     new_evidence = []
     total = sum(len(item.get("source_publication_ids") or []) for item in queue_items)
     processed = 0
+    template_prompt_fragment = EVIDENCE_TEMPLATES.build_template_prompt_fragment(
+        (session.get("analysis_templates") or {}).get("compiled_templates") or []
+    )
 
     def emit_progress(
         *,
@@ -658,6 +679,7 @@ def analyze_scholar_queue(
                 top_k_spans=top_k_spans,
                 analysis_scope=analysis_scope,
                 local_pdf_path=local_pdf_path,
+                template_prompt_fragment=template_prompt_fragment,
                 progress_callback=item_progress,
             )
             result["queue_id"] = queue_item.get("queue_id")
@@ -685,6 +707,23 @@ def analyze_scholar_queue(
                     finding,
                     person_tag_labels=person_tag_labels,
                 )
+                if queue_item.get("third_party_status"):
+                    evidence["self_citation_status"] = queue_item.get("third_party_status")
+                    evidence["self_citation_overlap_authors"] = (
+                        queue_item.get("self_citation_overlap_authors")
+                        or queue_item.get("excluded_overlap_authors")
+                        or []
+                    )
+                    evidence["strong_citation_score"] = SCHOLAR_EVIDENCE.score_strong_evidence(
+                        labels=evidence.get("evidence_labels") or [],
+                        confidence=evidence.get("confidence"),
+                        citation_char_count=evidence.get("citation_char_count") or 0,
+                        person_tag_labels=person_tag_labels,
+                        self_citation_status=evidence.get("self_citation_status") or "unknown",
+                    )
+                    evidence["evidence_strength"] = SCHOLAR_EVIDENCE.evidence_strength(
+                        evidence["strong_citation_score"]
+                    )
                 evidence["queue_id"] = queue_item.get("queue_id")
                 evidence["cited_publication_title"] = publication.get("title") or ""
                 evidence["analysis_status"] = result.get("status")

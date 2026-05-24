@@ -4,30 +4,42 @@ import re
 from typing import Any
 
 
-VALID_EVIDENCE_LABELS = {
+VALID_EVIDENCE_LABELS = (
     "positive_evaluation",
+    "sota_evaluation",
     "first_or_pioneering",
+    "representative_work",
+    "large_context",
+    "detailed_comparison",
     "baseline",
     "comparison",
     "method_foundation",
+    "method_extension",
     "theory_foundation",
-    "large_context",
+    "sustained_followup",
+    "important_person",
+    "review_comment_praise",
     "survey_or_related_work",
     "negative_or_limitation",
-    "important_person",
-}
+)
 
 LABEL_DISPLAY_NAMES = {
     "positive_evaluation": "正向评价",
-    "first_or_pioneering": "首次/开创性评价",
-    "baseline": "作为基线",
-    "comparison": "实验对比",
-    "method_foundation": "方法基础",
-    "theory_foundation": "理论基础",
+    "sota_evaluation": "最先进 / SOTA",
+    "first_or_pioneering": "首次 / 开创性",
+    "representative_work": "代表性工作",
     "large_context": "大篇幅引用",
+    "detailed_comparison": "详细对比",
+    "baseline": "作为 Baseline",
+    "comparison": "实验对比",
+    "method_foundation": "方法来源",
+    "method_extension": "方法拓展",
+    "theory_foundation": "理论 / 公式基础",
+    "sustained_followup": "持续跟踪引用",
+    "important_person": "重要人物引用",
+    "review_comment_praise": "审稿意见亮评",
     "survey_or_related_work": "综述/相关工作",
     "negative_or_limitation": "负面或局限评价",
-    "important_person": "重要人物引用",
 }
 
 KEYWORD_PATTERNS = {
@@ -44,8 +56,24 @@ KEYWORD_PATTERNS = {
         "有效",
         "重要",
     ],
+    "sota_evaluation": [
+        "state-of-the-art",
+        "state of the art",
+        "sota",
+        "best",
+        "advanced",
+        "leading",
+        "superior",
+        "outperform",
+        "outperforms",
+        "最先进",
+        "领先",
+        "优越",
+    ],
     "first_or_pioneering": [
         "first",
+        "first work",
+        "first use",
         "pioneer",
         "pioneering",
         "seminal",
@@ -54,8 +82,34 @@ KEYWORD_PATTERNS = {
         "开创",
         "奠基",
     ],
+    "representative_work": [
+        "representative",
+        "canonical",
+        "typical",
+        "unique",
+        "only",
+        "exemplar",
+        "代表性",
+        "典型",
+        "唯一",
+    ],
     "baseline": ["baseline", "baselines", "compare against", "compared with", "基线"],
     "comparison": ["compare", "comparison", "compared", "versus", "vs.", "对比", "比较"],
+    "detailed_comparison": [
+        "detailed comparison",
+        "compare against",
+        "compared with",
+        "comparison",
+        "evaluation",
+        "experiment",
+        "table",
+        "ablation",
+        "benchmark",
+        "详细对比",
+        "实验对比",
+        "评估",
+        "表",
+    ],
     "method_foundation": [
         "based on",
         "build on",
@@ -69,7 +123,42 @@ KEYWORD_PATTERNS = {
         "采用",
         "借鉴",
     ],
+    "method_extension": [
+        "extend",
+        "extends",
+        "extended",
+        "extension",
+        "adapt",
+        "adapts",
+        "modified",
+        "generalize",
+        "generalizes",
+        "拓展",
+        "扩展",
+        "改造",
+        "泛化",
+    ],
     "theory_foundation": ["theory", "theoretical", "proof", "lemma", "定理", "理论", "证明"],
+    "sustained_followup": [
+        "follow-up",
+        "follow up",
+        "subsequent work",
+        "continued",
+        "series of work",
+        "持续",
+        "后续工作",
+        "跟踪",
+    ],
+    "review_comment_praise": [
+        "reviewer",
+        "review comment",
+        "praised",
+        "excellent",
+        "highly novel",
+        "审稿",
+        "评审",
+        "高度评价",
+    ],
     "negative_or_limitation": ["limitation", "limited", "fail", "worse", "不足", "局限", "失败"],
 }
 
@@ -173,6 +262,82 @@ def classify_self_citation(
     }
 
 
+def _signature_index(values: list[Any] | None) -> set[str]:
+    signatures: set[str] = set()
+    for author in expand_author_names(values):
+        signatures.update(name_signatures(author))
+    return signatures
+
+
+def classify_third_party_citation(
+    *,
+    source_authors: list[Any] | None,
+    citing_authors: list[Any] | None,
+    selected_author_names: list[Any] | None = None,
+    extra_excluded_authors: list[Any] | None = None,
+    extra_excluded_affiliations: list[Any] | None = None,
+    citing_affiliations: list[Any] | None = None,
+) -> dict[str, Any]:
+    citing_names = expand_author_names(citing_authors)
+    if not citing_names:
+        return {
+            "status": "unknown",
+            "overlap_authors": [],
+            "overlap_affiliations": [],
+        }
+
+    self_signatures = _signature_index(
+        (source_authors or []) + (selected_author_names or [])
+    )
+    collaborator_signatures = _signature_index(extra_excluded_authors)
+
+    self_hits = []
+    collaborator_hits = []
+    for author in citing_names:
+        signatures = name_signatures(author)
+        if self_signatures and signatures & self_signatures:
+            self_hits.append(author)
+        elif collaborator_signatures and signatures & collaborator_signatures:
+            collaborator_hits.append(author)
+
+    if self_hits:
+        return {
+            "status": "self_citation",
+            "overlap_authors": unique_nonempty_strings(self_hits),
+            "overlap_affiliations": [],
+        }
+    if collaborator_hits:
+        return {
+            "status": "excluded_collaborator",
+            "overlap_authors": unique_nonempty_strings(collaborator_hits),
+            "overlap_affiliations": [],
+        }
+
+    excluded_affiliations = [
+        normalize_name(str(value or ""))
+        for value in (extra_excluded_affiliations or [])
+        if normalize_name(str(value or ""))
+    ]
+    affiliation_hits = []
+    for affiliation in citing_affiliations or []:
+        text = str(affiliation or "").strip()
+        normalized = normalize_name(text)
+        if normalized and any(excluded in normalized for excluded in excluded_affiliations):
+            affiliation_hits.append(text)
+    if affiliation_hits:
+        return {
+            "status": "excluded_collaborator",
+            "overlap_authors": [],
+            "overlap_affiliations": unique_nonempty_strings(affiliation_hits),
+        }
+
+    return {
+        "status": "non_self_citation",
+        "overlap_authors": [],
+        "overlap_affiliations": [],
+    }
+
+
 def coerce_labels(value: Any) -> list[str]:
     if value is None:
         return []
@@ -203,8 +368,11 @@ def derive_evidence_labels(
         labels.append("baseline")
     if aspect == "comparison":
         labels.append("comparison")
-    if aspect in {"method", "extension", "application"}:
+        labels.append("detailed_comparison")
+    if aspect in {"method", "application"}:
         labels.append("method_foundation")
+    if aspect == "extension":
+        labels.append("method_extension")
     if aspect == "background":
         labels.append("survey_or_related_work")
     if stance == "negative":
@@ -260,13 +428,19 @@ def score_strong_evidence(
 
     weights = {
         "positive_evaluation": 18,
+        "sota_evaluation": 24,
         "first_or_pioneering": 24,
+        "representative_work": 18,
+        "detailed_comparison": 22,
         "baseline": 18,
         "comparison": 18,
         "method_foundation": 14,
+        "method_extension": 18,
         "theory_foundation": 14,
         "large_context": 10,
+        "sustained_followup": 16,
         "important_person": 18,
+        "review_comment_praise": 18,
         "negative_or_limitation": 8,
         "survey_or_related_work": 4,
     }
@@ -280,6 +454,8 @@ def score_strong_evidence(
         score += 6
     elif self_citation_status == "self_citation":
         score -= 18
+    elif self_citation_status == "excluded_collaborator":
+        score -= 12
     return min(max(score, 0), 100)
 
 

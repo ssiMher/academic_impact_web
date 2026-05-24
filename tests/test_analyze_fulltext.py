@@ -31,7 +31,17 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
             "keep": True,
             "aspect": "baseline",
             "stance": "positive",
-            "evidence_labels": ["baseline", "first_or_pioneering", "not_valid"],
+            "evidence_labels": [
+                "baseline",
+                "first_or_pioneering",
+                "sota_evaluation",
+                "representative_work",
+                "detailed_comparison",
+                "method_extension",
+                "sustained_followup",
+                "review_comment_praise",
+                "not_valid",
+            ],
             "highlight_keywords": ["compare", "pioneering"],
             "evidence_strength": "high",
             "is_self_citation": True,
@@ -41,11 +51,88 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
 
         result = self.module.normalize_model_finding(finding, 0)
 
-        self.assertEqual(result["evidence_labels"], ["baseline", "first_or_pioneering"])
+        self.assertEqual(
+            result["evidence_labels"],
+            [
+                "baseline",
+                "first_or_pioneering",
+                "sota_evaluation",
+                "representative_work",
+                "detailed_comparison",
+                "method_extension",
+                "sustained_followup",
+                "review_comment_praise",
+            ],
+        )
         self.assertEqual(result["highlight_keywords"], ["compare", "pioneering"])
         self.assertEqual(result["evidence_strength"], "high")
         self.assertIs(result["is_self_citation"], True)
         self.assertEqual(result["why_valuable"], "可用于说明目标工作被作为开创性基线比较。")
+
+    def test_prompts_describe_refined_evidence_label_schema(self):
+        system_prompt = self.module.SINGLE_MODEL_SYSTEM_PROMPT
+        deepseek_prompt = self.module.DEEPSEEK_SYSTEM_PROMPT
+        user_prompt = self.module.build_single_model_prompt(
+            {
+                "target_title": "Target Paper",
+                "target_year": 2024,
+                "citing_title": "Citing Paper",
+                "candidate_spans": [
+                    {
+                        "page": 1,
+                        "span_index": 1,
+                        "text": "Target Paper is a state-of-the-art representative work.",
+                    }
+                ],
+            }
+        )
+
+        for label in [
+            "sota_evaluation",
+            "representative_work",
+            "detailed_comparison",
+            "method_extension",
+            "sustained_followup",
+            "review_comment_praise",
+        ]:
+            self.assertIn(label, system_prompt)
+            self.assertIn(label, deepseek_prompt)
+
+        self.assertIn("SOTA", system_prompt)
+        self.assertIn("representative", system_prompt)
+        self.assertIn("detailed comparison", system_prompt)
+        self.assertIn("template priority", system_prompt)
+        self.assertIn("优先级", user_prompt)
+
+    def test_template_prompt_fragment_is_included_in_candidate_and_fulltext_prompts(self):
+        fragment = "用户本次特别关注以下引用证据模板：详细对比；要求=寻找 baseline。"
+        candidate_prompt = self.module.build_single_model_prompt(
+            {
+                "target_title": "Target Paper",
+                "citing_title": "Citing Paper",
+                "template_prompt_fragment": fragment,
+                "candidate_spans": [
+                    {
+                        "page": 1,
+                        "span_index": 1,
+                        "text": "We compare against Target Paper.",
+                    }
+                ],
+            }
+        )
+        fulltext_prompt = self.module.build_fulltext_direct_prompt(
+            {
+                "target_title": "Target Paper",
+                "citing_title": "Citing Paper",
+                "template_prompt_fragment": fragment,
+                "fulltext_pages": [
+                    {"page": 2, "text": "Target Paper is a baseline."},
+                ],
+            }
+        )
+
+        self.assertIn(fragment, candidate_prompt)
+        self.assertIn(fragment, fulltext_prompt)
 
     def test_analyze_payload_prefers_message_content(self):
         payload = {

@@ -2018,11 +2018,46 @@ def get_scholar_pdf_download_report_path(session_id: str) -> Path:
 
 def _queue_item_publisher_url(item: dict[str, Any]) -> str:
     source_url = (item.get("source_url") or "").strip()
-    if source_url:
+    if source_url and _is_human_browsable_publisher_url(source_url):
         return source_url
     doi = (item.get("citing_doi") or "").strip()
     if doi:
         return f"https://doi.org/{doi}"
+    scopus_id = _scopus_id_from_queue_item(item)
+    if scopus_id:
+        return f"https://www.scopus.com/inward/record.uri?scp={scopus_id}&partnerID=HzOxMe3b&origin=inward"
+    if source_url:
+        return source_url
+    return ""
+
+
+def _is_human_browsable_publisher_url(url: str) -> bool:
+    lowered = str(url or "").strip().lower()
+    if not lowered:
+        return False
+    machine_url_markers = [
+        "api.elsevier.com/content/",
+        "api.openalex.org/",
+        "api.crossref.org/",
+    ]
+    return not any(marker in lowered for marker in machine_url_markers)
+
+
+def _scopus_id_from_queue_item(item: dict[str, Any]) -> str:
+    raw_values = [
+        item.get("citing_scopus_id"),
+        item.get("citing_paper_id"),
+        item.get("source_url"),
+    ]
+    for value in raw_values:
+        text = str(value or "").strip()
+        if not text:
+            continue
+        scopus_match = re.search(r"(?:scopus_id/|scp=|2-s2\.0-)(\d+)", text)
+        if scopus_match:
+            return scopus_match.group(1)
+        if text.isdigit():
+            return text
     return ""
 
 

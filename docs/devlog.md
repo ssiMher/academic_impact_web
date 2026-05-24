@@ -1,5 +1,23 @@
 # 开发日志
 
+## 2026-05-24：修正出版社页面链接误指向 Scopus API
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 高价值引用队列的“打开出版社页面”有时会打开 Elsevier / Scopus API XML。
+- 这类 URL 来自 Scopus 元数据里的机器接口，不是给浏览器阅读的论文落地页。
+
+本次处理：
+- 页面生成 publisher URL 时识别 `api.elsevier.com/content/`、OpenAlex API、Crossref API 等机器接口。
+- 如果有 DOI，优先打开 `https://doi.org/<doi>`，让浏览器跳到真正出版社页面。
+- 如果没有 DOI 但有 Scopus ID，则回退到 Scopus 可浏览记录页。
+- 增加回归测试，锁定 Scopus API URL 不再直接显示给用户点击。
+
+当前策略：
+- 自动下载仍可使用 `source_url` 做候选 PDF 抽取。
+- “打开出版社页面”只负责给用户可阅读、可登录、可手动下载的页面。
+
 ## 2026-05-24：把导师反馈落到亮点评价工作流
 
 分支：`codex/organize-analysis-venue-work`

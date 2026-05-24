@@ -647,6 +647,38 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(missing_id["readiness_status"], "missing_identifier")
         self.assertEqual(missing_id["self_citation_label"], "自引未知")
 
+    def test_build_deep_analysis_queue_view_prefers_human_page_over_scopus_api_url(self):
+        session = {
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q001",
+                    "citing_title": "ACM Citing Paper",
+                    "citing_doi": "10.1145/3495243.3560526",
+                    "citing_scopus_id": "85140921144",
+                    "source_url": "https://api.elsevier.com/content/abstract/scopus_id/85140921144",
+                    "reasons": ["venue:CCF A"],
+                },
+                {
+                    "queue_id": "Q002",
+                    "citing_title": "Scopus Only Paper",
+                    "citing_scopus_id": "85140921144",
+                    "source_url": "https://api.elsevier.com/content/abstract/scopus_id/85140921144",
+                    "reasons": ["venue:CCF A"],
+                },
+            ],
+        }
+
+        view = scholar_core.build_deep_analysis_queue_view(session)
+
+        self.assertEqual(
+            view["items"][0]["publisher_url"],
+            "https://doi.org/10.1145/3495243.3560526",
+        )
+        self.assertEqual(
+            view["items"][1]["publisher_url"],
+            "https://www.scopus.com/inward/record.uri?scp=85140921144&partnerID=HzOxMe3b&origin=inward",
+        )
+
     def test_build_deep_analysis_queue_view_marks_institution_login_failures(self):
         session = {
             "deep_analysis_queue": [

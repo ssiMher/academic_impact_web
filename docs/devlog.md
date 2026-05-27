@@ -1,5 +1,24 @@
 # 开发日志
 
+## 2026-05-27：限制全文分析请求长度，避免本地模型上下文溢出
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 批量分析长 PDF 时，本地 OpenAI-compatible 服务返回 400。
+- 服务端日志显示 `request (43127 tokens) exceeds the available context size (32768 tokens)`，根因是全文直读 prompt 超过模型上下文，而不是 PDF 上传或全文提取失败。
+
+本次处理：
+- 将 `ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS` 的默认值从 90000 下调到 45000，给 system prompt、模板片段和模型输出留出上下文余量。
+- 全文直读 prompt 被截断时，会明确加入“全文文本已按字符预算截断”的系统提示，便于后续排查。
+- `classify_request_exception` 会读取 HTTPError 的 response body，识别 llama.cpp / local server 返回的 context exceeded 细节。
+- 页面失败建议对 `context_length_exceeded` 给出具体处理方式：调低 `ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS`，或用更大上下文启动本地模型服务。
+- 增加回归测试，锁定默认全文预算、context exceeded 分类和页面动作建议。
+
+当前策略：
+- 项目侧默认保守截断，避免长 PDF 把 32k 上下文本地模型直接打爆。
+- 如果本地模型以 64k / 128k 上下文启动，可以显式调高 `ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS`，但需要同步评估显存、速度和模型长上下文质量。
+
 ## 2026-05-24：修正出版社页面链接误指向 Scopus API
 
 分支：`codex/organize-analysis-venue-work`

@@ -850,6 +850,7 @@ def _result_action_hint(result: dict[str, Any]) -> str:
     analysis = result.get("analysis") or {}
     download = result.get("download") or {}
     error_type = analysis.get("error_type") or ""
+    error_detail_type = analysis.get("error_detail_type") or ""
     download_source = download.get("source") or ""
     if (
         status in {"context_only", "fulltext_extract_failed"}
@@ -857,6 +858,11 @@ def _result_action_hint(result: dict[str, Any]) -> str:
         or download_source == "manual_required"
     ):
         return "未找到可用全文：请在高价值引用队列中上传该引用论文 PDF，然后重试失败项。"
+    if error_detail_type == "context_length_exceeded":
+        return (
+            "模型上下文不够：请调低 ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS 后重试，"
+            "或用更大上下文启动本地模型服务。"
+        )
     if status == "analysis_failed" or error_type:
         return "模型分析失败：可先重试；若持续失败，请减少单次选择数量并检查模型服务。"
     return "检查失败原因后重试；如果仍失败，请补充 PDF 或缩小本次分析范围。"

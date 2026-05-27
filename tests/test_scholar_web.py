@@ -77,6 +77,20 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Chen Tian", response.text)
 
+    def test_context_length_failure_gets_specific_action_hint(self):
+        result = {
+            "status": "analysis_failed",
+            "analysis": {
+                "error_type": "single_model_request_failed",
+                "error_detail_type": "context_length_exceeded",
+            },
+        }
+
+        hint = scholar_core._result_action_hint(result)
+
+        self.assertIn("上下文", hint)
+        self.assertIn("ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS", hint)
+
     def test_scholar_route_renders_local_pdf_index_controls(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
         (TEST_SESSION_DIR / "session.json").write_text(

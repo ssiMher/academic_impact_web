@@ -303,6 +303,24 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertIn('Transformer encoder', self.module.SINGLE_MODEL_SYSTEM_PROMPT)
         self.assertIn('不要降级为 mention_only', captured_messages[1]['content'])
 
+    def test_fulltext_direct_prompt_uses_conservative_default_budget(self):
+        self.assertLessEqual(self.module.MAX_FULLTEXT_DIRECT_CHARS, 50000)
+
+        prompt = self.module.build_fulltext_direct_prompt(
+            {
+                'analysis_scope': 'fulltext_direct',
+                'target_title': 'Target Paper',
+                'citing_title': 'Long Citing Paper',
+                'fulltext_pages': [
+                    {'page': 1, 'text': 'A' * (self.module.MAX_FULLTEXT_DIRECT_CHARS + 1000)},
+                    {'page': 2, 'text': 'This page should not fit under the direct prompt budget.'},
+                ],
+            }
+        )
+
+        self.assertIn('全文文本已按字符预算截断', prompt)
+        self.assertNotIn('This page should not fit', prompt)
+
     def test_fulltext_direct_requires_fulltext_text(self):
         payload = {
             'analysis_scope': 'fulltext_direct',
@@ -516,6 +534,18 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertEqual(result['analysis_text'], '{"ok": true, "findings": []}')
         self.assertIn('response_format', posts[0])
         self.assertNotIn('response_format', posts[1])
+
+    def test_request_exception_classification_uses_response_body(self):
+        class FakeResponse:
+            text = 'request (43127 tokens) exceeds the available context size (32768 tokens)'
+
+        exc = self.module.requests.HTTPError('400 Client Error')
+        exc.response = FakeResponse()
+
+        detail_type, message = self.module.classify_request_exception(exc)
+
+        self.assertEqual(detail_type, 'context_length_exceeded')
+        self.assertIn('上下文上限', message)
 
     def test_openai_compatible_chat_sends_disable_thinking_flag(self):
         payload = {

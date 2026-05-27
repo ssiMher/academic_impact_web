@@ -61,11 +61,11 @@ MAX_RAW_TEXT_CHARS_PER_SPAN = 1200
 MAX_TOTAL_PROMPT_CHARS = 9000
 try:
     MAX_FULLTEXT_DIRECT_CHARS = int(
-        get_project_env("ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS", "90000", project_root=ROOT)
-        or "90000"
+        get_project_env("ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS", "45000", project_root=ROOT)
+        or "45000"
     )
 except (TypeError, ValueError):
-    MAX_FULLTEXT_DIRECT_CHARS = 90000
+    MAX_FULLTEXT_DIRECT_CHARS = 45000
 VALID_ANALYSIS_SCOPES = {"candidate_spans", "fulltext_direct"}
 VALID_EVIDENCE_LABELS = {
     "positive_evaluation",
@@ -432,7 +432,14 @@ def call_deepseek(messages, api_key, max_tokens=800):
 
 
 def classify_request_exception(exc: Exception) -> Tuple[str, str]:
-    text = str(exc)
+    response_text = ""
+    response = getattr(exc, "response", None)
+    if response is not None:
+        try:
+            response_text = str(getattr(response, "text", "") or "")
+        except Exception:
+            response_text = ""
+    text = " ".join(part for part in [str(exc), response_text] if part)
     lowered = text.lower()
     if (
         "exceeds the available context size" in lowered
@@ -619,20 +626,31 @@ def build_fulltext_direct_prompt(payload, target_aliases=None):
     pages = normalize_fulltext_pages(payload)
     chunks = []
     total_chars = 0
+    truncated = False
 
     for page in pages:
         block = f"[Page {page['page']}]\n{page['text']}\n"
         if total_chars + len(block) > MAX_FULLTEXT_DIRECT_CHARS:
             remaining = MAX_FULLTEXT_DIRECT_CHARS - total_chars
             if remaining <= 0:
+                truncated = True
                 break
             chunks.append(block[:remaining])
             total_chars += remaining
+            truncated = True
             break
         chunks.append(block)
         total_chars += len(block)
 
     joined = "\n\n".join(chunks)
+    truncation_note = ""
+    if truncated:
+        truncation_note = (
+            "\n\n[系统提示] 全文文本已按字符预算截断，"
+            f"本次最多发送 {MAX_FULLTEXT_DIRECT_CHARS} 个字符。"
+            "若需要更完整上下文，请调高 ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS "
+            "并确认本地模型上下文足够。"
+        )
 
     return f"""目标论文标题：{payload.get('target_title', '')}
 目标论文年份：{payload.get('target_year', '')}
@@ -642,6 +660,7 @@ def build_fulltext_direct_prompt(payload, target_aliases=None):
 
 下面是引用论文全文文本，请直接通读全文判断目标论文是否被真正引用：
 {joined}
+{truncation_note}
 {template_section}
 
 请输出严格 JSON，不要输出自然语言报告。

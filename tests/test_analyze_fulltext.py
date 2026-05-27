@@ -303,8 +303,8 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertIn('Transformer encoder', self.module.SINGLE_MODEL_SYSTEM_PROMPT)
         self.assertIn('不要降级为 mention_only', captured_messages[1]['content'])
 
-    def test_fulltext_direct_prompt_uses_conservative_default_budget(self):
-        self.assertLessEqual(self.module.MAX_FULLTEXT_DIRECT_CHARS, 50000)
+    def test_fulltext_direct_prompt_uses_configurable_default_budget(self):
+        self.assertEqual(self.module.MAX_FULLTEXT_DIRECT_CHARS, 90000)
 
         prompt = self.module.build_fulltext_direct_prompt(
             {

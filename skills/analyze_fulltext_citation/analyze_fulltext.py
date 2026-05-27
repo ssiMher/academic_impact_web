@@ -61,11 +61,11 @@ MAX_RAW_TEXT_CHARS_PER_SPAN = 1200
 MAX_TOTAL_PROMPT_CHARS = 9000
 try:
     MAX_FULLTEXT_DIRECT_CHARS = int(
-        get_project_env("ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS", "45000", project_root=ROOT)
-        or "45000"
+        get_project_env("ACADEMIC_IMPACT_FULLTEXT_DIRECT_MAX_CHARS", "90000", project_root=ROOT)
+        or "90000"
     )
 except (TypeError, ValueError):
-    MAX_FULLTEXT_DIRECT_CHARS = 45000
+    MAX_FULLTEXT_DIRECT_CHARS = 90000
 VALID_ANALYSIS_SCOPES = {"candidate_spans", "fulltext_direct"}
 VALID_EVIDENCE_LABELS = {
     "positive_evaluation",

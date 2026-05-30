@@ -1,0 +1,24 @@
+{
+  "_comment": "Small source-backed Academia Europaea seed list. Extend with official ae-info.org member pages as needed.",
+  "items": [
+    {
+      "name": "Daqing Zhang",
+      "tag_type": "academia_europaea_member",
+      "aliases": [
+        "Zhang Daqing"
+      ],
+      "source_links": [
+        "https://www.ae-info.org/ae/Member/Zhang_Daqing"
+      ],
+      "matched_affiliations": [],
+      "openalex_author_ids": [],
+      "orcid_ids": [],
+      "dblp_author_ids": [],
+      "known_institutions": [
+        "Peking University",
+        "Telecom SudParis"
+      ],
+      "note": "Member of Academia Europaea, ordinary member; section: Informatics; elected 2019; source: Academia Europaea official member page"
+    }
+  ]
+}

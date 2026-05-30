@@ -16,6 +16,7 @@ TAG_LABELS = {
     "aaai_fellow": "AAAI Fellow",
     "cas_academician": "中国科学院院士",
     "cae_academician": "中国工程院院士",
+    "academia_europaea_member": "Member of Academia Europaea(欧洲科学院院士)",
     "godel_prize": "Gödel Prize",
     "top_school": "国外牛校作者",
 }

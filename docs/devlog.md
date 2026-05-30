@@ -1,5 +1,34 @@
 # 开发日志
 
+## 2026-05-30：用 NASA CM 对照补强 IEEE Fellow 和部分 venue registry
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- Jingyi Ning 的 NASA CitationMaster 导出中，荣誉引用命中比本项目更全。
+- 对照后发现主要不是分析逻辑问题，而是本地 registry 覆盖不足：
+  - 本地 IEEE Fellow 只有约 2600 条，缺少 Jun Luo、Tao Gu、Xin Wang、Z Chen 等近期 Fellow。
+  - 本地暂不支持 Academia Europaea 标签，导致 Daqing Zhang 的 AE 命中无法归类。
+  - 本人论文 venue registry 缺少 INFOCOM、ICDCS、SECON、TOSN、WoWMoM、ICCCN 等网络/移动计算常见 venue。
+
+本次处理：
+- 新增 `data/reference/source_lists/ieee_fellows_academic_awards.json`，从 `xiaohk/academic-awards` 的 IEEE Fellows JSON 生成约 7490 条本地 source-backed seed。
+- 刷新 `person_tag_registry.json`，IEEE Fellow 条目扩展到约 7994 条。
+- 新增 `academia_europaea_member` tag type，并加入 Daqing Zhang 的 Academia Europaea 官方页面 seed。
+- 补充网络/移动计算 venue aliases：
+  - INFOCOM：CCF A
+  - ICDCS / SECON / TOSN：CCF B
+  - WoWMoM / ICCCN：CCF C
+- 增加回归测试，锁定近期 IEEE Fellow seed、AE tag 支持和新增 venue 匹配。
+
+对照结果：
+- Jingyi Ning 的 NASA CM 荣誉引用 CSV 中 21 条记录，补强后本地 registry 可按同类标签匹配 21/21。
+- 本人论文 venue 对照中，NASA CM 标为 CCF 的 INFOCOM / ICDCS / SECON / TOSN / WoWMoM / ICCCN 已能被本地 registry 命中。
+
+当前策略：
+- NASA CM 页面也提示 “Results may contain name collisions”，所以不能把所有 name-only 命中都当作最终事实。
+- 本项目仍保留风险标记和人工/证据复核入口；registry 补全解决“查不到”，不等于解决“同名一定正确”。
+
 ## 2026-05-27：适配 98k 本地模型上下文，恢复全文分析默认输入预算
 
 分支：`codex/organize-analysis-venue-work`

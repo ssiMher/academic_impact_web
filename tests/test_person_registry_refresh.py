@@ -40,6 +40,30 @@ class PersonRegistryRefreshTestCase(unittest.TestCase):
         self.assertIn('李天和', items['Thomas H. Lee']['aliases'])
         self.assertIn('I. M. Pei', items['Leoh Ming Pei']['aliases'])
 
+    def test_ieee_academic_awards_source_list_covers_recent_fellows(self):
+        source_path = Path('data/reference/source_lists/ieee_fellows_academic_awards.json')
+        payload = json.loads(source_path.read_text(encoding='utf-8'))
+        items = {item['name']: item for item in payload.get('items', [])}
+
+        self.assertGreaterEqual(len(items), 7400)
+        self.assertIn('Jun Luo', items)
+        self.assertIn('Tao Gu', items)
+        self.assertIn('Xin Wang', items)
+        self.assertIn('For contributions', items['Jun Luo']['note'])
+
+    def test_academia_europaea_seed_tag_is_supported(self):
+        source_path = Path('data/reference/source_lists/academia_europaea_seed.json')
+        payload = json.loads(source_path.read_text(encoding='utf-8'))
+        entry = payload['items'][0]
+
+        self.assertEqual(entry['name'], 'Daqing Zhang')
+        self.assertEqual(entry['tag_type'], 'academia_europaea_member')
+        self.assertIn('academia_europaea_member', refresh_person_tag_registry.SUPPORTED_TAG_TYPES)
+        self.assertEqual(
+            person_candidates.TAG_LABELS['academia_europaea_member'],
+            'Member of Academia Europaea(欧洲科学院院士)',
+        )
+
     def test_refresh_imports_csv_and_json_without_network(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)

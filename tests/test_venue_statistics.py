@@ -125,6 +125,12 @@ class VenueStatisticsTestCase(unittest.TestCase):
             ("ACM SenSys", "CCF B", "CCF"),
             ("IEEE Journal on Selected Areas in Communications", "CCF A", "CCF"),
             ("IEEE Transactions on Mobile Computing", "CCF A", "CCF"),
+            ("INFOCOM", "CCF A", "CCF"),
+            ("ICDCS", "CCF B", "CCF"),
+            ("SECON", "CCF B", "CCF"),
+            ("TOSN", "CCF B", "CCF"),
+            ("WoWMoM", "CCF C", "CCF"),
+            ("ICCCN", "CCF C", "CCF"),
             ("IEEE Trans. Netw.", "Tracked venue seed", "project_seed"),
             ("IEEE Transactions on Instrumentation and Measurement", "Tracked venue seed", "project_seed"),
         ]

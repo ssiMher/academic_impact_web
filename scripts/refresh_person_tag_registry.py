@@ -32,6 +32,7 @@ SUPPORTED_TAG_TYPES = {
     "aaai_fellow",
     "cas_academician",
     "cae_academician",
+    "academia_europaea_member",
     "godel_prize",
     "top_school",
 }

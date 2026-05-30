@@ -183,7 +183,7 @@ JSON 格式必须严格为：
    - detailed_comparison 需要实验/评估/表格/系统设计中的具体对比；related work 中一笔带过仍应使用 survey_or_related_work 或旧 comparison。
    - 如果用户或模板给出目标标签优先级，优先寻找这些 template priority 标签，但不要为了满足模板而捏造标签。
 11. highlight_keywords 必须来自 citation_text 原文，优先选择 SOTA、representative、first、pioneering、baseline、compare、detailed comparison、outperform、based on、inspired by、extend 等能支撑标签的词。
-12. why_valuable 要面向组会汇报，说明这条证据为什么有价值；普通弱引用可写“证据较弱，不建议用于汇报”。
+12. why_valuable 要面向项目汇报，说明这条证据为什么有价值；普通弱引用可写“证据较弱，不建议用于汇报”。
 """
 
 DEEPSEEK_SYSTEM_PROMPT = """你是一个严格的JSON整理器。

@@ -1064,7 +1064,7 @@ def build_scholar_demo_guidance(
         add_step(
             "export_report",
             "下载报告并核对强引用证据",
-            "已有强引用证据时，可以下载 Markdown 报告，并检查证据摘录是否适合放进组会材料。",
+            "已有强引用证据时，可以下载 Markdown 报告，并检查证据摘录是否适合放进汇报材料。",
             "#report-summary",
         )
     if not steps:

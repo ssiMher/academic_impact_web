@@ -159,7 +159,7 @@ ACADEMIC_IMPACT_PDF_INDEX_PATH=/data/academic_impact/local_pdf_index.json
 
 ### Scopus 试验来源
 
-如需按导师建议尝试 Elsevier Scopus API，先在 Elsevier Developer Portal 创建 API key，然后在 `.env` 中配置：
+如需尝试 Elsevier Scopus API，先在 Elsevier Developer Portal 创建 API key，然后在 `.env` 中配置：
 
 ```bash
 ACADEMIC_IMPACT_CITATION_SOURCE=scopus

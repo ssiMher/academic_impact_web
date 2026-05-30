@@ -83,7 +83,7 @@
 - 自动下载仍可使用 `source_url` 做候选 PDF 抽取。
 - “打开出版社页面”只负责给用户可阅读、可登录、可手动下载的页面。
 
-## 2026-05-24：把导师反馈落到亮点评价工作流
+## 2026-05-24：把汇报需求落到亮点评价工作流
 
 分支：`codex/organize-analysis-venue-work`
 
@@ -123,7 +123,7 @@
 - 审稿意见导入只作为补充证据进入强引用证据池，不混入 citation edge。
 
 后续建议：
-1. 如果导师继续给出 PPT 模板，可以优先扩展 `scholar_evidence_templates.json`，不要把规则写死在页面里。
+1. 如果后续继续补充 PPT 模板，可以优先扩展 `scholar_evidence_templates.json`，不要把规则写死在页面里。
 2. 如果需要更精确的“本组作者”识别，下一步应把排除列表保存成可复用的 profile，而不是只存在单个 session。
 3. 若要自动生成 PPT 文案，可基于 `highlight_cards.md` 继续做二次摘要。
 
@@ -239,7 +239,7 @@ python3 scripts/enrich_scholar_citing_authors.py <scholar_session_id>
 分支：`codex/organize-analysis-venue-work`
 
 背景：
-- 组会反馈强调系统核心不应只是引用数量统计，而是找出“别人如何评价我的工作”的第三方证据。
+- 汇报需求强调系统核心不应只是引用数量统计，而是找出“别人如何评价我的工作”的第三方证据。
 - 现有强引用证据只粗略记录 aspect、stance、长引用和 Fellow 强引用，难以直接服务 PPT 汇报。
 - 高价值队列缺少自引状态和更贴近“先分析哪些论文”的筛选口径。
 
@@ -269,7 +269,7 @@ python3 scripts/enrich_scholar_citing_authors.py <scholar_session_id>
 - Markdown 报告的 Top 强引用证据改为按强度分排序，并补充证据标签、自引状态和汇报价值。
 
 当前策略：
-- 证据标签是可扩展集合，后续导师新增模板时优先改 `scholar_evidence.py` 和 prompt，不要把规则继续散落到页面里。
+- 证据标签是可扩展集合，后续新增模板时优先改 `scholar_evidence.py` 和 prompt，不要把规则继续散落到页面里。
 - 自引判断只基于作者姓名签名，支持常见的 `Chen Tian` / `Tian Chen` 顺序差异；没有作者信息时标为未知，不强行判断。
 - 本轮不继续扩大外部 ID 补全范围，避免把主线从“引用语义证据”拉回“名单清洗”。
 

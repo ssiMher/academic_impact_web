@@ -160,7 +160,7 @@
 
         <section class="subpanel" id="review-comment-import">
           <h2>审稿意见 / 外部评价导入</h2>
-          <p class="muted">把审稿意见、评审总结或老师整理的外部评价原文贴进来，系统会把它们转成可放进“亮点评价卡片”的证据。</p>
+          <p class="muted">把审稿意见、评审总结或外部评价原文贴进来，系统会把它们转成可放进“亮点评价卡片”的证据。</p>
           <form action="/scholars/{{ session_id }}/review-comment-evidence" method="post">
             <label>
               原文片段（空行分隔多条）
@@ -231,7 +231,7 @@
         <div class="panel-header">
           <div>
             <h2>报告摘要</h2>
-            <p class="muted">适合直接放入周报或组会 PPT 的简版结论。</p>
+            <p class="muted">适合直接放入汇报 PPT 的简版结论。</p>
           </div>
           <div class="inline-actions">
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/citation_statistics.csv">Export Citation Statistics CSV</a>
@@ -276,7 +276,7 @@
           <div>
             <p class="eyebrow">Evidence Cards</p>
             <h2>亮点评价卡片</h2>
-            <p class="muted">按导师反馈，把可汇报的第三方正向评价、详细对比、方法来源、理论基础和审稿意见整理成卡片。</p>
+            <p class="muted">把可汇报的第三方正向评价、详细对比、方法来源、理论基础和审稿意见整理成卡片。</p>
           </div>
           <div class="inline-actions">
             <a class="button-link secondary" href="/scholars/{{ session_id }}/exports/highlight_cards.csv">导出 CSV</a>

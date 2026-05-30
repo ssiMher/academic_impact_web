@@ -853,8 +853,12 @@ class ScholarWebTestCase(unittest.TestCase):
                     "citing_title": "A Survey of Distributed Graph Algorithms on Massive Graphs",
                     "cited_publication_title": "Trust: Triangle Counting Reloaded on GPUs.",
                     "citation_text": citation_text,
-                    "aspect": "background",
+                    "aspect": "method",
                     "stance": "neutral",
+                    "mention_type": "explicit_citation",
+                    "evidence_labels": ["method_foundation"],
+                    "strong_citation_score": 52,
+                    "evidence_strength": "medium",
                     "page": 10,
                     "span_index": 6,
                 },
@@ -863,8 +867,12 @@ class ScholarWebTestCase(unittest.TestCase):
                     "citing_title": "A Survey of Distributed Graph Algorithms on Massive Graphs",
                     "cited_publication_title": "TRUST: Triangle Counting Reloaded on GPUs.",
                     "citation_text": citation_text,
-                    "aspect": "background",
+                    "aspect": "method",
                     "stance": "neutral",
+                    "mention_type": "explicit_citation",
+                    "evidence_labels": ["method_foundation"],
+                    "strong_citation_score": 52,
+                    "evidence_strength": "medium",
                     "page": 10,
                     "span_index": 6,
                 },
@@ -875,8 +883,42 @@ class ScholarWebTestCase(unittest.TestCase):
 
         self.assertEqual(view["total_count"], 1)
         self.assertEqual(view["unfiltered_count"], 1)
-        self.assertEqual(view["aspect_counts"]["background"], 1)
+        self.assertEqual(view["aspect_counts"]["method"], 1)
         self.assertEqual(view["items"][0]["cited_publication_title"], "Trust: Triangle Counting Reloaded on GPUs.")
+
+    def test_build_strong_evidence_view_hides_weak_grouped_mentions(self):
+        session = {
+            "strong_evidence": [
+                {
+                    "citing_title": "Weak Survey Mention",
+                    "citation_text": "voice sensing [14], [17], [18]",
+                    "aspect": "background",
+                    "stance": "neutral",
+                    "mention_type": "grouped_literature_mention",
+                    "evidence_labels": ["survey_or_related_work"],
+                    "strong_citation_score": 28,
+                    "evidence_strength": "low",
+                    "keep": False,
+                },
+                {
+                    "citing_title": "Baseline Paper",
+                    "citation_text": "We compare against this baseline in Table 2.",
+                    "aspect": "baseline",
+                    "stance": "neutral",
+                    "mention_type": "explicit_citation",
+                    "evidence_labels": ["baseline", "detailed_comparison"],
+                    "strong_citation_score": 65,
+                    "evidence_strength": "medium",
+                    "keep": True,
+                },
+            ]
+        }
+
+        view = scholar_core.build_strong_evidence_view(session)
+
+        self.assertEqual(view["total_count"], 1)
+        self.assertEqual(view["unfiltered_count"], 1)
+        self.assertEqual(view["items"][0]["citing_title"], "Baseline Paper")
 
     def test_build_person_candidate_view_filters_and_paginates(self):
         session = {
@@ -1552,6 +1594,9 @@ class ScholarWebTestCase(unittest.TestCase):
                 {
                     "citing_title": "Fellow Method Paper",
                     "citation_text": "A strong citation.",
+                    "aspect": "method",
+                    "strong_citation_score": 60,
+                    "evidence_strength": "medium",
                 }
             ],
             "person_candidates": [

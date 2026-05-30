@@ -836,8 +836,8 @@ class ScholarPipelineTestCase(unittest.TestCase):
                 )
 
         self.assertEqual(len(analyzed["scholar_fulltext_results"]), 2)
-        self.assertEqual(len(analyzed["strong_evidence"]), 1)
-        self.assertEqual(analyzed["statistics"]["strong_evidence_count"], 1)
+        self.assertEqual(len(analyzed["strong_evidence"]), 0)
+        self.assertEqual(analyzed["statistics"]["strong_evidence_count"], 0)
 
     def test_expand_publication_citations_records_provider_errors_and_continues(self):
         session = {

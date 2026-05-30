@@ -1,5 +1,24 @@
 # 开发日志
 
+## 2026-05-30：过滤弱背景提及，避免误入强引用证据
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 全文分析会保留一些弱提及，例如 related work 中的组引用或背景综述。
+- 这些弱提及对排查“是否被引用”有用，但不应默认出现在“强引用证据”列表里。
+- 典型误例是 `grouped_literature_mention`、`background`、`low` 强度、低分数的组引用，被页面显示成强引用证据。
+
+本次处理：
+- 新增统一判断函数 `is_reportable_strong_evidence`，把强引用证据的展示口径集中到 `scholar_evidence.py`。
+- 新分析入池时过滤 `grouped_literature_mention`、`weak_body_mention`、低分数、低强度和纯背景综述项。
+- 页面、报告、亮点评价卡片和统计摘要统一使用可汇报强证据集合；旧 session 中已有弱项也不会默认显示。
+- 保留早期 session 的兼容逻辑：没有新评分字段但有 method、baseline、positive、Fellow、长引用等强信号的旧证据仍可显示。
+
+当前策略：
+- 弱背景提及仍保留在全文分析结果文件中，方便诊断模型为何看到该引用。
+- “强引用证据”只展示可支撑汇报的中高强度证据；普通 related work 组引用应留在分析详情，不进入强证据列表。
+
 ## 2026-05-30：用 NASA CM 对照补强 IEEE Fellow 和部分 venue registry
 
 分支：`codex/organize-analysis-venue-work`

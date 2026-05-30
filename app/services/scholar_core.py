@@ -511,7 +511,7 @@ def build_strong_evidence_view(
     page_size: int = 10,
 ) -> dict[str, Any]:
     evidence_helper = scholar_pipeline().SCHOLAR_EVIDENCE
-    evidence_items = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+    evidence_items = _reportable_strong_evidence(session.get("strong_evidence", []) or [])
     evidence_items = sorted(
         evidence_items,
         key=lambda item: (
@@ -735,6 +735,15 @@ def _deduplicate_strong_evidence(items: list[dict[str, Any]]) -> list[dict[str, 
     return deduped
 
 
+def _reportable_strong_evidence(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    evidence_helper = scholar_pipeline().SCHOLAR_EVIDENCE
+    return [
+        item
+        for item in _deduplicate_strong_evidence(items)
+        if evidence_helper.is_reportable_strong_evidence(item)
+    ]
+
+
 def build_person_candidate_view(
     session: dict[str, Any],
     *,
@@ -870,7 +879,7 @@ def _result_action_hint(result: dict[str, Any]) -> str:
 
 def build_scholar_analysis_summary(session: dict[str, Any]) -> dict[str, Any]:
     results = session.get("scholar_fulltext_results", []) or []
-    strong_evidence = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+    strong_evidence = _reportable_strong_evidence(session.get("strong_evidence", []) or [])
     status_counts: dict[str, int] = {}
     failed_statuses = {
         "context_only",
@@ -1008,7 +1017,7 @@ def build_scholar_demo_guidance(
     failure_count = overview.get("failure_count", analysis.get("failure_count", 0))
     strong_evidence_count = overview.get(
         "strong_evidence_count",
-        len(_deduplicate_strong_evidence(session.get("strong_evidence", []) or [])),
+        len(_reportable_strong_evidence(session.get("strong_evidence", []) or [])),
     )
     citation_edge_count = statistics.get("citation_edge_count")
     if citation_edge_count is None:
@@ -1119,7 +1128,7 @@ def build_scholar_report_payload(
     analyzed_queue_count = overview.get("analyzed_queue_count", 0)
     strong_evidence_count = overview.get(
         "strong_evidence_count",
-        len(_deduplicate_strong_evidence(session.get("strong_evidence", []) or [])),
+        len(_reportable_strong_evidence(session.get("strong_evidence", []) or [])),
     )
     fellow_strong_count = overview.get("fellow_strong_count", 0)
     positive_count = flag_counts.get("positive", 0)
@@ -1127,7 +1136,7 @@ def build_scholar_report_payload(
     failure_count = overview.get("failure_count", 0)
     top_target_title = overview.get("top_target_title") or "暂无"
     next_action = overview.get("next_action") or "建议继续完善引用网络和全文分析。"
-    strong_evidence = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+    strong_evidence = _reportable_strong_evidence(session.get("strong_evidence", []) or [])
     pending_person_count = sum(
         1
         for candidate in session.get("person_candidates", []) or []
@@ -1283,7 +1292,7 @@ def build_scholar_report_payload(
         ]
     )
 
-    examples = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+    examples = _reportable_strong_evidence(session.get("strong_evidence", []) or [])
     if examples:
         markdown_lines.extend(["", "## 强引用证据示例", ""])
     for evidence in examples[:5]:
@@ -1445,7 +1454,7 @@ def _append_review_comment_evidence(
     session: dict[str, Any],
     snippets: list[str],
 ) -> int:
-    existing = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+    existing = _reportable_strong_evidence(session.get("strong_evidence", []) or [])
     new_items = _build_review_comment_evidence_items(
         session,
         snippets,
@@ -1495,7 +1504,7 @@ def _highlight_card_report_sentence(item: dict[str, Any], labels: list[str]) -> 
 
 
 def build_highlight_cards(session: dict[str, Any], limit: int = 30) -> list[dict[str, Any]]:
-    evidence_items = _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+    evidence_items = _reportable_strong_evidence(session.get("strong_evidence", []) or [])
     team_groups: dict[str, list[dict[str, Any]]] = {}
     for item in evidence_items:
         if (item.get("third_party_status") or item.get("self_citation_status") or "unknown") != "non_self_citation":
@@ -2798,7 +2807,7 @@ def review_person_candidate(
             session.get("citation_edges", []),
             session.get("person_candidates", []),
             strong_evidence_count=len(
-                _deduplicate_strong_evidence(session.get("strong_evidence", []) or [])
+                _reportable_strong_evidence(session.get("strong_evidence", []) or [])
             ),
         )
         session["deep_analysis_queue"] = stats.build_deep_analysis_queue(

@@ -270,6 +270,7 @@ def normalize_strong_evidence(
         "aspect": finding.get("aspect") or "",
         "stance": finding.get("stance") or "",
         "mention_type": finding.get("mention_type") or "",
+        "keep": finding.get("keep"),
         "evidence_labels": labels,
         "evidence_label_names": [
             SCHOLAR_EVIDENCE.evidence_label_display(label) for label in labels
@@ -592,6 +593,7 @@ def analyze_scholar_queue(
         item
         for item in session.get("strong_evidence", []) or []
         if item.get("queue_id") not in selected_ids
+        and SCHOLAR_EVIDENCE.is_reportable_strong_evidence(item)
     ]
     new_results = []
     new_evidence = []
@@ -727,7 +729,8 @@ def analyze_scholar_queue(
                 evidence["queue_id"] = queue_item.get("queue_id")
                 evidence["cited_publication_title"] = publication.get("title") or ""
                 evidence["analysis_status"] = result.get("status")
-                new_evidence.append(evidence)
+                if SCHOLAR_EVIDENCE.is_reportable_strong_evidence(evidence):
+                    new_evidence.append(evidence)
             processed += 1
             emit_progress(
                 queue_item=queue_item,

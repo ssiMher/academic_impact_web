@@ -411,6 +411,57 @@ def evidence_strength(score: int) -> str:
     return "low"
 
 
+def is_reportable_strong_evidence(item: dict[str, Any]) -> bool:
+    """Return whether a finding belongs in the strong-evidence surface."""
+    if item.get("keep") is False:
+        return False
+    if (item.get("mention_type") or "") in {
+        "grouped_literature_mention",
+        "weak_body_mention",
+    }:
+        return False
+    score = item.get("strong_citation_score")
+    labels = set(coerce_labels(item.get("evidence_labels")))
+    if score is None:
+        aspect = item.get("aspect") or ""
+        stance = (item.get("stance") or "").lower()
+        has_legacy_strong_signal = bool(
+            item.get("fellow_strong_citation")
+            or item.get("positive_evaluation")
+            or item.get("long_context_100_chars")
+            or stance == "positive"
+            or aspect in {"method", "baseline", "comparison", "extension", "application"}
+            or labels.difference({"survey_or_related_work"})
+        )
+        if not has_legacy_strong_signal:
+            return False
+        if aspect == "background" and not (
+            item.get("fellow_strong_citation")
+            or item.get("positive_evaluation")
+            or stance == "positive"
+            or labels.difference({"survey_or_related_work", "large_context"})
+        ):
+            return False
+        return True
+    try:
+        score_value = int(score)
+    except (TypeError, ValueError):
+        score_value = 0
+    if score_value < 45:
+        return False
+    if (item.get("evidence_strength") or "").lower() == "low":
+        return False
+    if labels and labels <= {"survey_or_related_work"}:
+        return False
+    if (
+        (item.get("aspect") or "") == "background"
+        and (item.get("stance") or "").lower() != "positive"
+        and not labels.difference({"survey_or_related_work", "large_context"})
+    ):
+        return False
+    return True
+
+
 def score_strong_evidence(
     *,
     labels: list[str],

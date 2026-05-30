@@ -175,6 +175,36 @@ class ScholarEvidenceTestCase(unittest.TestCase):
         self.assertIn("review_comment_praise", labels)
         self.assertEqual(self.evidence.evidence_label_display("review_comment_praise"), "审稿意见亮评")
 
+    def test_reportable_strong_evidence_excludes_weak_grouped_mentions(self):
+        self.assertFalse(
+            self.evidence.is_reportable_strong_evidence(
+                {
+                    "citation_text": "voice sensing [14], [17], [18]",
+                    "aspect": "background",
+                    "stance": "neutral",
+                    "mention_type": "grouped_literature_mention",
+                    "evidence_labels": ["survey_or_related_work"],
+                    "strong_citation_score": 28,
+                    "evidence_strength": "low",
+                    "keep": False,
+                }
+            )
+        )
+        self.assertTrue(
+            self.evidence.is_reportable_strong_evidence(
+                {
+                    "citation_text": "We compare against this baseline in Table 2.",
+                    "aspect": "baseline",
+                    "stance": "neutral",
+                    "mention_type": "explicit_citation",
+                    "evidence_labels": ["baseline", "detailed_comparison"],
+                    "strong_citation_score": 65,
+                    "evidence_strength": "medium",
+                    "keep": True,
+                }
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

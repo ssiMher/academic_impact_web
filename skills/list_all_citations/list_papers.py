@@ -401,6 +401,20 @@ def normalize_scopus_entry(entry: dict) -> dict:
     }
 
 
+def is_valid_scopus_paper(paper: dict) -> bool:
+    external_ids = paper.get("externalIds") or {}
+    return bool((paper.get("title") or "").strip()) and bool(
+        external_ids.get("DOI")
+        or external_ids.get("EID")
+        or external_ids.get("Scopus")
+        or external_ids.get("ScopusID")
+    )
+
+
+def escape_scopus_title_query(title: str) -> str:
+    return str(title or "").replace('"', " ")
+
+
 def scopus_search(query: str, *, count: int = 25, start: int = 0, field: str = ""):
     params = {
         "query": query,
@@ -419,26 +433,42 @@ def resolve_paper_scopus(query: str):
     if query.lower().startswith("10.48550/arxiv."):
         query = normalize_arxiv_id(query)
     if "/" in query or query.startswith("10."):
-        scopus_query = f"DOI({query})"
+        scopus_queries = [f"DOI({query})"]
     else:
-        escaped = query.replace('"', " ")
-        scopus_query = f'TITLE("{escaped}")'
+        scopus_queries = [
+            f'TITLE("{escape_scopus_title_query(candidate)}")'
+            for candidate in title_lookup_variants(query)
+        ]
     fields = "dc:title,prism:doi,citedby-count,prism:coverDate,prism:publicationName,dc:identifier,eid,link"
-    data = scopus_search(scopus_query, count=1, field=fields)
-    entries = data.get("entry") or []
-    if not entries:
-        raise RuntimeError(f"[Scopus] 未找到论文: {query}")
-    paper = normalize_scopus_entry(entries[0])
-    return {
-        "paperId": paper["externalIds"].get("EID") or paper["externalIds"].get("Scopus") or paper["externalIds"].get("DOI"),
-        "title": paper.get("title", ""),
-        "year": paper.get("year"),
-        "venue": paper.get("venue"),
-        "externalIds": paper.get("externalIds", {}),
-        "citationCount": paper.get("citedby_count", 0),
-        "influentialCitationCount": 0,
-        "source_url": paper.get("source_url", ""),
-    }
+    first_invalid_paper = None
+    for scopus_query in scopus_queries:
+        data = scopus_search(scopus_query, count=3, field=fields)
+        entries = data.get("entry") or []
+        for entry in entries:
+            paper = normalize_scopus_entry(entry)
+            if not is_valid_scopus_paper(paper):
+                first_invalid_paper = first_invalid_paper or paper
+                continue
+            if not ("/" in query or query.startswith("10.")):
+                title = paper.get("title", "")
+                if not (
+                    openalex_title_matches_query(query, title)
+                    or any(openalex_title_matches_query(candidate, title) for candidate in title_lookup_variants(query))
+                ):
+                    continue
+            return {
+                "paperId": paper["externalIds"].get("EID") or paper["externalIds"].get("Scopus") or paper["externalIds"].get("DOI"),
+                "title": paper.get("title", ""),
+                "year": paper.get("year"),
+                "venue": paper.get("venue"),
+                "externalIds": paper.get("externalIds", {}),
+                "citationCount": paper.get("citedby_count", 0),
+                "influentialCitationCount": 0,
+                "source_url": paper.get("source_url", ""),
+            }
+    if first_invalid_paper is not None:
+        raise RuntimeError(f"[Scopus] 未找到有效论文元数据: {query}")
+    raise RuntimeError(f"[Scopus] 未找到论文: {query}")
 
 
 def scopus_reference_queries(target: dict):

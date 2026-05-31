@@ -213,6 +213,42 @@ class CitationSourcesTestCase(unittest.TestCase):
         self.assertEqual(paper["authors"], [{"name": "Smith J."}])
         self.assertEqual(paper["citedby_count"], 349)
 
+    def test_scopus_title_search_skips_empty_metadata_and_tries_moire_variant(self):
+        calls = []
+        empty = {"entry": [{"@_fa": "false"}]}
+        hit = {
+            "entry": [
+                {
+                    "dc:title": "MoiréTracker: Continuous Camera-to-Screen 6-DoF Pose Tracking Based on Moiré Pattern",
+                    "prism:doi": "10.1109/JSAC.2024.3414619",
+                    "prism:coverDate": "2024-01-01",
+                    "prism:publicationName": "IEEE Journal on Selected Areas in Communications",
+                    "dc:identifier": "SCOPUS_ID:123",
+                    "eid": "2-s2.0-123",
+                    "citedby-count": "1",
+                }
+            ]
+        }
+
+        def fake_search(query, *, count, field, start=0):
+            calls.append(query)
+            return hit if "MoiréTracker" in query else empty
+
+        with mock.patch.object(self.list_papers, "scopus_search", side_effect=fake_search):
+            resolved = self.list_papers.resolve_paper_scopus(
+                "MoirTracker_Continuous_Camera-to-Screen_6-DoF_Pose_Tracking_Based_on_Moir_Pattern"
+            )
+
+        self.assertEqual(resolved["paperId"], "2-s2.0-123")
+        self.assertEqual(resolved["externalIds"]["DOI"], "10.1109/JSAC.2024.3414619")
+        self.assertGreaterEqual(len(calls), 2)
+        self.assertIn("MoiréTracker", calls[-1])
+
+    def test_scopus_title_search_rejects_empty_metadata(self):
+        with mock.patch.object(self.list_papers, "scopus_search", return_value={"entry": [{"@_fa": "false"}]}):
+            with self.assertRaisesRegex(RuntimeError, "未找到有效论文元数据"):
+                self.list_papers.resolve_paper_scopus("Unknown_Title")
+
     def test_scopus_source_preference_uses_elsevier_provider(self):
         target = {
             "paperId": "2-s2.0-1",

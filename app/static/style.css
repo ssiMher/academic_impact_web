@@ -100,6 +100,22 @@ label {
   font-size: 14px;
 }
 
+.field-help {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.field-help-details {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.field-help-details ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
 input,
 select,
 button {

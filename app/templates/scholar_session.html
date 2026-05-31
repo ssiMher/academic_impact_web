@@ -116,8 +116,28 @@
             </div>
             <label>
               自定义需求（一行一个）
-              <textarea name="custom_requests" rows="3" {% if task_active %}disabled{% endif %}>{{ (analysis_templates.custom_requests or []) | join('\n') }}</textarea>
+              <span class="field-help">
+                写法：每行写一个想找的证据类型，可以包含“要找什么、关键词、不要什么”。系统会把每一行编译成后续全文分析的关注点。
+              </span>
+              <textarea
+                name="custom_requests"
+                rows="5"
+                placeholder="优先找第三方正向评价、state-of-the-art、代表性评价，不要普通 related work 组引用。
+优先找实验章节中把目标论文作为 baseline 或主要对比对象的证据。
+优先找引用论文明确基于、采用、拓展或改进目标论文方法的证据。
+优先找首次、开创性、first、pioneering、seminal 等评价。"
+                {% if task_active %}disabled{% endif %}
+              >{{ (analysis_templates.custom_requests or []) | join('\n') }}</textarea>
             </label>
+            <details class="field-help-details">
+              <summary>自定义需求怎么写</summary>
+              <ul>
+                <li>一行只写一个目标，越具体越好。</li>
+                <li>可以写关键词：first、baseline、compare、based on、state-of-the-art、首次、对比、基于、拓展。</li>
+                <li>可以写排除条件：不要普通 related work 组引用、不要只列参考文献编号的背景提及。</li>
+                <li>保存后，新一轮全文分析会优先按这些要求筛选可汇报证据。</li>
+              </ul>
+            </details>
             {% if analysis_templates.compiled_templates %}
             <details>
               <summary>查看当前已编译模板</summary>

@@ -441,12 +441,12 @@ def load_status(session_id: str, filters: dict[str, Any] | None = None):
     status_payload = impact_cli().build_status_payload(session)
     if task_state.get("active"):
         detail_payload = impact_cli().build_session_detail_payload(session, filters or {})
-        detail_payload["exports"] = dict(session.get("exports", {}))
+        detail_payload["exports"] = impact_cli().merge_exports(session.get("exports", {}))
     else:
         detail_payload = refresh_phase1_exports(session_id, session=session)
     if filters:
         detail_payload = impact_cli().build_session_detail_payload(session, filters)
-        detail_payload["exports"] = dict(session.get("exports", {}))
+        detail_payload["exports"] = impact_cli().merge_exports(session.get("exports", {}))
     status_payload["task_state"] = dict(task_state)
     detail_payload["task_state"] = dict(task_state)
     status_payload["exports"] = detail_payload.get("exports", {})
@@ -469,6 +469,24 @@ def download_papers(session_id: str, ids: list[str] | None = None, *, auto_only:
 
 def analyze_papers(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8, analysis_scope: str = "fulltext_direct"):
     return impact_cli().run_analysis(resolve_session_dir(session_id), ids or [], top_k_spans, analysis_scope)
+
+
+def update_analysis_templates(
+    session_id: str,
+    *,
+    active_template_ids: list[str],
+    custom_requests_text: str,
+):
+    with _task_lock(session_id):
+        session = load_session(session_id)
+        task_state = ensure_task_state(session)
+        if task_state.get("active"):
+            raise ValueError("当前后台任务仍在运行，暂时不能更新分析模板。")
+        return impact_cli().update_analysis_templates(
+            resolve_session_dir(session_id),
+            active_template_ids,
+            custom_requests_text,
+        )
 
 
 def start_refresh_task(session_id: str, ids: list[str] | None = None, *, force: bool = False):
@@ -588,6 +606,8 @@ def resolve_export_path(session_id: str, export_name: str) -> Path:
     mapping = {
         "report.md": exports.get("report_md_path", ""),
         "structured.json": exports.get("structured_json_path", ""),
+        "highlight_cards.csv": exports.get("highlight_cards_csv_path", ""),
+        "highlight_cards.md": exports.get("highlight_cards_md_path", ""),
     }
     raw_path = mapping.get(export_name, "")
     if not raw_path:

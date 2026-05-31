@@ -4,6 +4,7 @@ import json
 import shutil
 import unittest
 import asyncio
+from unittest import mock
 from pathlib import Path
 
 from starlette.requests import Request
@@ -95,6 +96,18 @@ class Phase1DetailTestCase(unittest.TestCase):
                             'reason': '明确说明是在原方法基础上扩展。',
                             'confidence': 0.91,
                             'mention_type': 'explicit_citation',
+                        },
+                        {
+                            'page': 5,
+                            'span_index': 3,
+                            'citation_text': 'Attention is All You Need [18] appears with related Transformer papers.',
+                            'aspect': 'background',
+                            'stance': 'neutral',
+                            'function': '普通相关工作提及。',
+                            'reason': '仅作为 related work 成组出现。',
+                            'confidence': 0.6,
+                            'mention_type': 'grouped_literature_mention',
+                            'keep': False,
                         }
                     ],
                 },
@@ -267,9 +280,16 @@ class Phase1DetailTestCase(unittest.TestCase):
         first_paper = detail_payload['papers'][0]
         self.assertIn('extension', first_paper['citation_method_summary']['labels'])
         self.assertTrue(first_paper['citation_method_summary']['first_claim_hit'])
+        self.assertEqual(first_paper['citation_method_summary']['reportable_strong_evidence_count'], 1)
+        self.assertEqual(first_paper['citation_method_summary']['finding_count'], 2)
+        self.assertEqual(len(detail_payload['highlight_cards']), 1)
+        self.assertIn('首次 / 开创性', detail_payload['highlight_cards'][0]['labels'])
         self.assertTrue(detail_payload['exports']['report_md_path'])
         self.assertTrue(detail_payload['exports']['structured_json_path'])
+        self.assertTrue(detail_payload['exports']['highlight_cards_csv_path'])
+        self.assertTrue(detail_payload['exports']['highlight_cards_md_path'])
         self.assertIn('单篇论文引用分析报告', report_md)
+        self.assertIn('亮点评价卡片', report_md)
 
     def test_review_candidate_changes_summary_counts(self):
         _, _, detail_payload, _ = impact_core.load_status(TEST_SESSION_ID)
@@ -343,12 +363,15 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('Publication Statistics', body)
         self.assertIn('Citation Statistics', body)
         self.assertIn('快速统计基于元数据和本地 registry', body)
+        self.assertIn('分析模板', body)
+        self.assertIn('亮点评价卡片', body)
         self.assertIn('引用论文列表与状态', body)
         self.assertIn('深度语义分析结果', body)
         self.assertIn('深度分析才是全文语义判断', body)
         self.assertIn('人物标签候选区', body)
         self.assertIn('导出与汇总', body)
         self.assertIn('/exports/report.md', body)
+        self.assertIn('/exports/highlight_cards.csv', body)
         self.assertIn('Grace Hopper', body)
         self.assertIn('会话', body)
         self.assertIn('当前限制', body)
@@ -360,6 +383,31 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('上传并绑定 PDF', body)
         self.assertIn('全文分析完成', body)
         self.assertIn('仅上下文分析', body)
+
+    def test_update_analysis_templates_passes_prompt_fragment_to_pipeline(self):
+        impact_core.update_analysis_templates(
+            TEST_SESSION_ID,
+            active_template_ids=['first_evaluation'],
+            custom_requests_text='寻找方法来源证据',
+        )
+        cli = impact_core.impact_cli()
+        calls = []
+
+        def fake_process_citing_paper(**kwargs):
+            calls.append(kwargs)
+            return {
+                'id': kwargs['citing_paper'].get('id'),
+                'status': 'fulltext_analyzed',
+                'paths': {},
+            }
+
+        with mock.patch.object(cli.RUN_PIPELINE, 'process_citing_paper', side_effect=fake_process_citing_paper):
+            cli.run_analysis(TEST_SESSION_DIR, ['P001'], 3, analysis_scope='fulltext_direct')
+
+        self.assertEqual(len(calls), 1)
+        prompt_fragment = calls[0].get('template_prompt_fragment') or ''
+        self.assertIn('首次', prompt_fragment)
+        self.assertIn('方法来源', prompt_fragment)
 
     def test_session_detail_page_renders_running_task_banner_and_disables_actions(self):
         session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))

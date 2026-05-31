@@ -251,9 +251,97 @@
       </section>
 
       <section class="panel">
+        {% set template_state = session.analysis_templates or {} %}
         <div class="panel-header">
           <div>
             <p class="eyebrow">03</p>
+            <h2>分析模板</h2>
+            <p class="muted">模板会影响后续全文分析，帮助系统优先寻找首次评价、详细对比、理论基础、方法来源等可汇报证据。</p>
+          </div>
+        </div>
+        <form action="/sessions/{{ session_id }}/analysis-templates" method="post" class="stack">
+          <div class="template-grid">
+            {% for template in template_state.builtin_templates or [] %}
+            <label class="template-option">
+              <input
+                type="checkbox"
+                name="template_ids"
+                value="{{ template.id }}"
+                {% if template.id in (template_state.active_template_ids or []) %}checked{% endif %}
+                {% if task_active %}disabled{% endif %}
+                data-task-control
+              />
+              <strong>{{ template.name }}</strong>
+              <span>{{ template.description }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          <label>
+            自定义需求（一行一个）
+            <textarea name="custom_requests" rows="4" {% if task_active %}disabled{% endif %} data-task-control>{{ (template_state.custom_requests or []) | join('\n') }}</textarea>
+          </label>
+          {% if template_state.compiled_templates %}
+          <details>
+            <summary>查看当前已编译模板</summary>
+            <ul>
+              {% for template in template_state.compiled_templates %}
+              <li>{{ template.name }}：{{ template.target_labels | join(' / ') }}；关键词 {{ template.positive_keywords | join(' / ') }}</li>
+              {% endfor %}
+            </ul>
+          </details>
+          {% endif %}
+          <div class="actions">
+            <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-task-control>保存分析模板</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">04</p>
+            <h2>亮点评价卡片</h2>
+            <p class="muted">只展示强度足够、不是普通 related work 背景提及的引用证据，可直接用于整理亮点材料。</p>
+          </div>
+          <div class="actions">
+            <a class="button-link" href="/sessions/{{ session_id }}/exports/highlight_cards.md">下载卡片 Markdown</a>
+            <a class="button-link secondary" href="/sessions/{{ session_id }}/exports/highlight_cards.csv">下载卡片 CSV</a>
+          </div>
+        </div>
+        {% if detail_payload.highlight_cards %}
+        <div class="cards">
+          {% for card in detail_payload.highlight_cards[:10] %}
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <strong>{{ card.index }}. {{ card.headline }}</strong>
+                <p class="muted">{{ card.citing_year or '-' }} / {{ card.citing_venue or '-' }}</p>
+              </div>
+              <span class="chip">强度分：{{ card.score }}</span>
+            </div>
+            <div class="card-metrics">
+              {% for label in card.labels %}
+              <span class="chip">{{ label }}</span>
+              {% endfor %}
+              <span class="chip">{{ card.self_citation_label or card.self_citation_status }}</span>
+            </div>
+            <p><strong>汇报句：</strong>{{ card.report_sentence }}</p>
+            {% if card.why_valuable %}
+            <p><strong>汇报价值：</strong>{{ card.why_valuable }}</p>
+            {% endif %}
+            <p class="evidence-excerpt">{{ card.highlighted_evidence_excerpt | safe }}</p>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">当前还没有可汇报强引用证据。可以先分析已命中本地 PDF 的论文，或在分析模板里增加需要关注的证据类型。</p>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">05</p>
             <h2>引用论文列表与状态</h2>
             <p class="muted">
               当前显示第 {{ pagination.start or 0 }} - {{ pagination.end or 0 }} 篇；
@@ -292,7 +380,7 @@
             </label>
             <label class="checkbox">
               <input type="checkbox" name="strong_only" {% if detail_payload.paper_filters.active.strong_only %}checked{% endif %} />
-              仅看强表述命中
+              仅看强证据
             </label>
             <label class="checkbox">
               <input type="checkbox" name="candidate_only" {% if detail_payload.paper_filters.active.candidate_only %}checked{% endif %} />
@@ -345,6 +433,7 @@
                 <th>Venue 等级</th>
                 <th>下载状态</th>
                 <th>分析状态</th>
+                <th>强证据</th>
                 <th>上下文置信度</th>
                 <th>候选人物</th>
               </tr>
@@ -359,6 +448,7 @@
                 <td>{{ item.venue_tier.tier_label or '-' }}</td>
                 <td>{{ item.download_status_label or item.download_status or '-' }}</td>
                 <td>{{ item.analysis_status_label or item.analysis_status or '-' }}</td>
+                <td>{{ item.citation_method_summary.reportable_strong_evidence_count or 0 }}</td>
                 <td>{{ item.context_confidence or '-' }}</td>
                 <td>{{ item.candidate_count }}</td>
               </tr>
@@ -394,7 +484,7 @@
       <section class="panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">04</p>
+            <p class="eyebrow">06</p>
             <h2>深度语义分析结果</h2>
             <p class="muted">这里只展示 PDF 下载、`fulltext_direct` 提取与全文语义分析产物。深度分析才是全文语义判断。</p>
           </div>
@@ -415,6 +505,8 @@
               <span class="chip">提及类型：{{ item.citation_method_summary.primary_mention_type_label }}</span>
               <span class="chip">立场：{{ item.citation_method_summary.primary_stance_label }}</span>
               <span class="chip">证据数：{{ item.citation_method_summary.kept_finding_count }}/{{ item.citation_method_summary.finding_count }}</span>
+              <span class="chip">强证据：{{ item.citation_method_summary.reportable_strong_evidence_count or 0 }}</span>
+              <span class="chip">强度分：{{ item.citation_method_summary.strong_evidence_score or 0 }}</span>
               {% if item.citation_method_summary.confidence is not none %}
               <span class="chip">最高置信度：{{ ((item.citation_method_summary.confidence * 100) | round(0)) | int }}%</span>
               {% endif %}
@@ -463,6 +555,11 @@
                   <div class="finding-meta">
                     <span class="chip">{{ finding.aspect_label }}</span>
                     <span class="chip">{{ finding.mention_type_label }}</span>
+                    {% for label in finding.evidence_label_names %}
+                    <span class="chip">{{ label }}</span>
+                    {% endfor %}
+                    <span class="chip">强度分 {{ finding.strong_citation_score }}</span>
+                    <span class="chip">{{ finding.self_citation_label }}</span>
                     <span class="chip">第 {{ finding.page or '-' }} 页 / 片段 {{ finding.span_index or '-' }}</span>
                     {% if finding.confidence is not none %}
                     <span class="chip">置信度 {{ ((finding.confidence * 100) | round(0)) | int }}%</span>
@@ -474,7 +571,13 @@
                   {% if finding.reason %}
                   <p><strong>理由：</strong>{{ finding.reason }}</p>
                   {% endif %}
-                  <p class="evidence-excerpt">{{ finding.citation_excerpt or '暂无原文摘录。' }}</p>
+                  <p class="evidence-excerpt">
+                    {% if finding.highlighted_citation_text %}
+                    {{ finding.highlighted_citation_text | safe }}
+                    {% else %}
+                    {{ finding.citation_excerpt or '暂无原文摘录。' }}
+                    {% endif %}
+                  </p>
                 </div>
                 {% endfor %}
               </div>
@@ -493,7 +596,7 @@
         {% set person_stats = detail_payload.person_tag_statistics %}
         <div class="panel-header">
           <div>
-            <p class="eyebrow">05</p>
+            <p class="eyebrow">07</p>
             <h2>统计信息</h2>
             <p class="muted">基于已发现的引用论文作者、人物标签 registry 和全文引用方式分析生成。</p>
           </div>
@@ -531,7 +634,7 @@
       <section class="panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">06</p>
+            <p class="eyebrow">08</p>
             <h2>人物标签候选区</h2>
           </div>
           <div class="status-chips">
@@ -596,12 +699,14 @@
       <section class="panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">07</p>
+            <p class="eyebrow">09</p>
             <h2>导出与汇总</h2>
           </div>
           <div class="actions">
             <a class="button-link" href="/sessions/{{ session_id }}/exports/report.md">下载 Markdown 报告</a>
             <a class="button-link secondary" href="/sessions/{{ session_id }}/exports/structured.json">下载结构化 JSON</a>
+            <a class="button-link secondary" href="/sessions/{{ session_id }}/exports/highlight_cards.md">下载亮点卡片 MD</a>
+            <a class="button-link secondary" href="/sessions/{{ session_id }}/exports/highlight_cards.csv">下载亮点卡片 CSV</a>
           </div>
         </div>
         {% if report_md %}

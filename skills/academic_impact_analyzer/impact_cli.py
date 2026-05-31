@@ -1,5 +1,7 @@
 import argparse
+import csv
 import importlib.util
+import io
 import json
 import os
 import re
@@ -7,7 +9,7 @@ import shutil
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote, urlencode
 
 
@@ -165,6 +167,14 @@ SCHOLAR_STATS = load_module(
     "impact_cli_scholar_stats",
     SKILLS_ROOT / "academic_impact_analyzer" / "scholar_stats.py"
 )
+SCHOLAR_EVIDENCE = load_module(
+    "impact_cli_scholar_evidence",
+    SKILLS_ROOT / "scholar_impact_analyzer" / "scholar_evidence.py"
+)
+EVIDENCE_TEMPLATES = load_module(
+    "impact_cli_evidence_templates",
+    SKILLS_ROOT / "scholar_impact_analyzer" / "evidence_templates.py"
+)
 
 
 def sanitize_json_value(value):
@@ -265,6 +275,73 @@ def unique_strings(values: List[str]) -> List[str]:
     return result
 
 
+def parse_multiline_values(value: str) -> List[str]:
+    parts = re.split(r"[\n\r;；|]+", str(value or ""))
+    return unique_strings([part.strip() for part in parts if part.strip()])
+
+
+def default_analysis_templates() -> dict:
+    try:
+        templates = EVIDENCE_TEMPLATES.load_builtin_templates()
+    except Exception:
+        templates = []
+    compiled = [
+        template
+        for template in templates
+        if template.get("id") == "ppt_highlight_default"
+    ]
+    return {
+        "active_template_ids": ["ppt_highlight_default"],
+        "custom_requests": [],
+        "compiled_templates": compiled,
+        "builtin_templates": templates,
+    }
+
+
+def ensure_analysis_templates(session: dict) -> dict:
+    defaults = default_analysis_templates()
+    template_state = session.get("analysis_templates")
+    if not isinstance(template_state, dict):
+        session["analysis_templates"] = defaults
+        return defaults
+    template_state.setdefault("active_template_ids", defaults["active_template_ids"])
+    template_state.setdefault("custom_requests", [])
+    template_state.setdefault("compiled_templates", defaults["compiled_templates"])
+    template_state["builtin_templates"] = defaults["builtin_templates"]
+    session["analysis_templates"] = template_state
+    return template_state
+
+
+def update_analysis_templates(
+    session_dir: Path,
+    active_template_ids: List[str],
+    custom_requests_text: str,
+) -> dict:
+    session = load_session(session_dir)
+    builtin = EVIDENCE_TEMPLATES.load_builtin_templates()
+    builtin_by_id = {item.get("id"): item for item in builtin}
+    active_ids = []
+    compiled = []
+    for template_id in active_template_ids:
+        template_id = str(template_id or "").strip()
+        if template_id and template_id in builtin_by_id and template_id not in active_ids:
+            active_ids.append(template_id)
+            compiled.append(builtin_by_id[template_id])
+    custom_requests = parse_multiline_values(custom_requests_text)
+    compiled.extend(
+        EVIDENCE_TEMPLATES.compile_custom_request(request)
+        for request in custom_requests
+    )
+    session["analysis_templates"] = {
+        "active_template_ids": active_ids,
+        "custom_requests": custom_requests,
+        "compiled_templates": compiled,
+        "builtin_templates": builtin,
+    }
+    save_session(session_dir, session)
+    return session
+
+
 def count_sentences(text: str) -> int:
     clean = re.sub(r"\s+", " ", str(text or "")).strip()
     if not clean:
@@ -350,7 +427,16 @@ def default_exports():
     return {
         "report_md_path": "",
         "structured_json_path": "",
+        "highlight_cards_csv_path": "",
+        "highlight_cards_md_path": "",
     }
+
+
+def merge_exports(value: Any = None) -> dict:
+    exports = default_exports()
+    if isinstance(value, dict):
+        exports.update(value)
+    return exports
 
 
 def default_task_state():
@@ -478,18 +564,95 @@ def build_primary_evidence(candidate_data: dict, analysis_data: dict):
     }
 
 
-def build_finding_detail(finding: dict):
+def _paper_authors(item: dict) -> List[Any]:
+    paper = item.get("paper") if isinstance(item.get("paper"), dict) else {}
+    return item.get("authors") or paper.get("authors") or []
+
+
+def _target_authors(target: Optional[dict]) -> List[Any]:
+    target = target or {}
+    authors = target.get("authors") or target.get("author_names") or []
+    if authors:
+        return authors
+    paper = target.get("paper") if isinstance(target.get("paper"), dict) else {}
+    return paper.get("authors") or []
+
+
+def _person_tag_labels_for_item(item: dict) -> List[str]:
+    labels = []
+    for hit in item.get("person_candidate_hits", []) or []:
+        if hit.get("status") == "rejected":
+            continue
+        label = hit.get("tag_label") or hit.get("tag_type") or ""
+        if label:
+            labels.append(label)
+    return unique_strings(labels)
+
+
+def _exclusion_profile_value(profile: Optional[dict], key: str) -> List[str]:
+    if not isinstance(profile, dict):
+        return []
+    return profile.get(key) or []
+
+
+def build_finding_detail(
+    finding: dict,
+    *,
+    item: Optional[dict] = None,
+    target: Optional[dict] = None,
+    exclusion_profile: Optional[dict] = None,
+):
     if not isinstance(finding, dict):
         return None
     aspect = (finding.get("aspect") or "").strip()
     mention_type = (finding.get("mention_type") or "").strip()
     stance = (finding.get("stance") or "").strip()
     confidence = finding.get("confidence")
+    citation_text = finding.get("citation_text") or ""
+    citation_char_count = len(re.sub(r"\s+", "", citation_text))
+    item = item or {}
+    person_tag_labels = _person_tag_labels_for_item(item)
+    third_party = SCHOLAR_EVIDENCE.classify_third_party_citation(
+        source_authors=_target_authors(target),
+        citing_authors=_paper_authors(item),
+        selected_author_names=[],
+        extra_excluded_authors=_exclusion_profile_value(exclusion_profile, "extra_excluded_authors"),
+        extra_excluded_affiliations=_exclusion_profile_value(exclusion_profile, "extra_excluded_affiliations"),
+        citing_affiliations=item.get("affiliations") or (item.get("paper") or {}).get("affiliations") or [],
+    )
+    self_citation_status = third_party.get("status") or "unknown"
+    evidence_labels = SCHOLAR_EVIDENCE.derive_evidence_labels(
+        finding,
+        citation_char_count=citation_char_count,
+        person_tag_labels=person_tag_labels,
+    )
+    highlight_keywords = SCHOLAR_EVIDENCE.derive_highlight_keywords(finding, evidence_labels)
+    strong_score = SCHOLAR_EVIDENCE.score_strong_evidence(
+        labels=evidence_labels,
+        confidence=confidence,
+        citation_char_count=citation_char_count,
+        person_tag_labels=person_tag_labels,
+        self_citation_status=self_citation_status,
+    )
+    evidence_strength = SCHOLAR_EVIDENCE.evidence_strength(strong_score)
+    keep = bool(finding.get("keep", True))
+    reportable_probe = dict(finding)
+    reportable_probe.update(
+        {
+            "keep": keep,
+            "evidence_labels": evidence_labels,
+            "strong_citation_score": strong_score,
+            "evidence_strength": evidence_strength,
+        }
+    )
+    reportable = SCHOLAR_EVIDENCE.is_reportable_strong_evidence(reportable_probe)
+    if self_citation_status in {"self_citation", "excluded_collaborator"}:
+        reportable = False
     return {
         "page": finding.get("page"),
         "span_index": finding.get("span_index"),
-        "citation_text": finding.get("citation_text") or "",
-        "citation_excerpt": truncate_text(finding.get("citation_text") or "", limit=360),
+        "citation_text": citation_text,
+        "citation_excerpt": truncate_text(citation_text, limit=360),
         "aspect": aspect,
         "aspect_label": ASPECT_LABELS.get(aspect, aspect or "-"),
         "mention_type": mention_type,
@@ -499,7 +662,31 @@ def build_finding_detail(finding: dict):
         "function": finding.get("function") or "",
         "reason": finding.get("reason") or "",
         "confidence": confidence if isinstance(confidence, (int, float)) else None,
-        "keep": bool(finding.get("keep", True)),
+        "keep": keep,
+        "evidence_labels": evidence_labels,
+        "evidence_label_names": [
+            SCHOLAR_EVIDENCE.evidence_label_display(label)
+            for label in evidence_labels
+        ],
+        "highlight_keywords": highlight_keywords,
+        "highlighted_citation_text": SCHOLAR_EVIDENCE.highlight_excerpt_html(
+            citation_text,
+            highlight_keywords,
+        ),
+        "strong_citation_score": strong_score,
+        "evidence_strength": evidence_strength,
+        "reportable_strong_evidence": reportable,
+        "self_citation_status": self_citation_status,
+        "self_citation_label": {
+            "self_citation": "自引",
+            "excluded_collaborator": "本组/合作者",
+            "non_self_citation": "非自引",
+            "unknown": "未知",
+        }.get(self_citation_status, self_citation_status),
+        "overlap_authors": third_party.get("overlap_authors", []),
+        "overlap_affiliations": third_party.get("overlap_affiliations", []),
+        "person_tag_labels": person_tag_labels,
+        "valuable_reason": finding.get("valuable_reason") or finding.get("reason") or "",
     }
 
 
@@ -957,7 +1144,12 @@ def build_analysis_reason(item: dict, status: str, fallback_data: Optional[dict]
     }
 
 
-def summarize_citation_method(item: dict):
+def summarize_citation_method(
+    item: dict,
+    *,
+    target: Optional[dict] = None,
+    exclusion_profile: Optional[dict] = None,
+):
     analysis_paths = item.get("analysis_result", {}).get("paths", {})
     candidate_data = load_json_if_exists(analysis_paths.get("candidate_spans", ""))
     analysis_data = load_json_if_exists(analysis_paths.get("analysis", ""))
@@ -998,9 +1190,15 @@ def summarize_citation_method(item: dict):
             labels.append(aspect)
         if mention_type and mention_type != "explicit_citation":
             labels.append(mention_type)
-        detail = build_finding_detail(finding)
+        detail = build_finding_detail(
+            finding,
+            item=item,
+            target=target,
+            exclusion_profile=exclusion_profile,
+        )
         if detail:
             finding_details.append(detail)
+            labels.extend(detail.get("evidence_labels") or [])
     if status and status not in {"fulltext_analyzed", "mention_only"}:
         labels.append(status)
 
@@ -1021,7 +1219,14 @@ def summarize_citation_method(item: dict):
     confidence = max(confidence_values) if confidence_values else primary_evidence.get("finding", {}).get("confidence")
     analysis_reason = build_analysis_reason(item, status, fallback_data)
     kept_findings = [finding for finding in finding_details if finding.get("keep")]
-    primary_finding = kept_findings[0] if kept_findings else (finding_details[0] if finding_details else {})
+    reportable_findings = [
+        finding for finding in finding_details if finding.get("reportable_strong_evidence")
+    ]
+    primary_finding = (
+        reportable_findings[0]
+        if reportable_findings
+        else (kept_findings[0] if kept_findings else (finding_details[0] if finding_details else {}))
+    )
 
     return {
         "labels": unique_strings(labels),
@@ -1036,8 +1241,13 @@ def summarize_citation_method(item: dict):
         "status_label": ANALYSIS_STATUS_LABELS.get(status, status or "-"),
         "finding_count": len(finding_details),
         "kept_finding_count": len(kept_findings),
+        "reportable_strong_evidence_count": len(reportable_findings),
+        "strong_evidence_score": max(
+            [finding.get("strong_citation_score") or 0 for finding in reportable_findings] or [0]
+        ),
         "finding_details": finding_details,
-        "finding_preview": finding_details[:3],
+        "reportable_strong_evidence": reportable_findings,
+        "finding_preview": (reportable_findings or finding_details)[:3],
         "extra_finding_count": max(0, len(finding_details) - 3),
         "primary_aspect_label": primary_finding.get("aspect_label") or "-",
         "primary_mention_type_label": primary_finding.get("mention_type_label") or "-",
@@ -1457,7 +1667,12 @@ def load_session(session_dir: Path):
     session.setdefault("evidence_index", default_evidence_index())
     session.setdefault("person_candidates", [])
     session.setdefault("overview_stats", default_overview_stats())
-    session.setdefault("exports", default_exports())
+    session["exports"] = merge_exports(session.get("exports"))
+    ensure_analysis_templates(session)
+    session.setdefault("exclusion_profile", {
+        "extra_excluded_authors": [],
+        "extra_excluded_affiliations": [],
+    })
     session.setdefault("task_state", default_task_state())
     session["paper_count"] = len(session.get("papers", []))
     for item in session.get("papers", []):
@@ -1484,7 +1699,12 @@ def save_session(session_dir: Path, session: dict):
     session["paper_count"] = len(session.get("papers", []))
     session["paper_aliases"] = build_session_paper_aliases(session.get("papers", []))
     session["quick_stats"] = SCHOLAR_STATS.build_quick_stats(session)
-    session.setdefault("exports", default_exports())
+    session["exports"] = merge_exports(session.get("exports"))
+    ensure_analysis_templates(session)
+    session.setdefault("exclusion_profile", {
+        "extra_excluded_authors": [],
+        "extra_excluded_affiliations": [],
+    })
     apply_qa_flags(session)
     write_json(session_dir / "session.json", session)
     build_phase1_export_payload(session_dir, session)
@@ -1803,6 +2023,9 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_s
     target = session.get("target", {})
     papers = session.get("papers", [])
     selected_ids = set(ids)
+    template_prompt_fragment = EVIDENCE_TEMPLATES.build_template_prompt_fragment(
+        (ensure_analysis_templates(session).get("compiled_templates") or [])
+    )
 
     results = []
     for item in papers:
@@ -1820,6 +2043,7 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_s
             top_k_spans=top_k_spans,
             local_pdf_path=item.get("download_probe", {}).get("local_file_path") or "",
             analysis_scope=analysis_scope,
+            template_prompt_fragment=template_prompt_fragment,
         )
         paper_result["id"] = item["id"]
         paper_result["paper_id"] = item["id"]
@@ -1892,6 +2116,124 @@ def review_person_candidate(session_dir: Path, candidate_id: str, action: str, n
         "candidate_id": candidate_id,
         "status": matched.get("status"),
     }
+
+
+def _single_paper_card_sentence(card: dict) -> str:
+    labels = "、".join(card.get("labels") or []) or "强引用"
+    citing_title = card.get("citing_title") or "引用论文"
+    target_title = card.get("target_title") or "目标论文"
+    return f"{citing_title} 对 {target_title} 形成{labels}证据，可作为可汇报引用评价。"
+
+
+def build_highlight_cards_from_papers(
+    papers: List[dict],
+    *,
+    target_title: str = "",
+    limit: int = 30,
+) -> List[dict]:
+    cards = []
+    for paper in papers:
+        summary = paper.get("citation_method_summary") or {}
+        for finding in summary.get("reportable_strong_evidence") or []:
+            raw_labels = finding.get("evidence_labels") or []
+            labels = finding.get("evidence_label_names") or [
+                SCHOLAR_EVIDENCE.evidence_label_display(label)
+                for label in raw_labels
+            ]
+            card = {
+                "index": 0,
+                "paper_id": paper.get("id"),
+                "headline": f"{paper.get('title') or '引用论文'} 引用并评价目标论文",
+                "citing_title": paper.get("title") or "",
+                "citing_venue": paper.get("venue") or "",
+                "citing_year": paper.get("year") or "",
+                "target_title": target_title,
+                "labels": labels,
+                "raw_labels": raw_labels,
+                "score": finding.get("strong_citation_score") or 0,
+                "evidence_strength": finding.get("evidence_strength") or "",
+                "self_citation_status": finding.get("self_citation_status") or "unknown",
+                "self_citation_label": finding.get("self_citation_label") or "",
+                "important_person": " / ".join(finding.get("person_tag_labels") or []),
+                "evidence_excerpt": finding.get("citation_text") or "",
+                "highlight_keywords": finding.get("highlight_keywords") or [],
+                "highlighted_evidence_excerpt": finding.get("highlighted_citation_text") or "",
+                "why_valuable": finding.get("valuable_reason") or finding.get("reason") or "",
+                "page": finding.get("page"),
+                "span_index": finding.get("span_index"),
+            }
+            card["report_sentence"] = _single_paper_card_sentence(card)
+            cards.append(card)
+    cards = sorted(
+        cards,
+        key=lambda item: (
+            -(item.get("score") or 0),
+            item.get("citing_title") or "",
+            item.get("page") or 0,
+        ),
+    )[:limit]
+    for index, card in enumerate(cards, 1):
+        card["index"] = index
+    return cards
+
+
+def render_highlight_cards_csv(cards: List[dict]) -> str:
+    headers = [
+        "index",
+        "paper_id",
+        "headline",
+        "citing_title",
+        "citing_venue",
+        "citing_year",
+        "labels",
+        "score",
+        "evidence_strength",
+        "self_citation_status",
+        "important_person",
+        "page",
+        "evidence_excerpt",
+        "highlight_keywords",
+        "why_valuable",
+        "report_sentence",
+    ]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=headers)
+    writer.writeheader()
+    for card in cards:
+        row = dict(card)
+        row["labels"] = " | ".join(card.get("labels") or [])
+        row["highlight_keywords"] = " | ".join(card.get("highlight_keywords") or [])
+        writer.writerow({key: row.get(key, "") for key in headers})
+    return buffer.getvalue()
+
+
+def render_highlight_cards_markdown(cards: List[dict]) -> str:
+    lines = ["# 亮点评价卡片", ""]
+    if not cards:
+        lines.append("暂无可导出的亮点评价卡片。")
+        return "\n".join(lines).rstrip() + "\n"
+    for card in cards:
+        excerpt = str(card.get("evidence_excerpt") or "").strip()
+        if len(excerpt) > 600:
+            excerpt = f"{excerpt[:600]}..."
+        lines.extend(
+            [
+                f"### {card.get('index')}. {card.get('headline') or '-'}",
+                "",
+                f"- 引用论文：{card.get('citing_title') or '-'}",
+                f"- 证据标签：{' / '.join(card.get('labels') or []) or '-'}",
+                f"- 强度分：{card.get('score') if card.get('score') is not None else '-'}",
+                f"- 自引状态：{card.get('self_citation_label') or card.get('self_citation_status') or '-'}",
+                f"- 汇报句：{card.get('report_sentence') or '-'}",
+                f"- 汇报价值：{card.get('why_valuable') or '-'}",
+                "",
+                "原文证据：",
+                "",
+                excerpt or "-",
+                "",
+            ]
+        )
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def render_phase1_export_markdown(detail_payload: dict):
@@ -1967,6 +2309,26 @@ def render_phase1_export_markdown(detail_payload: dict):
             lines.append(f"  - {cited_item.get('id')} {cited_item.get('title')}")
     lines.extend([
         "",
+        "## 亮点评价卡片",
+        "",
+    ])
+    highlight_cards = detail_payload.get("highlight_cards") or []
+    if not highlight_cards:
+        lines.append("暂无可汇报的强引用证据。")
+    for card in highlight_cards[:10]:
+        lines.extend(
+            [
+                f"### {card.get('index')}. {card.get('headline') or '-'}",
+                f"- 引用论文：{card.get('citing_title') or '-'}",
+                f"- 证据标签：{' / '.join(card.get('labels') or []) or '-'}",
+                f"- 强度分：{card.get('score') if card.get('score') is not None else '-'}",
+                f"- 汇报句：{card.get('report_sentence') or '-'}",
+                f"- 原文证据：{truncate_text(card.get('evidence_excerpt') or '', limit=360) or '-'}",
+                "",
+            ]
+        )
+    lines.extend([
+        "",
         "## 深度语义分析结果",
         "",
     ])
@@ -2020,13 +2382,20 @@ def build_phase1_export_payload(session_dir: Path, session: dict):
     export_dir.mkdir(parents=True, exist_ok=True)
     markdown_path = export_dir / "phase1_report.md"
     structured_json_path = export_dir / "phase1_structured.json"
+    highlight_cards_csv_path = export_dir / "highlight_cards.csv"
+    highlight_cards_md_path = export_dir / "highlight_cards.md"
     session["exports"] = {
         "report_md_path": str(markdown_path),
         "structured_json_path": str(structured_json_path),
+        "highlight_cards_csv_path": str(highlight_cards_csv_path),
+        "highlight_cards_md_path": str(highlight_cards_md_path),
     }
     detail_payload = build_session_detail_payload(session)
     detail_payload["exports"] = dict(session["exports"])
+    highlight_cards = detail_payload.get("highlight_cards") or []
     markdown_path.write_text(render_phase1_export_markdown(detail_payload), encoding="utf-8")
+    highlight_cards_csv_path.write_text(render_highlight_cards_csv(highlight_cards), encoding="utf-8-sig")
+    highlight_cards_md_path.write_text(render_highlight_cards_markdown(highlight_cards), encoding="utf-8")
     structured_json_path.write_text(
         json.dumps(detail_payload, ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -2191,7 +2560,7 @@ def build_status_payload(session: dict):
         "evidence_index": session.get("evidence_index", default_evidence_index()),
         "overview_stats": session.get("overview_stats", default_overview_stats()),
         "person_candidates": session.get("person_candidates", []),
-        "exports": session.get("exports", default_exports()),
+        "exports": merge_exports(session.get("exports")),
         "papers": items,
     }
 
@@ -2211,7 +2580,11 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
     detail_papers = []
     for item in status_payload.get("papers", []):
         raw_item = paper_lookup.get(item.get("id"), {})
-        citation_summary = summarize_citation_method(raw_item)
+        citation_summary = summarize_citation_method(
+            raw_item,
+            target=target,
+            exclusion_profile=session.get("exclusion_profile"),
+        )
         venue_tier = classify_venue_tier(raw_item.get("venue"), venue_tier_index)
         paper_payload = {
             "id": item.get("id"),
@@ -2238,13 +2611,17 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             continue
         if analysis_filter and paper_payload["analysis_status"] != analysis_filter:
             continue
-        if strong_only and not citation_summary.get("first_claim_hit"):
+        if strong_only and not citation_summary.get("reportable_strong_evidence_count"):
             continue
         if candidate_only and not paper_payload.get("candidate_count"):
             continue
         detail_papers.append(paper_payload)
 
     total_filtered_papers = len(detail_papers)
+    highlight_cards = build_highlight_cards_from_papers(
+        detail_papers,
+        target_title=target.get("title", ""),
+    )
     try:
         page_size = int(filters.get("page_size") or 20)
     except (TypeError, ValueError):
@@ -2326,6 +2703,13 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
         },
         "quick_stats": quick_stats,
         "papers": paged_detail_papers,
+        "highlight_cards": highlight_cards,
+        "highlight_summary": {
+            "card_count": len(highlight_cards),
+            "high_strength_count": sum(
+                1 for card in highlight_cards if card.get("evidence_strength") == "high"
+            ),
+        },
         "venue_statistics": venue_statistics,
         "person_tag_statistics": person_tag_statistics,
         "person_candidates": status_payload.get("person_candidates", []),
@@ -2334,7 +2718,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             "confirmed_count": len(confirmed_candidates),
             "rejected_count": len(rejected_candidates),
         },
-        "exports": status_payload.get("exports", default_exports()),
+        "exports": merge_exports(status_payload.get("exports")),
     }
 
 

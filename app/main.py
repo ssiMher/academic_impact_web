@@ -573,6 +573,25 @@ async def analyze_session(
     return redirect_to_session(session_id)
 
 
+@app.post("/sessions/{session_id}/analysis-templates")
+async def update_session_analysis_templates(
+    request: Request,
+    session_id: str,
+    custom_requests: str = Form(""),
+):
+    form = await request.form()
+    active_template_ids = [str(item) for item in form.getlist("template_ids")]
+    try:
+        impact_core.update_analysis_templates(
+            session_id,
+            active_template_ids=active_template_ids,
+            custom_requests_text=custom_requests,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return redirect_to_session(session_id)
+
+
 @app.post("/sessions/{session_id}/attach-pdf")
 async def attach_pdf(
     session_id: str,
@@ -608,7 +627,12 @@ async def review_candidate(
 @app.get("/sessions/{session_id}/exports/{export_name}")
 async def download_export(session_id: str, export_name: str):
     path = impact_core.resolve_export_path(session_id, export_name)
-    media_type = "application/json" if export_name.endswith(".json") else "text/markdown"
+    if export_name.endswith(".json"):
+        media_type = "application/json"
+    elif export_name.endswith(".csv"):
+        media_type = "text/csv"
+    else:
+        media_type = "text/markdown"
     return FileResponse(path, media_type=media_type, filename=path.name)
 
 

@@ -140,6 +140,34 @@ def compile_custom_request(request: str) -> dict[str, Any]:
     })
 
 
+def compile_template_state(
+    *,
+    active_template_ids: list[Any],
+    custom_requests: list[Any],
+    builtin_templates: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    builtin = [normalize_template(item) for item in (builtin_templates or load_builtin_templates())]
+    builtin_by_id = {item.get("id"): item for item in builtin}
+    active_ids = []
+    compiled = []
+
+    for template_id in active_template_ids or []:
+        template_id = str(template_id or "").strip()
+        if template_id and template_id in builtin_by_id and template_id not in active_ids:
+            active_ids.append(template_id)
+            compiled.append(builtin_by_id[template_id])
+
+    normalized_requests = unique_strings(list(custom_requests or []))
+    compiled.extend(compile_custom_request(request) for request in normalized_requests)
+
+    return {
+        "active_template_ids": active_ids,
+        "custom_requests": normalized_requests,
+        "compiled_templates": compiled,
+        "builtin_templates": builtin,
+    }
+
+
 def build_template_prompt_fragment(templates: list[dict[str, Any]]) -> str:
     normalized = [normalize_template(item) for item in templates if item]
     if not normalized:

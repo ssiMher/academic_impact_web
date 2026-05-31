@@ -42,6 +42,18 @@ def scholar_pipeline():
     )
 
 
+@lru_cache(maxsize=1)
+def evidence_templates_module():
+    pipeline = scholar_pipeline()
+    module = getattr(pipeline, "EVIDENCE_TEMPLATES", None)
+    if module is not None:
+        return module
+    return _load_module(
+        SKILLS_ROOT / "scholar_impact_analyzer" / "evidence_templates.py",
+        "academic_impact_web_scholar_evidence_templates",
+    )
+
+
 def slugify(value: str) -> str:
     text = re.sub(r"[^a-z0-9]+", "_", (value or "").strip().lower())
     return re.sub(r"_+", "_", text).strip("_") or "scholar"
@@ -149,18 +161,15 @@ def parse_multiline_values(value: str) -> list[str]:
 
 def default_analysis_templates() -> dict[str, Any]:
     try:
-        templates = scholar_pipeline().EVIDENCE_TEMPLATES.load_builtin_templates()
+        template_module = evidence_templates_module()
+        templates = template_module.load_builtin_templates()
     except Exception:
         templates = []
-    compiled = [
-        template for template in templates if template.get("id") == "ppt_highlight_default"
-    ]
-    return {
-        "active_template_ids": ["ppt_highlight_default"],
-        "custom_requests": [],
-        "compiled_templates": compiled,
-        "builtin_templates": templates,
-    }
+    return evidence_templates_module().compile_template_state(
+        active_template_ids=["ppt_highlight_default"],
+        custom_requests=[],
+        builtin_templates=templates,
+    )
 
 
 def ensure_analysis_templates(session: dict[str, Any]) -> dict[str, Any]:
@@ -169,12 +178,18 @@ def ensure_analysis_templates(session: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(template_state, dict):
         session["analysis_templates"] = defaults
         return defaults
-    template_state.setdefault("active_template_ids", defaults["active_template_ids"])
-    template_state.setdefault("custom_requests", [])
-    template_state.setdefault("compiled_templates", defaults["compiled_templates"])
-    template_state["builtin_templates"] = defaults["builtin_templates"]
-    session["analysis_templates"] = template_state
-    return template_state
+    active_template_ids = (
+        template_state["active_template_ids"]
+        if "active_template_ids" in template_state
+        else defaults["active_template_ids"]
+    )
+    synced = evidence_templates_module().compile_template_state(
+        active_template_ids=active_template_ids,
+        custom_requests=template_state.get("custom_requests") or [],
+        builtin_templates=defaults["builtin_templates"],
+    )
+    session["analysis_templates"] = synced
+    return synced
 
 
 def ensure_exclusion_profile(session: dict[str, Any]) -> dict[str, Any]:
@@ -2684,25 +2699,11 @@ def update_scholar_analysis_templates(
         if task_state.get("active"):
             raise ValueError("当前后台任务仍在运行，暂时不能更新分析模板。")
         template_module = scholar_pipeline().EVIDENCE_TEMPLATES
-        builtin = template_module.load_builtin_templates()
-        builtin_by_id = {item.get("id"): item for item in builtin}
-        active_ids = []
-        compiled = []
-        for template_id in active_template_ids:
-            template_id = str(template_id or "").strip()
-            if template_id and template_id in builtin_by_id and template_id not in active_ids:
-                active_ids.append(template_id)
-                compiled.append(builtin_by_id[template_id])
         custom_requests = parse_multiline_values(custom_requests_text)
-        compiled.extend(
-            template_module.compile_custom_request(request)
-            for request in custom_requests
+        session["analysis_templates"] = template_module.compile_template_state(
+            active_template_ids=active_template_ids,
+            custom_requests=custom_requests,
         )
-        session["analysis_templates"] = {
-            "active_template_ids": active_ids,
-            "custom_requests": custom_requests,
-            "compiled_templates": compiled,
-        }
         write_scholar_status(session_id, session)
         return session
 

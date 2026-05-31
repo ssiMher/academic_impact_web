@@ -42,6 +42,18 @@ class EvidenceTemplatesTestCase(unittest.TestCase):
         self.assertIn("开创性", compiled["positive_keywords"])
         self.assertIn("seminal", compiled["positive_keywords"])
 
+    def test_compile_template_state_rebuilds_custom_keywords(self):
+        state = self.module.compile_template_state(
+            active_template_ids=[],
+            custom_requests=["优先找首次、first、开创性、seminal等表达"],
+            builtin_templates=[],
+        )
+
+        compiled = state["compiled_templates"][0]
+        self.assertEqual(state["custom_requests"], ["优先找首次、first、开创性、seminal等表达"])
+        self.assertIn("seminal", compiled["positive_keywords"])
+        self.assertIn("开创性", compiled["positive_keywords"])
+
     def test_compile_custom_request_detailed_comparison(self):
         compiled = self.module.compile_custom_request("找大量实验比较")
         self.assertIn("detailed_comparison", compiled["target_labels"])

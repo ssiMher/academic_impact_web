@@ -409,6 +409,32 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('首次', prompt_fragment)
         self.assertIn('方法来源', prompt_fragment)
 
+    def test_load_session_rebuilds_stale_custom_template_keywords(self):
+        session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))
+        session_payload['analysis_templates'] = {
+            'active_template_ids': [],
+            'custom_requests': ['优先找首次、first、开创性、seminal等表达'],
+            'compiled_templates': [
+                {
+                    'id': 'custom_first_or_pioneering',
+                    'name': '旧编译结果',
+                    'target_labels': ['first_or_pioneering'],
+                    'positive_keywords': ['first', '首次'],
+                    'prompt_instruction': '旧要求',
+                }
+            ],
+        }
+        (TEST_SESSION_DIR / 'session.json').write_text(
+            json.dumps(session_payload, ensure_ascii=False),
+            encoding='utf-8',
+        )
+
+        loaded = impact_core.load_session(TEST_SESSION_ID)
+        compiled = loaded['analysis_templates']['compiled_templates'][0]
+
+        self.assertIn('seminal', compiled['positive_keywords'])
+        self.assertIn('开创性', compiled['positive_keywords'])
+
     def test_session_detail_page_renders_running_task_banner_and_disables_actions(self):
         session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))
         session_payload['task_state'] = {

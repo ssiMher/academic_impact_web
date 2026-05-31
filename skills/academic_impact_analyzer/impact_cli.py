@@ -285,17 +285,11 @@ def default_analysis_templates() -> dict:
         templates = EVIDENCE_TEMPLATES.load_builtin_templates()
     except Exception:
         templates = []
-    compiled = [
-        template
-        for template in templates
-        if template.get("id") == "ppt_highlight_default"
-    ]
-    return {
-        "active_template_ids": ["ppt_highlight_default"],
-        "custom_requests": [],
-        "compiled_templates": compiled,
-        "builtin_templates": templates,
-    }
+    return EVIDENCE_TEMPLATES.compile_template_state(
+        active_template_ids=["ppt_highlight_default"],
+        custom_requests=[],
+        builtin_templates=templates,
+    )
 
 
 def ensure_analysis_templates(session: dict) -> dict:
@@ -304,12 +298,18 @@ def ensure_analysis_templates(session: dict) -> dict:
     if not isinstance(template_state, dict):
         session["analysis_templates"] = defaults
         return defaults
-    template_state.setdefault("active_template_ids", defaults["active_template_ids"])
-    template_state.setdefault("custom_requests", [])
-    template_state.setdefault("compiled_templates", defaults["compiled_templates"])
-    template_state["builtin_templates"] = defaults["builtin_templates"]
-    session["analysis_templates"] = template_state
-    return template_state
+    active_template_ids = (
+        template_state["active_template_ids"]
+        if "active_template_ids" in template_state
+        else defaults["active_template_ids"]
+    )
+    synced = EVIDENCE_TEMPLATES.compile_template_state(
+        active_template_ids=active_template_ids,
+        custom_requests=template_state.get("custom_requests") or [],
+        builtin_templates=defaults["builtin_templates"],
+    )
+    session["analysis_templates"] = synced
+    return synced
 
 
 def update_analysis_templates(
@@ -318,26 +318,11 @@ def update_analysis_templates(
     custom_requests_text: str,
 ) -> dict:
     session = load_session(session_dir)
-    builtin = EVIDENCE_TEMPLATES.load_builtin_templates()
-    builtin_by_id = {item.get("id"): item for item in builtin}
-    active_ids = []
-    compiled = []
-    for template_id in active_template_ids:
-        template_id = str(template_id or "").strip()
-        if template_id and template_id in builtin_by_id and template_id not in active_ids:
-            active_ids.append(template_id)
-            compiled.append(builtin_by_id[template_id])
     custom_requests = parse_multiline_values(custom_requests_text)
-    compiled.extend(
-        EVIDENCE_TEMPLATES.compile_custom_request(request)
-        for request in custom_requests
+    session["analysis_templates"] = EVIDENCE_TEMPLATES.compile_template_state(
+        active_template_ids=active_template_ids,
+        custom_requests=custom_requests,
     )
-    session["analysis_templates"] = {
-        "active_template_ids": active_ids,
-        "custom_requests": custom_requests,
-        "compiled_templates": compiled,
-        "builtin_templates": builtin,
-    }
     save_session(session_dir, session)
     return session
 

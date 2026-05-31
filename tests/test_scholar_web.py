@@ -46,6 +46,44 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(payload["session_id"], TEST_SESSION_ID)
         self.assertEqual(payload["selected_author"]["display_name"], "Chen Tian")
 
+    def test_load_scholar_status_rebuilds_stale_custom_template_keywords(self):
+        TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_SESSION_DIR / "session.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "session_type": "scholar_impact",
+                    "session_id": TEST_SESSION_ID,
+                    "selected_author": {"display_name": "Chen Tian"},
+                    "publications": [],
+                    "citation_edges": [],
+                    "statistics": {"publication_count": 0},
+                    "task_state": {"active": False},
+                    "analysis_templates": {
+                        "active_template_ids": [],
+                        "custom_requests": ["优先找首次、first、开创性、seminal等表达"],
+                        "compiled_templates": [
+                            {
+                                "id": "custom_first_or_pioneering",
+                                "name": "旧编译结果",
+                                "target_labels": ["first_or_pioneering"],
+                                "positive_keywords": ["first", "首次"],
+                                "prompt_instruction": "旧要求",
+                            }
+                        ],
+                    },
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        payload = scholar_core.load_scholar_status(TEST_SESSION_ID)
+        compiled = payload["analysis_templates"]["compiled_templates"][0]
+
+        self.assertIn("seminal", compiled["positive_keywords"])
+        self.assertIn("开创性", compiled["positive_keywords"])
+
     def test_scholar_route_renders(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)
         (TEST_SESSION_DIR / "session.json").write_text(

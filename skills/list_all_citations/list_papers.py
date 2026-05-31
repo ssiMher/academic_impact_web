@@ -162,6 +162,34 @@ def openalex_title_matches_query(query: str, title: str) -> bool:
         return title_match_score(query, title) >= 0.8
     return title_match_score(query, title) >= 0.55
 
+
+def openalex_work_url(paper_id: str) -> str:
+    paper_id = str(paper_id or "").strip()
+    if paper_id.startswith("http://") or paper_id.startswith("https://"):
+        return paper_id
+    return f"https://openalex.org/{paper_id}" if paper_id else "https://openalex.org/"
+
+
+def title_lookup_variants(query: str) -> list:
+    variants = []
+
+    def add(value: str):
+        value = re.sub(r"\s+", " ", str(value or "")).strip()
+        if value and value not in variants:
+            variants.append(value)
+
+    add(query)
+    normalized = normalize_query_for_lookup(query)
+    add(normalized)
+    # Some PDF filenames drop the accent and the trailing "e" from "Moiré".
+    # OpenAlex title search is stricter than Semantic Scholar, so keep a
+    # narrow domain spelling variant but still validate returned titles below.
+    if re.search(r"(?i)\bmoir(?:tracker|\s+pattern\b)", normalized):
+        add(re.sub(r"(?i)\bmoir(?=tracker\b|\s+pattern\b)", "Moiré", normalized))
+        add(re.sub(r"(?i)\bmoir(?=tracker\b|\s+pattern\b)", "Moire", normalized))
+    return variants
+
+
 def safe_get_openalex(url):
     """专门为 OpenAlex 准备的请求函数，同样套用重试逻辑"""
     for attempt in range(1, 4):
@@ -481,15 +509,21 @@ def resolve_paper_openalex(query: str):
             }
             
     # 按标题搜索
-    search_url = f"https://api.openalex.org/works?search={urllib.parse.quote(query)}&per-page=5"
-    r = safe_get_openalex(search_url)
-    if r and r.json().get("results"):
+    for search_query in title_lookup_variants(query):
+        search_url = f"https://api.openalex.org/works?search={urllib.parse.quote(search_query)}&per-page=5"
+        r = safe_get_openalex(search_url)
+        if not r or not r.json().get("results"):
+            continue
         for data in r.json()["results"]:
-            if not openalex_title_matches_query(query, data.get("title", "")):
+            title = data.get("title", "")
+            if not (
+                openalex_title_matches_query(query, title)
+                or openalex_title_matches_query(search_query, title)
+            ):
                 continue
             return {
                 "paperId": data.get("id"),
-                "title": data.get("title", ""),
+                "title": title,
                 "year": data.get("publication_year"),
                 "venue": openalex_venue_name(data),
                 "externalIds": {"DOI": data.get("doi", "").replace("https://doi.org/", "") if data.get("doi") else ""},
@@ -737,7 +771,7 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
         target = resolve_paper_openalex(query)
         paper_id = target["paperId"]
         data = fetch_citations_openalex(paper_id, fetch_limit=desired_fetch)
-        url = f"https://openalex.org/{paper_id}"
+        url = openalex_work_url(paper_id)
         used_source = "OpenAlex"
     elif source_preference in {"scopus", "elsevier"}:
         target = resolve_paper_scopus(query)
@@ -772,7 +806,7 @@ def list_all_citations(query: str, limit: Optional[int] = None, sort_by: str = "
             target = resolve_paper_openalex(query)
             paper_id = target["paperId"]
             data = fetch_citations_openalex(paper_id, fetch_limit=desired_fetch)
-            url = f"https://openalex.org/{paper_id}"
+            url = openalex_work_url(paper_id)
             used_source = "OpenAlex (Fallback)"
 
     # ==========================================

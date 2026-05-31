@@ -7,16 +7,18 @@
 背景：
 - 用户用 `MoirTracker_Continuous_Camera-to-Screen_6-DoF_Pose_Tracking_Based_on_Moir_Pattern` 这类文件名/slug 作为目标论文查询时，引用发现可能返回 0 篇或定位到错误目标。
 - 根因是检索 query 带下划线且缺少重音/标点；Semantic Scholar 可在正常空格标题下找到目标，但 OpenAlex fallback 对低相似度标题可能误命中其它 “All You Need” 论文。
+- 二次复查发现，部分环境下 Semantic Scholar 失败后会走 OpenAlex fallback；OpenAlex 对 `MoirTracker` / `Moir Pattern` 这种少了 `é/e` 的标题更严格，会直接搜不到目标。
 
 本次处理：
 - 标题检索前把文件名式下划线 query 规范化为空格标题，并去掉末尾 `.pdf`。
 - OpenAlex 标题搜索从单条结果改为多条候选，并加入标题相似度校验。
 - 低相似度 OpenAlex 结果会被拒绝，避免生成看似成功但目标论文错误的会话。
-- 增加回归测试覆盖下划线标题规范化和 OpenAlex 低相似度拒绝。
+- OpenAlex fallback 增加窄范围标题变体：`MoirTracker` / `Moir Pattern` 会额外尝试 `MoiréTracker` / `Moiré Pattern`，但仍需通过标题相似度校验。
+- 增加回归测试覆盖下划线标题规范化、OpenAlex 低相似度拒绝、Moiré 标题变体和 OpenAlex 链接生成。
 
 当前策略：
 - DOI 仍是最稳入口；例如 `10.1109/JSAC.2024.3414619` 可以直接定位 MoiréTracker。
-- 当 Semantic Scholar 限流且 OpenAlex 没有可靠标题命中时，系统应失败并提示，而不是静默创建错误目标。
+- 当 Semantic Scholar 限流时，OpenAlex fallback 也能定位该 MoiréTracker 文件名式输入；如果仍没有可靠标题命中，系统应失败并提示，而不是静默创建错误目标。
 
 ## 2026-05-31：把学者强证据能力复用到单篇论文分析
 

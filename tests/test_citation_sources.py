@@ -83,6 +83,7 @@ class CitationSourcesTestCase(unittest.TestCase):
 
         self.assertTrue(payload["ok"])
         self.assertEqual(payload["data_provider"], "OpenAlex")
+        self.assertEqual(payload["source_url"], "https://openalex.org/W1")
         self.assertEqual(payload["papers"][0]["title"], "Citing Paper")
 
     def test_title_lookup_normalizes_filename_style_underscores(self):
@@ -138,6 +139,53 @@ class CitationSourcesTestCase(unittest.TestCase):
                 self.list_papers.resolve_paper_openalex(
                     "MoirTracker Continuous Camera-to-Screen 6-DoF Pose Tracking Based on Moir Pattern"
                 )
+
+    def test_openalex_title_search_tries_moire_diacritic_variant(self):
+        requested_urls = []
+
+        class FakeResponse:
+            def __init__(self, results):
+                self._results = results
+
+            def json(self):
+                return {"results": self._results}
+
+        def fake_get_openalex(url):
+            requested_urls.append(url)
+            if "Moir%C3%A9Tracker" in url:
+                return FakeResponse(
+                    [
+                        {
+                            "id": "https://openalex.org/W-moire",
+                            "title": "MoiréTracker: Continuous Camera-to-Screen 6-DoF Pose Tracking Based on Moiré Pattern",
+                            "publication_year": 2024,
+                            "primary_location": {},
+                            "doi": "https://doi.org/10.1109/jsac.2024.3414619",
+                            "cited_by_count": 1,
+                        }
+                    ]
+                )
+            return FakeResponse(
+                [
+                    {
+                        "id": "https://openalex.org/W-wrong",
+                        "title": "Revisiting Class-Incremental Learning with Pre-Trained Models: Generalizability and Adaptivity are All You Need",
+                        "publication_year": 2023,
+                        "primary_location": {},
+                        "doi": "https://doi.org/10.48550/arxiv.2303.07338",
+                        "cited_by_count": 3,
+                    }
+                ]
+            )
+
+        with mock.patch.object(self.list_papers, "safe_get_openalex", side_effect=fake_get_openalex):
+            resolved = self.list_papers.resolve_paper_openalex(
+                "MoirTracker Continuous Camera-to-Screen 6-DoF Pose Tracking Based on Moir Pattern"
+            )
+
+        self.assertEqual(resolved["paperId"], "https://openalex.org/W-moire")
+        self.assertGreaterEqual(len(requested_urls), 2)
+        self.assertIn("Moir%C3%A9Tracker", requested_urls[-1])
 
     def test_scopus_entry_mapping_handles_common_fields(self):
         entry = {

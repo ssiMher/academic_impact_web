@@ -134,6 +134,47 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertIn(fragment, candidate_prompt)
         self.assertIn(fragment, fulltext_prompt)
 
+    def test_prompt_includes_target_citation_anchor_metadata(self):
+        payload = {
+            "target_title": "MoiréTracker: Continuous Camera-to-Screen 6-DoF Pose Tracking Based on Moiré Pattern",
+            "target_year": 2024,
+            "citing_title": "Visual-Based Out-of-Plane Rotation Measurement",
+            "target_citation_index": "16",
+            "target_reference_text": "[16] J. Ning et al., MoiréTracker: Continuous camera-to-screen 6-DoF pose tracking based on Moiré pattern.",
+            "candidate_spans": [
+                {
+                    "page": 2,
+                    "span_index": 1,
+                    "text": "Some methods leverage the aliasing effect [15], [16], [17]. Other methods achieved high accuracy [18].",
+                    "citation_index": "16",
+                    "match_type": "citation_index_grouped",
+                }
+            ],
+        }
+
+        prompt = self.module.build_single_model_prompt(payload)
+
+        self.assertIn("目标论文引用编号/锚点：16", prompt)
+        self.assertIn("目标论文参考文献条目", prompt)
+        self.assertIn("MoiréTracker", prompt)
+        self.assertIn("不能把其他编号", prompt)
+
+    def test_fulltext_prompt_includes_citation_anchor_rules(self):
+        prompt = self.module.build_fulltext_direct_prompt(
+            {
+                "target_title": "Target Paper",
+                "citing_title": "Citing Paper",
+                "target_citation_index": "9",
+                "fulltext_pages": [
+                    {"page": 1, "text": "Related work cites Target Paper [9]."},
+                ],
+            }
+        )
+
+        self.assertIn("目标论文引用编号/锚点：9", prompt)
+        self.assertIn("同一句、同一子句或明确承接", prompt)
+        self.assertIn("不能把其他编号", prompt)
+
     def test_analyze_payload_prefers_message_content(self):
         payload = {
             'target_title': 'LoRA: Low-Rank Adaptation of Large Language Models',

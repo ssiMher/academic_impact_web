@@ -113,6 +113,7 @@ LOCAL_SYSTEM_PROMPT = """你是一个论文引用语义分析助手。
 1. 若只是组引用（如 [9,13,2]）或“相关工作之一”的并列背景综述，通常应判为 keep=否，且更接近 grouped_literature_mention，而不是 explicit_citation。
 2. 若只是弱关键词命中、泛泛提到 low-rank / attention / adaptation 等术语，但没有明确把目标论文当作方法、基线、比较对象或扩展对象，也应判为 keep=否。
 3. 表格/列表中的基线行只有在该行明确点名目标方法或编号（例如 “LoRA [9]”）时，才能视为 comparison/baseline 证据；若片段本身未明确出现目标方法/编号，不要因为附近上下文或表题而误判为 keep=是。
+4. 如果提供目标引用编号，评价词必须和目标编号/标题/别名处在同一句、同一子句或明确承接关系中；不能把其他编号或邻近句子的正向评价归因给目标论文。
 """
 
 SINGLE_MODEL_SYSTEM_PROMPT = """你是一个严格的论文引用语义分析器。
@@ -184,6 +185,11 @@ JSON 格式必须严格为：
    - 如果用户或模板给出目标标签优先级，优先寻找这些 template priority 标签，但不要为了满足模板而捏造标签。
 11. highlight_keywords 必须来自 citation_text 原文，优先选择 SOTA、representative、first、pioneering、baseline、compare、detailed comparison、outperform、based on、inspired by、extend 等能支撑标签的词。
 12. why_valuable 要面向项目汇报，说明这条证据为什么有价值；普通弱引用可写“证据较弱，不建议用于汇报”。
+13. 目标引用锚定规则：
+   - 如果 user prompt 提供了目标引用编号/锚点或目标参考文献条目，必须先用它定位目标论文。
+   - positive_evaluation、sota_evaluation、first_or_pioneering、baseline、comparison、method_foundation、method_extension 等强标签只能归因给同一句、同一子句或明确承接到目标编号/标题/别名的内容。
+   - 不能把其他编号、其他作者或相邻句子的评价转嫁给目标论文。例如目标是 [16]，而 “high accuracy” 只连接到 [18]，则不得把 high accuracy 当作 [16] 的正向评价。
+   - 目标编号只在 [15], [16], [17] 这类组引用里出现时，通常是 grouped_literature_mention；除非原文随后单独解释目标论文，否则不要输出强证据。
 """
 
 DEEPSEEK_SYSTEM_PROMPT = """你是一个严格的JSON整理器。
@@ -227,6 +233,7 @@ JSON格式必须严格为：
 8. 对 weak_body_mention，默认 keep=false；不要因为术语相似或邻近上下文而提升为 explicit_citation。
 9. evidence_labels 允许的标签为：positive_evaluation, sota_evaluation, first_or_pioneering, representative_work, large_context, detailed_comparison, baseline, comparison, method_foundation, method_extension, theory_foundation, sustained_followup, important_person, review_comment_praise, survey_or_related_work, negative_or_limitation。
 10. SOTA 只在原文明确写 state-of-the-art / SOTA / best / advanced / leading / superior / 最先进时使用；representative_work 只在原文表示 representative / canonical / unique / only example / 代表性时使用；detailed_comparison 需要实验、评估、表格或系统讨论中的具体对比。若模板给出 template priority，优先保留这些标签，但不得捏造。
+11. 若提供目标引用编号/锚点，强标签只能归因给同一句、同一子句或明确承接到目标编号/标题/别名的内容；不能把其他编号或邻近句子的评价转嫁给目标论文。
 """
 
 def load_deepseek_key():
@@ -535,6 +542,7 @@ def try_parse_json(text):
 def build_local_prompt(payload):
     spans = payload.get("candidate_spans", [])[:MAX_LOCAL_SPANS]
     target_aliases = payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
+    anchor_section = build_target_citation_anchor_section(payload, target_aliases)
     chunks = []
     total_chars = 0
     for s in spans:
@@ -566,6 +574,7 @@ def build_local_prompt(payload):
 目标论文年份：{payload.get('target_year', '')}
 目标论文别名/缩写：{", ".join(target_aliases) if target_aliases else "无"}
 引用论文标题：{payload.get('citing_title', '')}
+{anchor_section}
 
 下面是从引用论文全文中筛出的候选段落：
 {joined}
@@ -573,6 +582,57 @@ def build_local_prompt(payload):
 请根据这些段落判断是否真正引用了目标论文，并按指定格式输出自然语言分析。
 如果 payload 或后续模板提供 template priority / 目标标签优先级，请优先寻找这些证据类型，但仍必须以原文为准。
 """
+
+
+def unique_clean_strings(values):
+    result = []
+    seen = set()
+    for value in values:
+        text = str(value or "").strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        result.append(text)
+    return result
+
+
+def payload_target_citation_indices(payload):
+    indices = []
+    for value in payload.get("target_citation_indices") or []:
+        indices.append(value)
+    for key in ["target_citation_index", "citation_index"]:
+        if payload.get(key):
+            indices.append(payload.get(key))
+    for span in payload.get("candidate_spans") or []:
+        if isinstance(span, dict) and span.get("citation_index"):
+            indices.append(span.get("citation_index"))
+    return unique_clean_strings(indices)
+
+
+def build_target_citation_anchor_section(payload, target_aliases=None):
+    target_aliases = target_aliases or payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
+    indices = payload_target_citation_indices(payload)
+    reference_text = str(
+        payload.get("target_reference_text")
+        or (payload.get("citation_meta") or {}).get("reference_text")
+        or ""
+    ).strip()
+    lines = [
+        "",
+        "目标引用锚定信息：",
+        f"- 目标论文引用编号/锚点：{', '.join(indices) if indices else '未知；需要先从全文参考文献和目标标题/DOI自行定位'}",
+        f"- 目标论文标题/别名：{', '.join(target_aliases) if target_aliases else payload.get('target_title', '')}",
+    ]
+    if reference_text:
+        lines.append(f"- 目标论文参考文献条目：{reference_text[:900]}")
+    lines.extend(
+        [
+            "- 判断 positive / SOTA / first / pioneering / baseline / comparison / based on 等标签时，评价词必须和目标论文标题、别名或目标引用编号处在同一句、同一子句或明确承接关系中。",
+            "- 如果目标编号只出现在组引用（例如 [15], [16], [17]）中，而正向评价或方法描述实际连到其他编号（例如 [18]），不能把其他编号的评价归因给目标论文。",
+            "- 如果不能确认评价词锚定到目标论文，保守输出 grouped_literature_mention 或 weak_body_mention，并在 reason 中说明目标只是并列/邻近提及。",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def build_single_model_prompt(payload):
@@ -623,6 +683,7 @@ def build_fulltext_direct_prompt(payload, target_aliases=None):
     target_aliases = target_aliases or payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
     template_prompt_fragment = str(payload.get("template_prompt_fragment") or "").strip()
     template_section = f"\n{template_prompt_fragment}" if template_prompt_fragment else ""
+    anchor_section = build_target_citation_anchor_section(payload, target_aliases)
     pages = normalize_fulltext_pages(payload)
     chunks = []
     total_chars = 0
@@ -657,6 +718,7 @@ def build_fulltext_direct_prompt(payload, target_aliases=None):
 目标论文别名/缩写：{", ".join(target_aliases) if target_aliases else "无"}
 引用论文标题：{payload.get('citing_title', '')}
 分析范围：fulltext_direct
+{anchor_section}
 
 下面是引用论文全文文本，请直接通读全文判断目标论文是否被真正引用：
 {joined}
@@ -682,12 +744,14 @@ def build_fulltext_direct_prompt(payload, target_aliases=None):
 
 def build_deepseek_prompt(payload, raw_analysis):
     target_aliases = payload.get("target_aliases") or generate_target_aliases(payload.get("target_title", ""))
+    anchor_section = build_target_citation_anchor_section(payload, target_aliases)
     return f"""请把下面这段自然语言分析整理成严格JSON。
 
 目标论文标题：{payload.get('target_title', '')}
 目标论文年份：{payload.get('target_year', '')}
 目标论文别名/缩写：{", ".join(target_aliases) if target_aliases else "无"}
 引用论文标题：{payload.get('citing_title', '')}
+{anchor_section}
 
 自然语言分析如下：
 {raw_analysis}

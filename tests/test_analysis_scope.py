@@ -89,7 +89,10 @@ class AnalysisScopeTestCase(unittest.TestCase):
                     'ok': True,
                     'count': 0,
                     'mode': 'no_candidates',
-                    'citation_index': None,
+                    'citation_index': '16',
+                    'citation_meta': {
+                        'reference_text': '[16] Target Paper. Journal, 2025.',
+                    },
                     'spans': [],
                 }), \
                 mock.patch.object(self.run_pipeline.ANALYZE_FULLTEXT, 'analyze_payload', side_effect=fake_analyze_payload):
@@ -112,6 +115,8 @@ class AnalysisScopeTestCase(unittest.TestCase):
         self.assertEqual(result['status'], 'fulltext_analyzed')
         self.assertEqual(payload['analysis_scope'], 'fulltext_direct')
         self.assertEqual(payload['candidate_spans'], [])
+        self.assertEqual(payload['target_citation_index'], '16')
+        self.assertEqual(payload['target_reference_text'], '[16] Target Paper. Journal, 2025.')
         self.assertEqual(payload['fulltext_page_count'], 2)
         self.assertIn('We compare with Chen et al. (2025).', payload['fulltext_pages'][1]['text'])
         self.assertEqual(payload_on_disk['analysis_scope'], 'fulltext_direct')

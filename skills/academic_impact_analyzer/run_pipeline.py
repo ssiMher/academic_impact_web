@@ -530,6 +530,14 @@ def process_citing_paper(
         "analysis_scope": analysis_scope,
         "candidate_spans": candidate_spans,
     }
+    if candidate_result.get("citation_index"):
+        payload["target_citation_index"] = candidate_result.get("citation_index")
+    citation_meta = candidate_result.get("citation_meta") if isinstance(candidate_result, dict) else {}
+    if isinstance(citation_meta, dict):
+        reference_text = citation_meta.get("reference_text")
+        if reference_text:
+            payload["target_reference_text"] = reference_text
+        payload["citation_meta"] = citation_meta
     if template_prompt_fragment:
         payload["template_prompt_fragment"] = template_prompt_fragment
     if analysis_scope == "fulltext_direct":

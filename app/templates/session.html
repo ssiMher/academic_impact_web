@@ -279,7 +279,7 @@
           <label>
             自定义需求（一行一个）
             <span class="field-help">
-              写法：每行写一个想找的证据类型，可以包含“要找什么、关键词、不要什么”。系统会把每一行编译成后续全文分析的关注点。
+              写法：每行写一个想找的证据类型，可以包含“要找什么、关键词、不要什么”。系统会把每一行编译成后续全文分析的关注点；结果页只高亮原文实际命中的词。
             </span>
             <textarea
               name="custom_requests"
@@ -299,6 +299,7 @@
               <li>可以写关键词：first、baseline、compare、based on、state-of-the-art、首次、对比、基于、拓展。</li>
               <li>可以写排除条件：不要普通 related work 组引用、不要只列参考文献编号的背景提及。</li>
               <li>保存后，新一轮全文分析会优先按这些要求筛选可汇报证据。</li>
+              <li>关键词不会被强行写进结果；只有原文中出现并且锚定到目标论文引用编号时，才会进入证据标签和高亮。</li>
             </ul>
           </details>
           {% if template_state.compiled_templates %}

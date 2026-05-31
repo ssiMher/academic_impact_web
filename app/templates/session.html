@@ -306,7 +306,10 @@
             <summary>查看当前已编译模板</summary>
             <ul>
               {% for template in template_state.compiled_templates %}
-              <li>{{ template.name }}：{{ template.target_labels | join(' / ') }}；关键词 {{ template.positive_keywords | join(' / ') }}</li>
+              <li>
+                {{ template.name }}：{{ template.target_labels | join(' / ') }}；关键词 {{ template.positive_keywords | join(' / ') }}
+                {% if template.prompt_instruction %}<br /><span class="muted">要求：{{ template.prompt_instruction }}</span>{% endif %}
+              </li>
               {% endfor %}
             </ul>
           </details>

@@ -7,6 +7,49 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TEMPLATE_PATH = ROOT / "data" / "reference" / "scholar_evidence_templates.json"
+CUSTOM_KEYWORD_ALIASES = [
+    "state-of-the-art",
+    "first work",
+    "based on",
+    "inspired by",
+    "first",
+    "pioneering",
+    "seminal",
+    "baseline",
+    "compare",
+    "comparison",
+    "evaluation",
+    "outperform",
+    "advanced",
+    "derive",
+    "equation",
+    "model",
+    "framework",
+    "theory",
+    "extend",
+    "adopt",
+    "follow",
+    "首次",
+    "开创性",
+    "开创",
+    "代表性",
+    "最先进",
+    "正向",
+    "好评",
+    "比较",
+    "对比",
+    "基线",
+    "实验",
+    "理论",
+    "公式",
+    "模型",
+    "推导",
+    "方法",
+    "来源",
+    "拓展",
+    "基于",
+    "采用",
+]
 
 
 def unique_strings(values: list[Any]) -> list[str]:
@@ -39,6 +82,18 @@ def load_builtin_templates(path: Path | str = DEFAULT_TEMPLATE_PATH) -> list[dic
     return [normalize_template(item) for item in data if isinstance(item, dict)]
 
 
+def extract_custom_keywords(request: str) -> list[str]:
+    text = str(request or "")
+    lower = text.lower()
+    keywords = []
+    for keyword in CUSTOM_KEYWORD_ALIASES:
+        haystack = lower if keyword.isascii() else text
+        needle = keyword.lower() if keyword.isascii() else keyword
+        if needle in haystack:
+            keywords.append(keyword)
+    return unique_strings(keywords)
+
+
 def compile_custom_request(request: str) -> dict[str, Any]:
     text = str(request or "").strip()
     lower = text.lower()
@@ -48,7 +103,7 @@ def compile_custom_request(request: str) -> dict[str, Any]:
 
     if any(token in lower for token in ["首次", "first", "开创", "pioneer"]):
         labels.append("first_or_pioneering")
-        keywords.extend(["first", "first work", "pioneering", "首次", "开创"])
+        keywords.extend(["first", "first work", "pioneering", "seminal", "首次", "开创性", "开创"])
         instructions.append("寻找原文明确表达 first、首次、pioneering、开创性或 seminal 的证据。")
     if any(token in lower for token in ["比较", "对比", "baseline", "实验", "compare"]):
         labels.extend(["detailed_comparison", "baseline"])
@@ -66,6 +121,8 @@ def compile_custom_request(request: str) -> dict[str, Any]:
         labels.extend(["positive_evaluation", "sota_evaluation"])
         keywords.extend(["state-of-the-art", "advanced", "outperform", "正向", "最先进"])
         instructions.append("寻找明确正向评价、state-of-the-art、advanced、outperform 等证据。")
+
+    keywords.extend(extract_custom_keywords(text))
 
     if not labels:
         labels = ["positive_evaluation", "large_context"]

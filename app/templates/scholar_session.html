@@ -143,7 +143,10 @@
               <summary>查看当前已编译模板</summary>
               <ul>
                 {% for template in analysis_templates.compiled_templates %}
-                <li>{{ template.name }}：{{ (template.target_labels or []) | join(' / ') }}{% if template.positive_keywords %}；关键词 {{ (template.positive_keywords or []) | join(' / ') }}{% endif %}</li>
+                <li>
+                  {{ template.name }}：{{ (template.target_labels or []) | join(' / ') }}{% if template.positive_keywords %}；关键词 {{ (template.positive_keywords or []) | join(' / ') }}{% endif %}
+                  {% if template.prompt_instruction %}<br /><span class="muted">要求：{{ template.prompt_instruction }}</span>{% endif %}
+                </li>
                 {% endfor %}
               </ul>
             </details>

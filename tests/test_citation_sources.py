@@ -85,6 +85,60 @@ class CitationSourcesTestCase(unittest.TestCase):
         self.assertEqual(payload["data_provider"], "OpenAlex")
         self.assertEqual(payload["papers"][0]["title"], "Citing Paper")
 
+    def test_title_lookup_normalizes_filename_style_underscores(self):
+        requested_urls = []
+
+        class FakeResponse:
+            def json(self):
+                return {
+                    "data": [
+                        {
+                            "paperId": "S2-moire",
+                            "title": "MoiréTracker: Continuous Camera-to-Screen 6-DoF Pose Tracking Based on Moiré Pattern",
+                            "year": 2024,
+                            "venue": "IEEE Journal on Selected Areas in Communications",
+                            "externalIds": {"DOI": "10.1109/JSAC.2024.3414619"},
+                            "citationCount": 2,
+                            "influentialCitationCount": 0,
+                        }
+                    ]
+                }
+
+        def fake_get(url):
+            requested_urls.append(url)
+            return FakeResponse()
+
+        with mock.patch.object(self.list_papers, "safe_get", side_effect=fake_get):
+            resolved = self.list_papers.resolve_paper(
+                "MoirTracker_Continuous_Camera-to-Screen_6-DoF_Pose_Tracking_Based_on_Moir_Pattern"
+            )
+
+        self.assertEqual(resolved["paperId"], "S2-moire")
+        self.assertIn("MoirTracker%20Continuous", requested_urls[0])
+        self.assertNotIn("_Continuous_", requested_urls[0])
+
+    def test_openalex_title_search_rejects_low_similarity_result(self):
+        class FakeResponse:
+            def json(self):
+                return {
+                    "results": [
+                        {
+                            "id": "https://openalex.org/W-wrong",
+                            "title": "Revisiting Class-Incremental Learning with Pre-Trained Models: Generalizability and Adaptivity are All You Need",
+                            "publication_year": 2023,
+                            "primary_location": {},
+                            "doi": "https://doi.org/10.48550/arxiv.2303.07338",
+                            "cited_by_count": 3,
+                        }
+                    ]
+                }
+
+        with mock.patch.object(self.list_papers, "safe_get_openalex", return_value=FakeResponse()):
+            with self.assertRaisesRegex(RuntimeError, "未找到论文"):
+                self.list_papers.resolve_paper_openalex(
+                    "MoirTracker Continuous Camera-to-Screen 6-DoF Pose Tracking Based on Moir Pattern"
+                )
+
     def test_scopus_entry_mapping_handles_common_fields(self):
         entry = {
             "dc:title": "Adult cardiac-resident MSC-like stem cells with a proepicardial origin",

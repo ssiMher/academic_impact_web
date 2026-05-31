@@ -6,6 +6,7 @@ import time
 import requests
 import urllib.parse
 import hashlib
+import unicodedata
 from pathlib import Path
 from typing import Optional
 
@@ -93,6 +94,73 @@ def safe_get(url, retries=5, sleep_sec=3):
 # ==========================================
 OPENALEX_HEADERS = {"User-Agent": "mailto:youdeng78@gmail.com"} 
 ELSEVIER_SCOPUS_SEARCH_URL = "https://api.elsevier.com/content/search/scopus"
+TITLE_MATCH_STOPWORDS = {
+    "a",
+    "an",
+    "the",
+    "and",
+    "or",
+    "of",
+    "for",
+    "with",
+    "to",
+    "in",
+    "on",
+    "all",
+    "you",
+    "need",
+}
+
+
+def normalize_query_for_lookup(query: str) -> str:
+    query = (query or "").strip()
+    if not query:
+        return ""
+    lower = query.lower()
+    if lower.startswith("10.") or lower.startswith("arxiv:") or lower.startswith("10.48550/arxiv."):
+        return query
+    if "/" in query and not query.endswith(".pdf"):
+        return query
+    query = re.sub(r"\.pdf$", "", query, flags=re.I)
+    query = query.replace("_", " ")
+    query = re.sub(r"\s+", " ", query).strip()
+    return query
+
+
+def normalize_title_match_text(text: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", str(text or ""))
+    without_marks = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    without_marks = without_marks.replace("_", " ")
+    without_marks = re.sub(r"[^a-zA-Z0-9]+", " ", without_marks).lower()
+    return re.sub(r"\s+", " ", without_marks).strip()
+
+
+def title_match_tokens(text: str) -> set:
+    return {
+        token
+        for token in normalize_title_match_text(text).split()
+        if token and token not in TITLE_MATCH_STOPWORDS
+    }
+
+
+def title_match_score(query: str, title: str) -> float:
+    query_text = normalize_title_match_text(query)
+    title_text = normalize_title_match_text(title)
+    if query_text and query_text == title_text:
+        return 1.0
+    query_tokens = title_match_tokens(query)
+    title_tokens = title_match_tokens(title)
+    if not query_tokens or not title_tokens:
+        return 0.0
+    overlap = query_tokens & title_tokens
+    return len(overlap) / max(1, len(query_tokens))
+
+
+def openalex_title_matches_query(query: str, title: str) -> bool:
+    query_tokens = title_match_tokens(query)
+    if len(query_tokens) <= 2:
+        return title_match_score(query, title) >= 0.8
+    return title_match_score(query, title) >= 0.55
 
 def safe_get_openalex(url):
     """专门为 OpenAlex 准备的请求函数，同样套用重试逻辑"""
@@ -319,7 +387,7 @@ def scopus_search(query: str, *, count: int = 25, start: int = 0, field: str = "
 
 
 def resolve_paper_scopus(query: str):
-    query = query.strip()
+    query = normalize_query_for_lookup(query)
     if query.lower().startswith("10.48550/arxiv."):
         query = normalize_arxiv_id(query)
     if "/" in query or query.startswith("10."):
@@ -394,7 +462,7 @@ def fetch_citations_scopus(target: dict, fetch_limit: int = 100):
 
 def resolve_paper_openalex(query: str):
     """使用 OpenAlex 查找目标论文"""
-    query = query.strip()
+    query = normalize_query_for_lookup(query)
     
     # 尝试按 DOI 查找
     if "/" in query or query.startswith("10."):
@@ -413,18 +481,20 @@ def resolve_paper_openalex(query: str):
             }
             
     # 按标题搜索
-    search_url = f"https://api.openalex.org/works?search={urllib.parse.quote(query)}&per-page=1"
+    search_url = f"https://api.openalex.org/works?search={urllib.parse.quote(query)}&per-page=5"
     r = safe_get_openalex(search_url)
     if r and r.json().get("results"):
-        data = r.json()["results"][0]
-        return {
-            "paperId": data.get("id"),
-            "title": data.get("title", ""),
-            "year": data.get("publication_year"),
-            "venue": openalex_venue_name(data),
-            "externalIds": {"DOI": data.get("doi", "").replace("https://doi.org/", "") if data.get("doi") else ""},
-            "citationCount": data.get("cited_by_count", 0),
-        }
+        for data in r.json()["results"]:
+            if not openalex_title_matches_query(query, data.get("title", "")):
+                continue
+            return {
+                "paperId": data.get("id"),
+                "title": data.get("title", ""),
+                "year": data.get("publication_year"),
+                "venue": openalex_venue_name(data),
+                "externalIds": {"DOI": data.get("doi", "").replace("https://doi.org/", "") if data.get("doi") else ""},
+                "citationCount": data.get("cited_by_count", 0),
+            }
     raise RuntimeError(f"[OpenAlex Fallback] 未找到论文: {query}")
 
 def fetch_citations_openalex(openalex_id: str, fetch_limit: int = 100):
@@ -477,7 +547,7 @@ def fetch_citations_openalex(openalex_id: str, fetch_limit: int = 100):
     return all_rows
 
 def resolve_paper(query: str):
-    query = query.strip()
+    query = normalize_query_for_lookup(query)
 
     # arXiv DOI alias
     if query.lower().startswith("10.48550/arxiv."):

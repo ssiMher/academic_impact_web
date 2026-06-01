@@ -592,9 +592,14 @@ def build_template_match_spec(compiled_templates: Optional[List[dict]]) -> dict:
         keywords.extend(template.get("positive_keywords") or [])
     label_terms = unique_strings([str(label or "").strip() for label in labels])
     keyword_terms = unique_strings([str(keyword or "").strip() for keyword in keywords])
+    available_terms = unique_strings(
+        [SCHOLAR_EVIDENCE.evidence_label_display(label) for label in label_terms]
+        + keyword_terms
+    )
     return {
         "labels": set(label_terms),
         "label_terms": label_terms,
+        "available_terms": available_terms,
         "keywords": [
             {"term": keyword, "lower": keyword.lower()}
             for keyword in keyword_terms
@@ -607,15 +612,7 @@ def build_template_match_spec(compiled_templates: Optional[List[dict]]) -> dict:
 def template_match_summary(detail: dict, template_spec: Optional[dict]) -> dict:
     available_terms = []
     if template_spec:
-        available_terms.extend(
-            SCHOLAR_EVIDENCE.evidence_label_display(label)
-            for label in template_spec.get("label_terms") or []
-        )
-        available_terms.extend(
-            keyword.get("term")
-            for keyword in template_spec.get("keywords") or []
-            if keyword.get("term")
-        )
+        available_terms.extend(template_spec.get("available_terms") or [])
     available_terms = unique_strings([term for term in available_terms if term])
     if not template_spec:
         return {
@@ -629,7 +626,7 @@ def template_match_summary(detail: dict, template_spec: Optional[dict]) -> dict:
             "matched": False,
             "matched_terms": [],
             "available_terms": available_terms,
-            "label": "模板未命中：" + (" / ".join(available_terms[:4]) if available_terms else "-"),
+            "label": "当前模板检查：" + (" / ".join(available_terms[:4]) if available_terms else "-"),
         }
     if (detail.get("mention_type") or "") in {
         "grouped_literature_mention",
@@ -639,7 +636,7 @@ def template_match_summary(detail: dict, template_spec: Optional[dict]) -> dict:
             "matched": False,
             "matched_terms": [],
             "available_terms": available_terms,
-            "label": "模板未命中：" + (" / ".join(available_terms[:4]) if available_terms else "-"),
+            "label": "当前模板检查：" + (" / ".join(available_terms[:4]) if available_terms else "-"),
         }
 
     target_labels = template_spec.get("labels") or set()
@@ -668,9 +665,9 @@ def template_match_summary(detail: dict, template_spec: Optional[dict]) -> dict:
         "matched_terms": matched_terms,
         "available_terms": available_terms,
         "label": (
-            "模板命中：" + " / ".join(matched_terms[:4])
+            "模板命中词：" + " / ".join(matched_terms[:4])
             if matched_terms
-            else "模板未命中：" + (" / ".join(available_terms[:4]) if available_terms else "-")
+            else "当前模板检查：" + (" / ".join(available_terms[:4]) if available_terms else "-")
         ),
     }
 
@@ -1325,6 +1322,11 @@ def summarize_citation_method(
     template_matched_findings = [
         finding for finding in finding_details if finding.get("template_matched")
     ]
+    template_matched_terms = unique_strings(
+        term
+        for finding in template_matched_findings
+        for term in (finding.get("template_match_terms") or [])
+    )
     primary_finding = (
         reportable_findings[0]
         if reportable_findings
@@ -1347,6 +1349,8 @@ def summarize_citation_method(
         "reportable_strong_evidence_count": len(reportable_findings),
         "template_match_count": len(template_matched_findings),
         "template_names": template_spec.get("names") or [],
+        "template_available_terms": template_spec.get("available_terms") or [],
+        "template_matched_terms": template_matched_terms,
         "strong_evidence_score": max(
             [finding.get("strong_citation_score") or 0 for finding in reportable_findings] or [0]
         ),

@@ -49,7 +49,7 @@ body {
   margin-bottom: 16px;
 }
 
-.panel.is-collapsed > :not(.panel-header) {
+.panel.is-collapsed > .panel-body {
   display: none;
 }
 
@@ -291,6 +291,23 @@ button.ghost,
   color: #2c4237;
   font-size: 12px;
   max-width: 100%;
+}
+
+.template-chip {
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+
+.template-chip-match {
+  background: #d8f1e8;
+  border-color: #8ecab7;
+  color: #083f33;
+}
+
+.template-chip-miss {
+  background: #fff2bd;
+  border-color: #e5bd54;
+  color: #5f4700;
 }
 
 .cards {

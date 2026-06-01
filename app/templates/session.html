@@ -123,6 +123,7 @@
             <h2>目标论文基本信息与总览统计</h2>
           </div>
         </div>
+        <div class="panel-body">
         <div class="stats stats-dense">
           <div class="stat"><span>当前候选论文</span><strong>{{ detail_payload.target_overview.paper_count }}</strong></div>
           <div class="stat"><span>总引用数</span><strong>{{ detail_payload.target_overview.total_citation_count or '-' }}</strong></div>
@@ -180,6 +181,7 @@
           </ul>
         </div>
         {% endif %}
+        </div>
       </section>
 
       <section class="panel" id="quick-stats">
@@ -190,6 +192,7 @@
             <p class="muted">Publication Statistics 与 Citation Statistics 仅基于元数据、本地 venue tier 表和人物 registry 生成，通常几秒内可得。</p>
           </div>
         </div>
+        <div class="panel-body">
         {% set quick_stats = detail_payload.quick_stats or {} %}
         {% set publication_stats = quick_stats.publication_statistics or {} %}
         {% set citation_stats = quick_stats.citation_statistics or {} %}
@@ -248,6 +251,7 @@
           </ul>
         </details>
         {% endif %}
+        </div>
       </section>
 
       <section class="panel" id="analysis-templates">
@@ -259,6 +263,7 @@
             <p class="muted">模板会影响后续全文分析，帮助系统优先寻找首次评价、详细对比、理论基础、方法来源等可汇报证据。</p>
           </div>
         </div>
+        <div class="panel-body">
         <form action="/sessions/{{ session_id }}/analysis-templates" method="post" class="stack">
           <div class="template-grid">
             {% for template in template_state.builtin_templates or [] %}
@@ -319,6 +324,7 @@
             <button type="submit" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-task-control>保存分析模板</button>
           </div>
         </form>
+        </div>
       </section>
 
       <section class="panel" id="highlight-cards">
@@ -333,6 +339,7 @@
             <a class="button-link secondary" href="/sessions/{{ session_id }}/exports/highlight_cards.csv">下载卡片 CSV</a>
           </div>
         </div>
+        <div class="panel-body">
         {% if detail_payload.highlight_cards %}
         <div class="cards">
           {% for card in detail_payload.highlight_cards[:10] %}
@@ -361,6 +368,7 @@
         {% else %}
         <p class="muted">当前还没有可汇报强引用证据。可以先分析已命中本地 PDF 的论文，或在分析模板里增加需要关注的证据类型。</p>
         {% endif %}
+        </div>
       </section>
 
       <section class="panel" id="paper-list">
@@ -379,6 +387,7 @@
             {% endfor %}
           </div>
         </div>
+        <div class="panel-body">
         <form method="get" class="stack">
           <div class="inline-controls">
             <input type="hidden" name="page" value="1" />
@@ -508,6 +517,7 @@
           {% endfor %}
         </div>
         {{ server_pager(pagination, session_id, 'PDF 上传卡片分页') }}
+        </div>
       </section>
 
       <section class="panel" id="analysis-results">
@@ -525,6 +535,7 @@
             {% endif %}
           </div>
         </div>
+        <div class="panel-body">
         <div class="cards">
           {% for item in detail_payload.papers %}
           <article class="card">
@@ -542,7 +553,13 @@
               <span class="chip">立场：{{ item.citation_method_summary.primary_stance_label }}</span>
               <span class="chip">证据数：{{ item.citation_method_summary.kept_finding_count }}/{{ item.citation_method_summary.finding_count }}</span>
               <span class="chip">强证据：{{ item.citation_method_summary.reportable_strong_evidence_count or 0 }}</span>
-              <span class="chip">模板命中：{{ item.citation_method_summary.template_match_count or 0 }}</span>
+              {% if item.citation_method_summary.template_match_count %}
+              <span class="chip template-chip template-chip-match">模板命中词：{{ item.citation_method_summary.template_matched_terms[:4] | join(' / ') }}</span>
+              {% elif item.citation_method_summary.template_available_terms %}
+              <span class="chip template-chip template-chip-miss">模板检查词：{{ item.citation_method_summary.template_available_terms[:4] | join(' / ') }}</span>
+              {% else %}
+              <span class="chip">模板：未配置</span>
+              {% endif %}
               <span class="chip">强度分：{{ item.citation_method_summary.strong_evidence_score or 0 }}</span>
               {% if item.citation_method_summary.confidence is not none %}
               <span class="chip">最高置信度：{{ ((item.citation_method_summary.confidence * 100) | round(0)) | int }}%</span>
@@ -595,7 +612,7 @@
                     {% for label in finding.evidence_label_names %}
                     <span class="chip">{{ label }}</span>
                     {% endfor %}
-                    <span class="chip">{{ finding.template_match_label }}</span>
+                    <span class="chip template-chip {% if finding.template_matched %}template-chip-match{% else %}template-chip-miss{% endif %}">{{ finding.template_match_label }}</span>
                     <span class="chip">强度分 {{ finding.strong_citation_score }}</span>
                     <span class="chip">{{ finding.self_citation_label }}</span>
                     <span class="chip">第 {{ finding.page or '-' }} 页 / 片段 {{ finding.span_index or '-' }}</span>
@@ -628,6 +645,7 @@
           {% endfor %}
         </div>
         {{ server_pager(pagination, session_id, '分析结果分页') }}
+        </div>
       </section>
 
       <section class="panel" id="statistics">
@@ -639,6 +657,7 @@
             <p class="muted">基于已发现的引用论文作者、人物标签 registry 和全文引用方式分析生成。</p>
           </div>
         </div>
+        <div class="panel-body">
         <h3>引用作者身份统计</h3>
         <div class="stats person-tag-stats">
           {% for group in person_stats.groups %}
@@ -667,6 +686,7 @@
           {% endfor %}
         </div>
         {% endif %}
+        </div>
       </section>
 
       <section class="panel" id="person-candidates">
@@ -681,6 +701,7 @@
             <span class="chip">已拒绝：{{ detail_payload.person_summary.rejected_count }}</span>
           </div>
         </div>
+        <div class="panel-body">
         {% if detail_payload.person_candidates %}
         <div class="cards" data-paginated-list="person-candidates" data-page-size="8">
           {% for candidate in detail_payload.person_candidates %}
@@ -732,6 +753,7 @@
         {% else %}
         <p class="muted">当前没有命中任何人物候选。可通过补充 `data/reference/person_tag_registry.json` 提供候选来源。</p>
         {% endif %}
+        </div>
       </section>
 
       <section class="panel" id="report-summary">
@@ -747,6 +769,7 @@
             <a class="button-link secondary" href="/sessions/{{ session_id }}/exports/highlight_cards.csv">下载亮点卡片 CSV</a>
           </div>
         </div>
+        <div class="panel-body">
         {% if report_md %}
         <details class="report-block" open>
           <summary>查看 Markdown 汇总</summary>
@@ -755,6 +778,7 @@
         {% else %}
         <p class="muted">当前还没有导出报告，请先执行分析或刷新页面。</p>
         {% endif %}
+        </div>
       </section>
 
       <section class="panel">
@@ -771,7 +795,8 @@
             const panel = header.closest('.panel');
             if (!panel || !panel.id) return;
             const storageKey = `academic-impact:session-panel:${panel.id}`;
-            const panelBodyElements = Array.from(panel.children).filter((child) => child !== header);
+            const panelBody = panel.querySelector(':scope > .panel-body');
+            if (!panelBody) return;
             const actions = header.querySelector(':scope > .actions') || document.createElement('div');
             if (!actions.parentElement) {
               actions.className = 'actions';
@@ -782,13 +807,12 @@
             toggle.type = 'button';
             toggle.className = 'ghost module-toggle';
             toggle.setAttribute('aria-controls', panel.id);
+            toggle.setAttribute('data-panel-toggle', panel.id);
             actions.appendChild(toggle);
 
             const render = () => {
               const collapsed = panel.classList.contains('is-collapsed');
-              panelBodyElements.forEach((element) => {
-                element.hidden = collapsed;
-              });
+              panelBody.hidden = collapsed;
               toggle.textContent = collapsed ? '展开' : '收起';
               toggle.setAttribute('aria-expanded', String(!collapsed));
             };
@@ -802,7 +826,8 @@
             }
             render();
 
-            toggle.addEventListener('click', () => {
+            toggle.addEventListener('click', (event) => {
+              event.preventDefault();
               panel.classList.toggle('is-collapsed');
               try {
                 window.localStorage.setItem(

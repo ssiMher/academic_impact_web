@@ -498,10 +498,18 @@ class VenueStatisticsTestCase(unittest.TestCase):
         self.assertTrue(unfiltered["papers"][0]["citation_method_summary"]["finding_preview"][0]["template_matched"])
         self.assertIn(
             "state-of-the-art",
+            unfiltered["papers"][0]["citation_method_summary"]["template_matched_terms"],
+        )
+        self.assertIn(
+            "state-of-the-art",
+            unfiltered["papers"][0]["citation_method_summary"]["template_available_terms"],
+        )
+        self.assertIn(
+            "state-of-the-art",
             unfiltered["papers"][0]["citation_method_summary"]["finding_preview"][0]["template_match_label"],
         )
         self.assertIn(
-            "模板未命中",
+            "当前模板检查",
             unfiltered["papers"][1]["citation_method_summary"]["finding_preview"][0]["template_match_label"],
         )
         self.assertIn(

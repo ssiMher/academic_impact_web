@@ -771,6 +771,7 @@
             const panel = header.closest('.panel');
             if (!panel || !panel.id) return;
             const storageKey = `academic-impact:session-panel:${panel.id}`;
+            const panelBodyElements = Array.from(panel.children).filter((child) => child !== header);
             const actions = header.querySelector(':scope > .actions') || document.createElement('div');
             if (!actions.parentElement) {
               actions.className = 'actions';
@@ -785,21 +786,32 @@
 
             const render = () => {
               const collapsed = panel.classList.contains('is-collapsed');
+              panelBodyElements.forEach((element) => {
+                element.hidden = collapsed;
+              });
               toggle.textContent = collapsed ? '展开' : '收起';
               toggle.setAttribute('aria-expanded', String(!collapsed));
             };
 
-            if (window.localStorage.getItem(storageKey) === 'collapsed') {
-              panel.classList.add('is-collapsed');
+            try {
+              if (window.localStorage.getItem(storageKey) === 'collapsed') {
+                panel.classList.add('is-collapsed');
+              }
+            } catch (_err) {
+              // Ignore storage restrictions; the button still controls this page.
             }
             render();
 
             toggle.addEventListener('click', () => {
               panel.classList.toggle('is-collapsed');
-              window.localStorage.setItem(
-                storageKey,
-                panel.classList.contains('is-collapsed') ? 'collapsed' : 'open'
-              );
+              try {
+                window.localStorage.setItem(
+                  storageKey,
+                  panel.classList.contains('is-collapsed') ? 'collapsed' : 'open'
+                );
+              } catch (_err) {
+                // Folding should still work even if localStorage is unavailable.
+              }
               render();
             });
           });

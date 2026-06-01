@@ -496,6 +496,18 @@ class VenueStatisticsTestCase(unittest.TestCase):
             [1, 0],
         )
         self.assertTrue(unfiltered["papers"][0]["citation_method_summary"]["finding_preview"][0]["template_matched"])
+        self.assertIn(
+            "state-of-the-art",
+            unfiltered["papers"][0]["citation_method_summary"]["finding_preview"][0]["template_match_label"],
+        )
+        self.assertIn(
+            "模板未命中",
+            unfiltered["papers"][1]["citation_method_summary"]["finding_preview"][0]["template_match_label"],
+        )
+        self.assertIn(
+            "state-of-the-art",
+            unfiltered["papers"][1]["citation_method_summary"]["finding_preview"][0]["template_match_label"],
+        )
         self.assertEqual([paper["id"] for paper in filtered["papers"]], ["P001"])
         self.assertTrue(filtered["paper_filters"]["active"]["template_only"])
 

@@ -590,32 +590,67 @@ def build_template_match_spec(compiled_templates: Optional[List[dict]]) -> dict:
         names.append(template.get("name") or template.get("id") or "")
         labels.extend(template.get("target_labels") or [])
         keywords.extend(template.get("positive_keywords") or [])
+    label_terms = unique_strings([str(label or "").strip() for label in labels])
+    keyword_terms = unique_strings([str(keyword or "").strip() for keyword in keywords])
     return {
-        "labels": set(unique_strings([str(label or "").strip() for label in labels])),
+        "labels": set(label_terms),
+        "label_terms": label_terms,
         "keywords": [
-            str(keyword or "").strip().lower()
-            for keyword in unique_strings([str(keyword or "").strip() for keyword in keywords])
-            if str(keyword or "").strip()
+            {"term": keyword, "lower": keyword.lower()}
+            for keyword in keyword_terms
+            if keyword
         ],
         "names": unique_strings([str(name or "").strip() for name in names]),
     }
 
 
-def finding_matches_template(detail: dict, template_spec: Optional[dict]) -> bool:
+def template_match_summary(detail: dict, template_spec: Optional[dict]) -> dict:
+    available_terms = []
+    if template_spec:
+        available_terms.extend(
+            SCHOLAR_EVIDENCE.evidence_label_display(label)
+            for label in template_spec.get("label_terms") or []
+        )
+        available_terms.extend(
+            keyword.get("term")
+            for keyword in template_spec.get("keywords") or []
+            if keyword.get("term")
+        )
+    available_terms = unique_strings([term for term in available_terms if term])
     if not template_spec:
-        return False
+        return {
+            "matched": False,
+            "matched_terms": [],
+            "available_terms": [],
+            "label": "未配置分析模板",
+        }
     if detail.get("keep") is False:
-        return False
+        return {
+            "matched": False,
+            "matched_terms": [],
+            "available_terms": available_terms,
+            "label": "模板未命中：" + (" / ".join(available_terms[:4]) if available_terms else "-"),
+        }
     if (detail.get("mention_type") or "") in {
         "grouped_literature_mention",
         "weak_body_mention",
     }:
-        return False
+        return {
+            "matched": False,
+            "matched_terms": [],
+            "available_terms": available_terms,
+            "label": "模板未命中：" + (" / ".join(available_terms[:4]) if available_terms else "-"),
+        }
 
     target_labels = template_spec.get("labels") or set()
     detail_labels = set(detail.get("evidence_labels") or [])
+    matched_terms = []
     if target_labels and target_labels & detail_labels:
-        return True
+        matched_terms.extend(
+            SCHOLAR_EVIDENCE.evidence_label_display(label)
+            for label in template_spec.get("label_terms") or []
+            if label in detail_labels
+        )
 
     text = str(detail.get("citation_text") or "").lower()
     highlight_keywords = {
@@ -624,9 +659,24 @@ def finding_matches_template(detail: dict, template_spec: Optional[dict]) -> boo
         if str(keyword or "").strip()
     }
     for keyword in template_spec.get("keywords") or []:
-        if keyword in highlight_keywords or (keyword and keyword in text):
-            return True
-    return False
+        keyword_lower = keyword.get("lower") or ""
+        if keyword_lower in highlight_keywords or (keyword_lower and keyword_lower in text):
+            matched_terms.append(keyword.get("term") or keyword_lower)
+    matched_terms = unique_strings([term for term in matched_terms if term])
+    return {
+        "matched": bool(matched_terms),
+        "matched_terms": matched_terms,
+        "available_terms": available_terms,
+        "label": (
+            "模板命中：" + " / ".join(matched_terms[:4])
+            if matched_terms
+            else "模板未命中：" + (" / ".join(available_terms[:4]) if available_terms else "-")
+        ),
+    }
+
+
+def finding_matches_template(detail: dict, template_spec: Optional[dict]) -> bool:
+    return bool(template_match_summary(detail, template_spec).get("matched"))
 
 
 def build_finding_detail(
@@ -727,8 +777,13 @@ def build_finding_detail(
         "person_tag_labels": person_tag_labels,
         "valuable_reason": finding.get("valuable_reason") or finding.get("reason") or "",
     }
-    detail["template_matched"] = finding_matches_template(detail, template_spec)
-    detail["template_match_label"] = "命中当前模板" if detail["template_matched"] else "未命中当前模板"
+    template_match = template_match_summary(detail, template_spec)
+    detail["template_matched"] = bool(template_match.get("matched"))
+    detail["template_match_terms"] = template_match.get("matched_terms") or []
+    detail["template_available_terms"] = template_match.get("available_terms") or []
+    detail["template_match_label"] = template_match.get("label") or (
+        "模板命中" if detail["template_matched"] else "模板未命中"
+    )
     return detail
 
 

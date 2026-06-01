@@ -49,6 +49,14 @@ body {
   margin-bottom: 16px;
 }
 
+.panel.is-collapsed > :not(.panel-header) {
+  display: none;
+}
+
+.module-toggle {
+  min-width: 76px;
+}
+
 h1,
 h2,
 h3,
@@ -564,6 +572,12 @@ pre {
 details summary {
   cursor: pointer;
   color: var(--blue);
+}
+
+details summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
 }
 
 a {

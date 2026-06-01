@@ -30,7 +30,7 @@
     {% endif %}
     {% endmacro %}
     <main class="page">
-      <section class="panel">
+      <section class="panel" id="overview">
         <p><a href="/">← 返回首页</a></p>
         <p class="eyebrow">会话</p>
         <h1>{{ detail_payload.target_overview.title or session.query }}</h1>
@@ -116,7 +116,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel" id="target-overview">
         <div class="panel-header">
           <div>
             <p class="eyebrow">01</p>
@@ -182,7 +182,7 @@
         {% endif %}
       </section>
 
-      <section class="panel">
+      <section class="panel" id="quick-stats">
         <div class="panel-header">
           <div>
             <p class="eyebrow">02</p>
@@ -250,7 +250,7 @@
         {% endif %}
       </section>
 
-      <section class="panel">
+      <section class="panel" id="analysis-templates">
         {% set template_state = session.analysis_templates or {} %}
         <div class="panel-header">
           <div>
@@ -321,7 +321,7 @@
         </form>
       </section>
 
-      <section class="panel">
+      <section class="panel" id="highlight-cards">
         <div class="panel-header">
           <div>
             <p class="eyebrow">04</p>
@@ -363,7 +363,7 @@
         {% endif %}
       </section>
 
-      <section class="panel">
+      <section class="panel" id="paper-list">
         <div class="panel-header">
           <div>
             <p class="eyebrow">05</p>
@@ -510,12 +510,19 @@
         {{ server_pager(pagination, session_id, 'PDF 上传卡片分页') }}
       </section>
 
-      <section class="panel">
+      <section class="panel" id="analysis-results">
         <div class="panel-header">
           <div>
             <p class="eyebrow">06</p>
             <h2>深度语义分析结果</h2>
             <p class="muted">这里只展示 PDF 下载、`fulltext_direct` 提取与全文语义分析产物。深度分析才是全文语义判断。</p>
+          </div>
+          <div class="actions">
+            {% if detail_payload.paper_filters.active.template_only %}
+            <a class="button-link ghost" href="/sessions/{{ session_id }}#analysis-results">显示全部分析结果</a>
+            {% else %}
+            <a class="button-link secondary" href="/sessions/{{ session_id }}?template_only=on&page_size={{ detail_payload.paper_filters.active.page_size or 20 }}#analysis-results">仅看模板命中</a>
+            {% endif %}
           </div>
         </div>
         <div class="cards">
@@ -623,7 +630,7 @@
         {{ server_pager(pagination, session_id, '分析结果分页') }}
       </section>
 
-      <section class="panel">
+      <section class="panel" id="statistics">
         {% set person_stats = detail_payload.person_tag_statistics %}
         <div class="panel-header">
           <div>
@@ -662,7 +669,7 @@
         {% endif %}
       </section>
 
-      <section class="panel">
+      <section class="panel" id="person-candidates">
         <div class="panel-header">
           <div>
             <p class="eyebrow">08</p>
@@ -727,7 +734,7 @@
         {% endif %}
       </section>
 
-      <section class="panel">
+      <section class="panel" id="report-summary">
         <div class="panel-header">
           <div>
             <p class="eyebrow">09</p>
@@ -759,6 +766,45 @@
     </main>
     <script>
       (function () {
+        const initializePanelToggles = () => {
+          document.querySelectorAll('.panel > .panel-header').forEach((header) => {
+            const panel = header.closest('.panel');
+            if (!panel || !panel.id) return;
+            const storageKey = `academic-impact:session-panel:${panel.id}`;
+            const actions = header.querySelector(':scope > .actions') || document.createElement('div');
+            if (!actions.parentElement) {
+              actions.className = 'actions';
+              header.appendChild(actions);
+            }
+
+            const toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'ghost module-toggle';
+            toggle.setAttribute('aria-controls', panel.id);
+            actions.appendChild(toggle);
+
+            const render = () => {
+              const collapsed = panel.classList.contains('is-collapsed');
+              toggle.textContent = collapsed ? '展开' : '收起';
+              toggle.setAttribute('aria-expanded', String(!collapsed));
+            };
+
+            if (window.localStorage.getItem(storageKey) === 'collapsed') {
+              panel.classList.add('is-collapsed');
+            }
+            render();
+
+            toggle.addEventListener('click', () => {
+              panel.classList.toggle('is-collapsed');
+              window.localStorage.setItem(
+                storageKey,
+                panel.classList.contains('is-collapsed') ? 'collapsed' : 'open'
+              );
+              render();
+            });
+          });
+        };
+
         const initializePagination = () => {
           document.querySelectorAll('[data-paginated-list]').forEach((list) => {
             const key = list.getAttribute('data-paginated-list');
@@ -876,6 +922,7 @@
             // Ignore transient polling errors in the minimal first version.
           }
         };
+        initializePanelToggles();
         initializePagination();
         if (taskActive) {
           setTaskControlsDisabled(true);

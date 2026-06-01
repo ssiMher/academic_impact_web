@@ -408,6 +408,10 @@
               仅看强证据
             </label>
             <label class="checkbox">
+              <input type="checkbox" name="template_only" {% if detail_payload.paper_filters.active.template_only %}checked{% endif %} />
+              仅看模板命中
+            </label>
+            <label class="checkbox">
               <input type="checkbox" name="candidate_only" {% if detail_payload.paper_filters.active.candidate_only %}checked{% endif %} />
               仅看命中人物候选
             </label>
@@ -531,6 +535,7 @@
               <span class="chip">立场：{{ item.citation_method_summary.primary_stance_label }}</span>
               <span class="chip">证据数：{{ item.citation_method_summary.kept_finding_count }}/{{ item.citation_method_summary.finding_count }}</span>
               <span class="chip">强证据：{{ item.citation_method_summary.reportable_strong_evidence_count or 0 }}</span>
+              <span class="chip">模板命中：{{ item.citation_method_summary.template_match_count or 0 }}</span>
               <span class="chip">强度分：{{ item.citation_method_summary.strong_evidence_score or 0 }}</span>
               {% if item.citation_method_summary.confidence is not none %}
               <span class="chip">最高置信度：{{ ((item.citation_method_summary.confidence * 100) | round(0)) | int }}%</span>
@@ -583,6 +588,7 @@
                     {% for label in finding.evidence_label_names %}
                     <span class="chip">{{ label }}</span>
                     {% endfor %}
+                    <span class="chip">{{ finding.template_match_label }}</span>
                     <span class="chip">强度分 {{ finding.strong_citation_score }}</span>
                     <span class="chip">{{ finding.self_citation_label }}</span>
                     <span class="chip">第 {{ finding.page or '-' }} 页 / 片段 {{ finding.span_index or '-' }}</span>

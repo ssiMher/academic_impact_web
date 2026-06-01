@@ -580,12 +580,62 @@ def _exclusion_profile_value(profile: Optional[dict], key: str) -> List[str]:
     return profile.get(key) or []
 
 
+def build_template_match_spec(compiled_templates: Optional[List[dict]]) -> dict:
+    labels = []
+    keywords = []
+    names = []
+    for template in compiled_templates or []:
+        if not isinstance(template, dict):
+            continue
+        names.append(template.get("name") or template.get("id") or "")
+        labels.extend(template.get("target_labels") or [])
+        keywords.extend(template.get("positive_keywords") or [])
+    return {
+        "labels": set(unique_strings([str(label or "").strip() for label in labels])),
+        "keywords": [
+            str(keyword or "").strip().lower()
+            for keyword in unique_strings([str(keyword or "").strip() for keyword in keywords])
+            if str(keyword or "").strip()
+        ],
+        "names": unique_strings([str(name or "").strip() for name in names]),
+    }
+
+
+def finding_matches_template(detail: dict, template_spec: Optional[dict]) -> bool:
+    if not template_spec:
+        return False
+    if detail.get("keep") is False:
+        return False
+    if (detail.get("mention_type") or "") in {
+        "grouped_literature_mention",
+        "weak_body_mention",
+    }:
+        return False
+
+    target_labels = template_spec.get("labels") or set()
+    detail_labels = set(detail.get("evidence_labels") or [])
+    if target_labels and target_labels & detail_labels:
+        return True
+
+    text = str(detail.get("citation_text") or "").lower()
+    highlight_keywords = {
+        str(keyword or "").strip().lower()
+        for keyword in detail.get("highlight_keywords") or []
+        if str(keyword or "").strip()
+    }
+    for keyword in template_spec.get("keywords") or []:
+        if keyword in highlight_keywords or (keyword and keyword in text):
+            return True
+    return False
+
+
 def build_finding_detail(
     finding: dict,
     *,
     item: Optional[dict] = None,
     target: Optional[dict] = None,
     exclusion_profile: Optional[dict] = None,
+    template_spec: Optional[dict] = None,
 ):
     if not isinstance(finding, dict):
         return None
@@ -637,7 +687,7 @@ def build_finding_detail(
     reportable = SCHOLAR_EVIDENCE.is_reportable_strong_evidence(reportable_probe)
     if self_citation_status in {"self_citation", "excluded_collaborator"}:
         reportable = False
-    return {
+    detail = {
         "page": finding.get("page"),
         "span_index": finding.get("span_index"),
         "citation_text": citation_text,
@@ -677,6 +727,9 @@ def build_finding_detail(
         "person_tag_labels": person_tag_labels,
         "valuable_reason": finding.get("valuable_reason") or finding.get("reason") or "",
     }
+    detail["template_matched"] = finding_matches_template(detail, template_spec)
+    detail["template_match_label"] = "命中当前模板" if detail["template_matched"] else "未命中当前模板"
+    return detail
 
 
 def build_evidence_index(session_dir: Path, session: dict):
@@ -1138,6 +1191,7 @@ def summarize_citation_method(
     *,
     target: Optional[dict] = None,
     exclusion_profile: Optional[dict] = None,
+    compiled_templates: Optional[List[dict]] = None,
 ):
     analysis_paths = item.get("analysis_result", {}).get("paths", {})
     candidate_data = load_json_if_exists(analysis_paths.get("candidate_spans", ""))
@@ -1172,6 +1226,7 @@ def summarize_citation_method(
 
     labels = []
     finding_details = []
+    template_spec = build_template_match_spec(compiled_templates)
     for finding in findings:
         aspect = (finding.get("aspect") or "").strip()
         mention_type = (finding.get("mention_type") or "").strip()
@@ -1184,6 +1239,7 @@ def summarize_citation_method(
             item=item,
             target=target,
             exclusion_profile=exclusion_profile,
+            template_spec=template_spec,
         )
         if detail:
             finding_details.append(detail)
@@ -1211,6 +1267,9 @@ def summarize_citation_method(
     reportable_findings = [
         finding for finding in finding_details if finding.get("reportable_strong_evidence")
     ]
+    template_matched_findings = [
+        finding for finding in finding_details if finding.get("template_matched")
+    ]
     primary_finding = (
         reportable_findings[0]
         if reportable_findings
@@ -1231,11 +1290,14 @@ def summarize_citation_method(
         "finding_count": len(finding_details),
         "kept_finding_count": len(kept_findings),
         "reportable_strong_evidence_count": len(reportable_findings),
+        "template_match_count": len(template_matched_findings),
+        "template_names": template_spec.get("names") or [],
         "strong_evidence_score": max(
             [finding.get("strong_citation_score") or 0 for finding in reportable_findings] or [0]
         ),
         "finding_details": finding_details,
         "reportable_strong_evidence": reportable_findings,
+        "template_matched_evidence": template_matched_findings,
         "finding_preview": (reportable_findings or finding_details)[:3],
         "extra_finding_count": max(0, len(finding_details) - 3),
         "primary_aspect_label": primary_finding.get("aspect_label") or "-",
@@ -2566,6 +2628,8 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
     target = status_payload.get("target", {})
     paper_lookup = {item.get("id"): item for item in session.get("papers", [])}
     venue_tier_index = build_venue_tier_index()
+    analysis_templates = ensure_analysis_templates(session)
+    compiled_templates = analysis_templates.get("compiled_templates") or []
     detail_papers = []
     for item in status_payload.get("papers", []):
         raw_item = paper_lookup.get(item.get("id"), {})
@@ -2573,6 +2637,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
             raw_item,
             target=target,
             exclusion_profile=session.get("exclusion_profile"),
+            compiled_templates=compiled_templates,
         )
         venue_tier = classify_venue_tier(raw_item.get("venue"), venue_tier_index)
         paper_payload = {
@@ -2595,12 +2660,15 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
         download_filter = (filters.get("download_status") or "").strip()
         analysis_filter = (filters.get("analysis_status") or "").strip()
         strong_only = str(filters.get("strong_only") or "").strip().lower() in {"1", "true", "on", "yes"}
+        template_only = str(filters.get("template_only") or "").strip().lower() in {"1", "true", "on", "yes"}
         candidate_only = str(filters.get("candidate_only") or "").strip().lower() in {"1", "true", "on", "yes"}
         if download_filter and paper_payload["download_status"] != download_filter:
             continue
         if analysis_filter and paper_payload["analysis_status"] != analysis_filter:
             continue
         if strong_only and not citation_summary.get("reportable_strong_evidence_count"):
+            continue
+        if template_only and not citation_summary.get("template_match_count"):
             continue
         if candidate_only and not paper_payload.get("candidate_count"):
             continue
@@ -2636,6 +2704,8 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
         pagination_query_base["analysis_status"] = analysis_status_filter
     if str(filters.get("strong_only") or "").strip().lower() in {"1", "true", "on", "yes"}:
         pagination_query_base["strong_only"] = "on"
+    if str(filters.get("template_only") or "").strip().lower() in {"1", "true", "on", "yes"}:
+        pagination_query_base["template_only"] = "on"
     if str(filters.get("candidate_only") or "").strip().lower() in {"1", "true", "on", "yes"}:
         pagination_query_base["candidate_only"] = "on"
 
@@ -2672,6 +2742,7 @@ def build_session_detail_payload(session: dict, filters: Optional[dict] = None):
                 "download_status": (filters.get("download_status") or "").strip(),
                 "analysis_status": (filters.get("analysis_status") or "").strip(),
                 "strong_only": str(filters.get("strong_only") or "").strip().lower() in {"1", "true", "on", "yes"},
+                "template_only": str(filters.get("template_only") or "").strip().lower() in {"1", "true", "on", "yes"},
                 "candidate_only": str(filters.get("candidate_only") or "").strip().lower() in {"1", "true", "on", "yes"},
                 "page_size": page_size,
             },

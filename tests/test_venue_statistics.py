@@ -388,6 +388,117 @@ class VenueStatisticsTestCase(unittest.TestCase):
             },
         )
 
+    def test_session_detail_payload_filters_template_matched_findings(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            match_analysis_path = tmp_path / "match_analysis.json"
+            other_analysis_path = tmp_path / "other_analysis.json"
+            candidate_path = tmp_path / "candidate_spans.json"
+            match_analysis_path.write_text(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "findings": [
+                            {
+                                "page": 2,
+                                "span_index": 1,
+                                "citation_text": "Target Paper is a state-of-the-art baseline.",
+                                "keep": True,
+                                "aspect": "baseline",
+                                "stance": "positive",
+                                "evidence_labels": ["baseline", "sota_evaluation"],
+                                "mention_type": "explicit_citation",
+                            }
+                        ],
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            other_analysis_path.write_text(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "findings": [
+                            {
+                                "page": 3,
+                                "span_index": 1,
+                                "citation_text": "Target Paper appears in a related-work group citation.",
+                                "keep": False,
+                                "aspect": "background",
+                                "stance": "neutral",
+                                "evidence_labels": ["sota_evaluation"],
+                                "mention_type": "grouped_literature_mention",
+                            }
+                        ],
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            candidate_path.write_text(json.dumps({"ok": True, "spans": []}), encoding="utf-8")
+            session = {
+                "ok": True,
+                "query": "Target",
+                "target": {"title": "Target", "year": 2024, "venue": "NeurIPS"},
+                "analysis_templates": {
+                    "active_template_ids": [],
+                    "custom_requests": ["优先找sota评价"],
+                    "compiled_templates": [
+                        {
+                            "id": "custom_sota",
+                            "name": "优先找sota评价",
+                            "target_labels": ["sota_evaluation"],
+                            "positive_keywords": ["state-of-the-art", "sota"],
+                        }
+                    ],
+                    "builtin_templates": [],
+                },
+                "papers": [
+                    {
+                        "id": "P001",
+                        "title": "Template Match",
+                        "year": 2025,
+                        "venue": "ICRA",
+                        "download_probe": {"status": "downloaded"},
+                        "analysis_result": {
+                            "status": "fulltext_analyzed",
+                            "paths": {
+                                "analysis": str(match_analysis_path),
+                                "candidate_spans": str(candidate_path),
+                            },
+                        },
+                    },
+                    {
+                        "id": "P002",
+                        "title": "Weak Other",
+                        "year": 2025,
+                        "venue": "ICRA",
+                        "download_probe": {"status": "downloaded"},
+                        "analysis_result": {
+                            "status": "mention_only",
+                            "paths": {
+                                "analysis": str(other_analysis_path),
+                                "candidate_spans": str(candidate_path),
+                            },
+                        },
+                    },
+                ],
+                "person_candidates": [],
+                "overview_stats": self.impact_cli.default_overview_stats(),
+            }
+
+            unfiltered = self.impact_cli.build_session_detail_payload(session)
+            filtered = self.impact_cli.build_session_detail_payload(session, {"template_only": "on"})
+
+        self.assertEqual(
+            [paper["citation_method_summary"]["template_match_count"] for paper in unfiltered["papers"]],
+            [1, 0],
+        )
+        self.assertTrue(unfiltered["papers"][0]["citation_method_summary"]["finding_preview"][0]["template_matched"])
+        self.assertEqual([paper["id"] for paper in filtered["papers"]], ["P001"])
+        self.assertTrue(filtered["paper_filters"]["active"]["template_only"])
+
 
 if __name__ == "__main__":
     unittest.main()

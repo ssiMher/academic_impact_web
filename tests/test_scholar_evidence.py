@@ -205,6 +205,30 @@ class ScholarEvidenceTestCase(unittest.TestCase):
             )
         )
 
+    def test_weak_grouped_mentions_do_not_derive_strong_keyword_labels(self):
+        finding = {
+            "citation_text": (
+                "Extensive experimental results demonstrate state-of-the-art "
+                "performance. Related work includes the target in [16]."
+            ),
+            "aspect": "background",
+            "stance": "neutral",
+            "keep": False,
+            "mention_type": "grouped_literature_mention",
+            "evidence_labels": ["sota_evaluation", "detailed_comparison"],
+            "highlight_keywords": ["state-of-the-art", "experimental"],
+        }
+
+        labels = self.evidence.derive_evidence_labels(
+            finding,
+            citation_char_count=len(finding["citation_text"]),
+            person_tag_labels=[],
+        )
+        keywords = self.evidence.derive_highlight_keywords(finding, labels)
+
+        self.assertEqual(labels, ["survey_or_related_work"])
+        self.assertEqual(keywords, [])
+
 
 if __name__ == "__main__":
     unittest.main()

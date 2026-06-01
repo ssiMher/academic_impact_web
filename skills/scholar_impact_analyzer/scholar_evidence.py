@@ -356,11 +356,22 @@ def derive_evidence_labels(
     citation_char_count: int,
     person_tag_labels: list[str] | None = None,
 ) -> list[str]:
-    labels = coerce_labels(finding.get("evidence_labels"))
     aspect = str(finding.get("aspect") or "").strip()
     stance = str(finding.get("stance") or "").strip().lower()
+    mention_type = str(finding.get("mention_type") or "").strip()
+    keep = finding.get("keep", True) is not False
     text = str(finding.get("citation_text") or "").lower()
     person_tags = person_tag_labels or []
+
+    if not keep or mention_type in {"grouped_literature_mention", "weak_body_mention"}:
+        weak_labels = []
+        if aspect == "background" or mention_type == "grouped_literature_mention":
+            weak_labels.append("survey_or_related_work")
+        if stance == "negative":
+            weak_labels.append("negative_or_limitation")
+        return [label for label in VALID_EVIDENCE_LABELS if label in set(weak_labels)]
+
+    labels = coerce_labels(finding.get("evidence_labels"))
 
     if stance == "positive":
         labels.append("positive_evaluation")
@@ -393,6 +404,11 @@ def derive_highlight_keywords(
     finding: dict[str, Any],
     labels: list[str],
 ) -> list[str]:
+    if finding.get("keep", True) is False or (finding.get("mention_type") or "") in {
+        "grouped_literature_mention",
+        "weak_body_mention",
+    }:
+        return []
     keywords = unique_nonempty_strings(finding.get("highlight_keywords") or [])
     text = str(finding.get("citation_text") or "")
     lower_text = text.lower()

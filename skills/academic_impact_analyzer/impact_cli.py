@@ -595,6 +595,11 @@ def build_finding_detail(
     confidence = finding.get("confidence")
     citation_text = finding.get("citation_text") or ""
     citation_char_count = len(re.sub(r"\s+", "", citation_text))
+    keep = bool(finding.get("keep", True))
+    is_weak_mention = (not keep) or mention_type in {
+        "grouped_literature_mention",
+        "weak_body_mention",
+    }
     item = item or {}
     person_tag_labels = _person_tag_labels_for_item(item)
     third_party = SCHOLAR_EVIDENCE.classify_third_party_citation(
@@ -612,7 +617,7 @@ def build_finding_detail(
         person_tag_labels=person_tag_labels,
     )
     highlight_keywords = SCHOLAR_EVIDENCE.derive_highlight_keywords(finding, evidence_labels)
-    strong_score = SCHOLAR_EVIDENCE.score_strong_evidence(
+    strong_score = 0 if is_weak_mention else SCHOLAR_EVIDENCE.score_strong_evidence(
         labels=evidence_labels,
         confidence=confidence,
         citation_char_count=citation_char_count,
@@ -620,7 +625,6 @@ def build_finding_detail(
         self_citation_status=self_citation_status,
     )
     evidence_strength = SCHOLAR_EVIDENCE.evidence_strength(strong_score)
-    keep = bool(finding.get("keep", True))
     reportable_probe = dict(finding)
     reportable_probe.update(
         {

@@ -1,5 +1,22 @@
 # 开发日志
 
+## 2026-06-01：弱提及不再派生强证据关键词
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 用户只配置了“首次 / SOTA / first”等模板，但弱提及结果中仍出现 `experiment` 等模板外高亮词。
+- 根因是结构化结果统一走全局证据标签派生：即使 finding 是 `grouped_literature_mention` 或 `keep=false`，只要原文里有 `experimental`、`state-of-the-art` 等词，也会被派生成 `detailed_comparison` / `sota_evaluation`，并进入高亮。
+
+本次处理：
+- `derive_evidence_labels()` 对弱提及和组引用只保留弱标签，例如 `survey_or_related_work` / `negative_or_limitation`。
+- `derive_highlight_keywords()` 对弱提及和组引用不再自动派生高亮关键词，也不会保留模型给出的强关键词。
+- 单篇论文结果详情中，弱提及和组引用的强度分固定为 0，避免“弱提及”明细里仍显示高分。
+
+当前策略：
+- 模板仍是“优先关注”，不是严格白名单；真正强证据仍可由全文分析识别出模板外的可靠证据。
+- 但弱提及 / 组引用不再因为上下文里有强词而显示成强证据。
+
 ## 2026-05-31：加强全文分析的引用编号锚定
 
 分支：`codex/organize-analysis-venue-work`

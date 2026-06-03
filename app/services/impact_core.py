@@ -15,6 +15,23 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SKILLS_ROOT = PROJECT_ROOT / "skills"
 SESSIONS_ROOT = PROJECT_ROOT / "data" / "sessions"
 _SESSION_TASK_LOCKS: dict[str, threading.Lock] = {}
+_ANALYSIS_MODEL_OPTIONS = [
+    {
+        "value": "default",
+        "label": "跟随环境配置",
+        "description": "使用当前 .env 中配置的分析模式、接口地址和模型名。",
+    },
+    {
+        "value": "local",
+        "label": "本地模型",
+        "description": "使用 ACADEMIC_IMPACT_LOCAL_LLM_URL / ACADEMIC_IMPACT_LOCAL_MODEL。",
+    },
+    {
+        "value": "deepseek",
+        "label": "DeepSeek",
+        "description": "使用 DeepSeek Chat，需要配置 DEEPSEEK_API_KEY。",
+    },
+]
 
 
 def _load_module(path: Path, name: str):
@@ -40,6 +57,43 @@ def run_pipeline():
         SKILLS_ROOT / "academic_impact_analyzer" / "run_pipeline.py",
         "academic_impact_web_run_pipeline",
     )
+
+
+def analysis_model_options() -> list[dict[str, str]]:
+    try:
+        return impact_cli().analysis_model_options()
+    except AttributeError:
+        return [dict(item) for item in _ANALYSIS_MODEL_OPTIONS]
+
+
+def normalize_analysis_model_profile(value: str = "") -> str:
+    try:
+        return impact_cli().normalize_analysis_model_profile(value)
+    except AttributeError:
+        profile = (value or "default").strip().lower().replace("-", "_")
+        aliases = {
+            "": "default",
+            "env": "default",
+            "current": "default",
+            "local_model": "local",
+            "local_llm": "local",
+            "本地模型": "local",
+            "deepseek_chat": "deepseek",
+        }
+        profile = aliases.get(profile, profile)
+        if profile not in {item["value"] for item in _ANALYSIS_MODEL_OPTIONS}:
+            return "default"
+        return profile
+
+
+def selected_analysis_model_profile(session: dict[str, Any]) -> str:
+    try:
+        return impact_cli().session_analysis_model_profile(session)
+    except AttributeError:
+        analysis_model = session.get("analysis_model")
+        if isinstance(analysis_model, dict):
+            return normalize_analysis_model_profile(analysis_model.get("profile") or "")
+        return "default"
 
 
 def resolve_session_dir(session_id: str) -> Path:
@@ -70,6 +124,7 @@ def default_task_state() -> dict[str, Any]:
         "requested_ids": [],
         "top_k_spans": None,
         "analysis_scope": "fulltext_direct",
+        "analysis_model_profile": "default",
     }
 
 
@@ -153,13 +208,30 @@ def update_task_state(session_id: str, **updates):
         return dict(task_state)
 
 
-def mark_task_running(session_id: str, task_type: str, *, requested_ids: list[str] | None = None, top_k_spans: int | None = None, analysis_scope: str | None = None, message: str = ""):
+def mark_task_running(
+    session_id: str,
+    task_type: str,
+    *,
+    requested_ids: list[str] | None = None,
+    top_k_spans: int | None = None,
+    analysis_scope: str | None = None,
+    analysis_model_profile: str | None = None,
+    message: str = "",
+):
     with _task_lock(session_id):
         session = load_session_record(session_id)
         task_state = ensure_task_state(session)
         if task_state.get("active"):
             return False, dict(task_state)
         now = datetime.now().isoformat(timespec="seconds")
+        resolved_model_profile = normalize_analysis_model_profile(
+            analysis_model_profile or selected_analysis_model_profile(session)
+        )
+        if task_type == "analyze":
+            try:
+                impact_cli().set_session_analysis_model_profile(session, resolved_model_profile)
+            except AttributeError:
+                session["analysis_model"] = {"profile": resolved_model_profile}
         task_state.update(
             {
                 "active": True,
@@ -173,6 +245,7 @@ def mark_task_running(session_id: str, task_type: str, *, requested_ids: list[st
                 "requested_ids": list(requested_ids or []),
                 "top_k_spans": top_k_spans,
                 "analysis_scope": analysis_scope or "candidate_spans",
+                "analysis_model_profile": resolved_model_profile,
             }
         )
         session["task_state"] = task_state
@@ -273,13 +346,25 @@ def _run_background_task(session_id: str, task_type: str, worker, *, success_mes
     )
 
 
-def _start_background_task(session_id: str, task_type: str, worker, *, requested_ids: list[str] | None = None, top_k_spans: int | None = None, analysis_scope: str | None = None, message: str = "", success_message: str = ""):
+def _start_background_task(
+    session_id: str,
+    task_type: str,
+    worker,
+    *,
+    requested_ids: list[str] | None = None,
+    top_k_spans: int | None = None,
+    analysis_scope: str | None = None,
+    analysis_model_profile: str | None = None,
+    message: str = "",
+    success_message: str = "",
+):
     started, task_state = mark_task_running(
         session_id,
         task_type,
         requested_ids=requested_ids,
         top_k_spans=top_k_spans,
         analysis_scope=analysis_scope,
+        analysis_model_profile=analysis_model_profile,
         message=message,
     )
     if not started:
@@ -467,8 +552,21 @@ def download_papers(session_id: str, ids: list[str] | None = None, *, auto_only:
     return impact_cli().run_downloads(resolve_session_dir(session_id), ids or [], auto_only)
 
 
-def analyze_papers(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8, analysis_scope: str = "fulltext_direct"):
-    return impact_cli().run_analysis(resolve_session_dir(session_id), ids or [], top_k_spans, analysis_scope)
+def analyze_papers(
+    session_id: str,
+    ids: list[str] | None = None,
+    *,
+    top_k_spans: int = 8,
+    analysis_scope: str = "fulltext_direct",
+    analysis_model_profile: str = "",
+):
+    return impact_cli().run_analysis(
+        resolve_session_dir(session_id),
+        ids or [],
+        top_k_spans,
+        analysis_scope,
+        analysis_model_profile=analysis_model_profile,
+    )
 
 
 def update_analysis_templates(
@@ -519,10 +617,27 @@ def start_download_task(session_id: str, ids: list[str] | None = None, *, auto_o
     )
 
 
-def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_spans: int = 8, analysis_scope: str = "fulltext_direct"):
+def start_analyze_task(
+    session_id: str,
+    ids: list[str] | None = None,
+    *,
+    top_k_spans: int = 8,
+    analysis_scope: str = "fulltext_direct",
+    analysis_model_profile: str = "",
+):
     ids = ids or []
+    session = load_session_record(session_id)
+    resolved_model_profile = normalize_analysis_model_profile(
+        analysis_model_profile or selected_analysis_model_profile(session)
+    )
     def worker():
-        impact_cli().run_analysis(resolve_session_dir(session_id), ids, top_k_spans, analysis_scope)
+        impact_cli().run_analysis(
+            resolve_session_dir(session_id),
+            ids,
+            top_k_spans,
+            analysis_scope,
+            analysis_model_profile=resolved_model_profile,
+        )
         session = load_session(session_id)
         papers = {item.get("id"): item for item in session.get("papers", [])}
         for paper_id in ids:
@@ -569,6 +684,7 @@ def start_analyze_task(session_id: str, ids: list[str] | None = None, *, top_k_s
         requested_ids=ids,
         top_k_spans=top_k_spans,
         analysis_scope=analysis_scope,
+        analysis_model_profile=resolved_model_profile,
         message="正在进行全文分析…",
         success_message="Analyze 完成",
     )

@@ -312,6 +312,60 @@ def ensure_analysis_templates(session: dict) -> dict:
     return synced
 
 
+ANALYSIS_MODEL_OPTIONS = [
+    {
+        "value": "default",
+        "label": "跟随环境配置",
+        "description": "使用当前 .env 中配置的分析模式、接口地址和模型名。",
+    },
+    {
+        "value": "local",
+        "label": "本地模型",
+        "description": "使用 ACADEMIC_IMPACT_LOCAL_LLM_URL / ACADEMIC_IMPACT_LOCAL_MODEL。",
+    },
+    {
+        "value": "deepseek",
+        "label": "DeepSeek",
+        "description": "使用 DeepSeek Chat，需要配置 DEEPSEEK_API_KEY。",
+    },
+]
+
+
+def normalize_analysis_model_profile(value: str = "") -> str:
+    profile = (value or "default").strip().lower().replace("-", "_")
+    aliases = {
+        "": "default",
+        "env": "default",
+        "current": "default",
+        "local_model": "local",
+        "local_llm": "local",
+        "本地模型": "local",
+        "deepseek_chat": "deepseek",
+    }
+    profile = aliases.get(profile, profile)
+    if profile not in {item["value"] for item in ANALYSIS_MODEL_OPTIONS}:
+        return "default"
+    return profile
+
+
+def analysis_model_options() -> List[dict]:
+    return [dict(item) for item in ANALYSIS_MODEL_OPTIONS]
+
+
+def session_analysis_model_profile(session: dict) -> str:
+    value = ""
+    analysis_model = session.get("analysis_model")
+    if isinstance(analysis_model, dict):
+        value = analysis_model.get("profile") or ""
+    return normalize_analysis_model_profile(value)
+
+
+def set_session_analysis_model_profile(session: dict, profile: str) -> str:
+    normalized = normalize_analysis_model_profile(profile)
+    session["analysis_model"] = {"profile": normalized}
+    return normalized
+
+
 def update_analysis_templates(
     session_dir: Path,
     active_template_ids: List[str],
@@ -436,6 +490,7 @@ def default_task_state():
         "error": "",
         "requested_ids": [],
         "top_k_spans": None,
+        "analysis_model_profile": "default",
     }
 
 
@@ -2126,9 +2181,19 @@ def run_downloads(session_dir: Path, ids: List[str], auto_only: bool):
     }
 
 
-def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_scope: str = "fulltext_direct"):
+def run_analysis(
+    session_dir: Path,
+    ids: List[str],
+    top_k_spans: int,
+    analysis_scope: str = "fulltext_direct",
+    analysis_model_profile: str = "",
+):
     analysis_scope = RUN_PIPELINE.normalize_analysis_scope(analysis_scope)
     session = load_session(session_dir)
+    resolved_model_profile = normalize_analysis_model_profile(
+        analysis_model_profile or session_analysis_model_profile(session)
+    )
+    set_session_analysis_model_profile(session, resolved_model_profile)
     contexts_data = read_json(session_dir / "contexts.json")
     target = session.get("target", {})
     papers = session.get("papers", [])
@@ -2153,6 +2218,7 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_s
             top_k_spans=top_k_spans,
             local_pdf_path=item.get("download_probe", {}).get("local_file_path") or "",
             analysis_scope=analysis_scope,
+            analysis_model_profile=resolved_model_profile,
             template_prompt_fragment=template_prompt_fragment,
         )
         paper_result["id"] = item["id"]
@@ -2171,6 +2237,7 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_s
         "output_dir": str(session_dir / "analysis"),
         "processed_papers": len(results),
         "analysis_scope": analysis_scope,
+        "analysis_model_profile": resolved_model_profile,
         "results": results,
     }
     summary_path = session_dir / "analysis" / "summary.json"
@@ -2183,6 +2250,7 @@ def run_analysis(session_dir: Path, ids: List[str], top_k_spans: int, analysis_s
         "report_md_path": str(report_md_path),
         "processed_papers": len(results),
         "analysis_scope": analysis_scope,
+        "analysis_model_profile": resolved_model_profile,
     }
     session["analysis_mode_last"] = "full"
     sync_session_derivatives(session_dir, session, update_evidence=True)
@@ -3115,6 +3183,12 @@ def build_parser():
         default="fulltext_direct",
         help="分析范围：fulltext_direct 为默认单篇全文直读模式，candidate_spans 为候选段落模式",
     )
+    analyze.add_argument(
+        "--analysis-model-profile",
+        choices=[item["value"] for item in ANALYSIS_MODEL_OPTIONS],
+        default="",
+        help="分析模型：default 跟随环境配置，local 使用本地模型，deepseek 使用 DeepSeek。",
+    )
 
     attach_pdf = sub.add_parser("attach-pdf", help="把本地 PDF 绑定到某篇候选论文，后续按 local_available 处理")
     attach_pdf.add_argument("session_dir", help="discover 阶段生成的会话目录")
@@ -3187,6 +3261,7 @@ def main():
             ids=parse_ids(args.ids),
             top_k_spans=max(1, args.top_k_spans),
             analysis_scope=args.analysis_scope,
+            analysis_model_profile=args.analysis_model_profile,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return

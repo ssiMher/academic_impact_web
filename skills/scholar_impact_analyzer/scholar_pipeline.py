@@ -602,6 +602,8 @@ def analyze_scholar_queue(
     template_prompt_fragment = EVIDENCE_TEMPLATES.build_template_prompt_fragment(
         (session.get("analysis_templates") or {}).get("compiled_templates") or []
     )
+    analysis_model = session.get("analysis_model") if isinstance(session.get("analysis_model"), dict) else {}
+    analysis_model_profile = (analysis_model.get("profile") or "default").strip() or "default"
 
     def emit_progress(
         *,
@@ -680,6 +682,7 @@ def analyze_scholar_queue(
                 item_dir=item_dir,
                 top_k_spans=top_k_spans,
                 analysis_scope=analysis_scope,
+                analysis_model_profile=analysis_model_profile,
                 local_pdf_path=local_pdf_path,
                 template_prompt_fragment=template_prompt_fragment,
                 progress_callback=item_progress,
@@ -757,6 +760,7 @@ def analyze_scholar_queue(
         "processed_pairs": len(new_results),
         "strong_evidence_count": len(new_evidence),
         "analysis_scope": analysis_scope,
+        "analysis_model_profile": analysis_model_profile,
         "top_k_spans": top_k_spans,
         "updated_at": datetime.now().isoformat(timespec="seconds"),
     }

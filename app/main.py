@@ -99,6 +99,8 @@ async def session_detail(
             "session": session,
             "status_payload": status_payload,
             "detail_payload": detail_payload,
+            "analysis_model_options": impact_core.analysis_model_options(),
+            "analysis_model_profile": impact_core.selected_analysis_model_profile(session),
             "status_json": json.dumps(status_payload, ensure_ascii=False, indent=2),
             "report_md": report_md,
         },
@@ -204,6 +206,8 @@ async def scholar_detail(
             "report_payload": report_payload,
             "highlight_cards": highlight_cards,
             "local_pdf_index_status": local_pdf_index_status,
+            "analysis_model_options": scholar_core.analysis_model_options(),
+            "analysis_model_profile": scholar_core.selected_analysis_model_profile(payload),
             "payload_json": json.dumps(payload, ensure_ascii=False, indent=2),
         },
     )
@@ -406,6 +410,7 @@ async def analyze_scholar_queue(
     session_id: str,
     top_k_spans: int = Form(8),
     analysis_scope: str = Form("fulltext_direct"),
+    analysis_model_profile: str = Form("default"),
 ):
     form = await request.form()
     queue_ids = [
@@ -423,6 +428,7 @@ async def analyze_scholar_queue(
             queue_ids=queue_ids,
             top_k_spans=top_k_spans,
             analysis_scope=analysis_scope,
+            analysis_model_profile=analysis_model_profile,
         )
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -566,10 +572,17 @@ async def analyze_session(
     session_id: str,
     top_k_spans: int = Form(8),
     analysis_scope: str = Form("fulltext_direct"),
+    analysis_model_profile: str = Form("default"),
 ):
     form = await request.form()
     ids = form.getlist("paper_ids")
-    impact_core.start_analyze_task(session_id, ids, top_k_spans=top_k_spans, analysis_scope=analysis_scope)
+    impact_core.start_analyze_task(
+        session_id,
+        ids,
+        top_k_spans=top_k_spans,
+        analysis_scope=analysis_scope,
+        analysis_model_profile=analysis_model_profile,
+    )
     return redirect_to_session(session_id)
 
 

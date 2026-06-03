@@ -1,5 +1,28 @@
 # 开发日志
 
+## 2026-06-03：全文分析支持选择模型来源
+
+分支：`codex/organize-analysis-venue-work`
+
+背景：
+- 论文全文分析原来只能跟随全局 `.env` 配置，切换本地模型和 DeepSeek 需要改环境变量并重启服务。
+- 单篇论文分析和学者高价值引用队列使用同一套全文分析器，但页面上没有入口选择本次分析使用哪类模型。
+
+本次处理：
+- 单篇论文详情页和学者高价值引用队列都新增“选择分析模型”控件。
+- 支持三个 profile：
+  - 跟随环境配置：继续使用 `ACADEMIC_IMPACT_ANALYSIS_MODE` / `ACADEMIC_IMPACT_LLM_URL` / `ACADEMIC_IMPACT_LLM_MODEL`。
+  - 本地模型：使用 `ACADEMIC_IMPACT_LOCAL_LLM_URL` / `ACADEMIC_IMPACT_LOCAL_MODEL`。
+  - DeepSeek：使用 `https://api.deepseek.com/chat/completions` 和 `deepseek-chat`，密钥从 `DEEPSEEK_API_KEY` 读取。
+- 会话会保存最近一次选择的 profile，后台任务状态和分析 summary 中也会记录该 profile。
+- `analyze_payload.json` 会写入 `analysis_model_profile`，全文分析器据此选择对应模型配置。
+- CLI `analyze` 子命令新增 `--analysis-model-profile`，方便从终端复现实验。
+
+当前策略：
+- 页面只暴露命名 profile，不允许直接填写 URL、模型名或密钥，避免误配置和凭据泄露。
+- DeepSeek 是否可用取决于运行环境是否配置了 `DEEPSEEK_API_KEY`，本地模型是否可用取决于本地 OpenAI-compatible 服务是否在线。
+- 以后增加新的模型提供方时，优先新增命名 profile，而不是把任意接口参数暴露给页面表单。
+
 ## 2026-06-02：澄清学者页本地 PDF 索引口径并补模块折叠
 
 分支：`codex/organize-analysis-venue-work`

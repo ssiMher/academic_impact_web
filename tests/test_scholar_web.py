@@ -1445,6 +1445,7 @@ class ScholarWebTestCase(unittest.TestCase):
                     "queue_ids": ["Q001", "Q002"],
                     "top_k_spans": "8",
                     "analysis_scope": "fulltext_direct",
+                    "analysis_model_profile": "deepseek",
                 },
                 follow_redirects=False,
             )
@@ -1459,6 +1460,7 @@ class ScholarWebTestCase(unittest.TestCase):
             queue_ids=["Q001", "Q002"],
             top_k_spans=8,
             analysis_scope="fulltext_direct",
+            analysis_model_profile="deepseek",
         )
 
     def test_analyze_scholar_queue_route_uses_default_span_count_when_hidden(self):
@@ -1483,6 +1485,7 @@ class ScholarWebTestCase(unittest.TestCase):
             queue_ids=["Q001"],
             top_k_spans=8,
             analysis_scope="fulltext_direct",
+            analysis_model_profile="default",
         )
 
     def test_analyze_scholar_queue_route_rejects_empty_selection(self):
@@ -2330,6 +2333,10 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("候选段落数", response.text)
         self.assertIn('type="hidden" name="top_k_spans" value="8"', response.text)
+        self.assertIn("选择分析模型", response.text)
+        self.assertIn('name="analysis_model_profile"', response.text)
+        self.assertIn('value="local"', response.text)
+        self.assertIn('value="deepseek"', response.text)
 
     def test_scholar_report_markdown_export_route(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

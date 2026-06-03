@@ -637,6 +637,63 @@ class ScholarPipelineTestCase(unittest.TestCase):
 
         self.assertEqual(observed_paths, ["/tmp/manual-citing.pdf"])
 
+    def test_analyze_scholar_queue_passes_session_analysis_model_profile(self):
+        observed_profiles = []
+        session = {
+            "analysis_model": {"profile": "deepseek"},
+            "publications": [
+                {
+                    "id": "S001",
+                    "title": "Target Paper",
+                    "year": 2024,
+                    "venue": "ACM MobiCom",
+                    "doi": "10.1000/target",
+                }
+            ],
+            "citation_edges": [],
+            "deep_analysis_queue": [
+                {
+                    "queue_id": "Q001",
+                    "source_publication_ids": ["S001"],
+                    "citing_paper_id": "C001",
+                    "citing_title": "Citing Paper",
+                }
+            ],
+            "statistics": {},
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            session_dir = Path(tmpdir)
+
+            def fake_process_citing_paper(**kwargs):
+                observed_profiles.append(kwargs.get("analysis_model_profile"))
+                item_dir = kwargs["item_dir"]
+                item_dir.mkdir(parents=True, exist_ok=True)
+                analysis_path = item_dir / "fulltext_analysis.json"
+                analysis_path.write_text(
+                    json.dumps({"ok": True, "findings": []}),
+                    encoding="utf-8",
+                )
+                return {
+                    "status": "fulltext_analyzed",
+                    "paths": {"analysis": str(analysis_path)},
+                    "analysis": {"findings_count": 0},
+                }
+
+            with mock.patch.object(
+                self.pipeline.RUN_PIPELINE,
+                "process_citing_paper",
+                side_effect=fake_process_citing_paper,
+            ):
+                self.pipeline.analyze_scholar_queue(
+                    session,
+                    session_dir,
+                    queue_ids=["Q001"],
+                    analysis_scope="fulltext_direct",
+                )
+
+        self.assertEqual(observed_profiles, ["deepseek"])
+
     def test_analyze_scholar_queue_uses_library_pdf_when_manual_missing(self):
         observed_paths = []
 

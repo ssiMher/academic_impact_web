@@ -50,7 +50,13 @@ class BackgroundTasksTestCase(unittest.TestCase):
     def test_start_analyze_task_blocks_duplicates_and_completes(self):
         class FakeCli:
             @staticmethod
-            def run_analysis(session_dir: Path, ids: list[str], top_k_spans: int, analysis_scope: str = "candidate_spans"):
+            def run_analysis(
+                session_dir: Path,
+                ids: list[str],
+                top_k_spans: int,
+                analysis_scope: str = "candidate_spans",
+                analysis_model_profile: str = "",
+            ):
                 time.sleep(0.05)
                 session = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
                 session["papers"][0]["analysis_result"] = {

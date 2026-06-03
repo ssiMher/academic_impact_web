@@ -271,6 +271,57 @@ def load_analysis_api_key(url: Optional[str] = None):
     return None
 
 
+def normalize_analysis_model_profile(value: Optional[str]) -> str:
+    profile = (value or "default").strip().lower().replace("-", "_")
+    aliases = {
+        "": "default",
+        "env": "default",
+        "current": "default",
+        "local_model": "local",
+        "local_llm": "local",
+        "本地模型": "local",
+        "deepseek_chat": "deepseek",
+    }
+    profile = aliases.get(profile, profile)
+    if profile not in {"default", "local", "deepseek"}:
+        return "default"
+    return profile
+
+
+def resolve_analysis_model_profile(profile_name: Optional[str] = None):
+    profile = normalize_analysis_model_profile(profile_name)
+    if profile == "local":
+        return {
+            "profile": "local",
+            "label": "本地模型",
+            "mode": "single_model",
+            "url": LOCAL_VLLM_URL or DEFAULT_LLM_URL,
+            "model": LOCAL_MODEL or DEFAULT_LLM_MODEL,
+            "api_key": load_analysis_api_key(LOCAL_VLLM_URL),
+            "disable_thinking": LLM_DISABLE_THINKING,
+        }
+    if profile == "deepseek":
+        return {
+            "profile": "deepseek",
+            "label": "DeepSeek",
+            "mode": "single_model",
+            "url": DEEPSEEK_URL,
+            "model": DEEPSEEK_MODEL,
+            "api_key": load_analysis_api_key(DEEPSEEK_URL),
+            "disable_thinking": False,
+        }
+    mode = normalized_analysis_mode()
+    return {
+        "profile": "default",
+        "label": "跟随环境配置",
+        "mode": mode,
+        "url": LLM_URL,
+        "model": LLM_MODEL,
+        "api_key": load_analysis_api_key(LLM_URL),
+        "disable_thinking": LLM_DISABLE_THINKING,
+    }
+
+
 def generate_target_aliases(title: str):
     aliases = []
     seen = set()
@@ -977,6 +1028,7 @@ def finalize_parsed_result(payload, parsed):
 
 
 def analyze_payload_single_model(payload):
+    model_profile = resolve_analysis_model_profile(payload.get("analysis_model_profile"))
     analysis_scope = normalize_analysis_scope(payload.get("analysis_scope"))
     fulltext_pages = normalize_fulltext_pages(payload) if analysis_scope == "fulltext_direct" else []
     fulltext_chars = sum(len(page.get("text", "")) for page in fulltext_pages)
@@ -989,6 +1041,8 @@ def analyze_payload_single_model(payload):
             "_debug": {
                 "analysis_mode": "single_model",
                 "analysis_scope": analysis_scope,
+                "analysis_model_profile": model_profile["profile"],
+                "analysis_model_label": model_profile["label"],
                 "candidate_span_count": 0,
             },
         }
@@ -1004,6 +1058,8 @@ def analyze_payload_single_model(payload):
             "_debug": {
                 "analysis_mode": "single_model",
                 "analysis_scope": analysis_scope,
+                "analysis_model_profile": model_profile["profile"],
+                "analysis_model_label": model_profile["label"],
                 "candidate_span_count": len(payload.get("candidate_spans", [])),
                 "fulltext_page_count": 0,
                 "fulltext_chars": 0,
@@ -1018,8 +1074,10 @@ def analyze_payload_single_model(payload):
         "fulltext_page_count": len(fulltext_pages),
         "fulltext_chars": fulltext_chars,
         "prompt_chars": len(user_prompt),
-        "llm_url": LLM_URL,
-        "llm_model": LLM_MODEL,
+        "analysis_model_profile": model_profile["profile"],
+        "analysis_model_label": model_profile["label"],
+        "llm_url": model_profile["url"],
+        "llm_model": model_profile["model"],
         "output_source": None,
         "finish_reason": None,
         "content_len": 0,
@@ -1032,13 +1090,13 @@ def analyze_payload_single_model(payload):
                 {"role": "system", "content": SINGLE_MODEL_SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
-            url=LLM_URL,
-            model=LLM_MODEL,
-            api_key=load_analysis_api_key(LLM_URL),
+            url=model_profile["url"],
+            model=model_profile["model"],
+            api_key=model_profile["api_key"],
             max_tokens=4096,
             response_format_json=True,
             use_reasoning_fallback=False,
-            disable_thinking=LLM_DISABLE_THINKING,
+            disable_thinking=model_profile["disable_thinking"],
         )
     except requests.RequestException as exc:
         error_detail_type, error_message = classify_request_exception(exc)
@@ -1225,7 +1283,8 @@ def analyze_payload_legacy_two_stage(payload):
 
 
 def analyze_payload(payload):
-    mode = normalized_analysis_mode()
+    model_profile = resolve_analysis_model_profile(payload.get("analysis_model_profile"))
+    mode = model_profile.get("mode") or normalized_analysis_mode()
     if mode == "legacy_two_stage":
         return analyze_payload_legacy_two_stage(payload)
     if mode != "single_model":

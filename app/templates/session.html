@@ -448,15 +448,28 @@
             <label class="checkbox"><input type="checkbox" name="force" {% if task_active %}disabled{% endif %} data-task-control /> Refresh 时强制重试</label>
             <label class="checkbox"><input type="checkbox" name="auto_only" {% if task_active %}disabled{% endif %} data-task-control /> Download 时仅处理 auto_downloadable</label>
             <label>
-              analyze top_k_spans
+              候选段落数
               <input type="number" name="top_k_spans" value="8" min="1" max="20" {% if task_active %}disabled{% endif %} data-task-control />
             </label>
             <label>
-              analysis scope
+              分析范围
               <select name="analysis_scope" {% if task_active %}disabled{% endif %} data-task-control>
                 <option value="candidate_spans">candidate_spans</option>
                 <option value="fulltext_direct" selected>fulltext_direct</option>
               </select>
+            </label>
+            <label>
+              选择分析模型
+              <select name="analysis_model_profile" {% if task_active %}disabled{% endif %} data-task-control>
+                {% for option in analysis_model_options or [] %}
+                <option value="{{ option.value }}" {% if option.value == analysis_model_profile %}selected{% endif %}>{{ option.label }}</option>
+                {% endfor %}
+              </select>
+              {% for option in analysis_model_options or [] %}
+              {% if option.value == analysis_model_profile %}
+              <span class="field-help">{{ option.description }}</span>
+              {% endif %}
+              {% endfor %}
             </label>
           </div>
 

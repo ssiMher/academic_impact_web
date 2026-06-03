@@ -306,6 +306,7 @@ def process_citing_paper(
     top_k_spans: int,
     local_pdf_path: str = "",
     analysis_scope: str = "fulltext_direct",
+    analysis_model_profile: str = "",
     template_prompt_fragment: str = "",
     progress_callback=None,
 ):
@@ -530,6 +531,8 @@ def process_citing_paper(
         "analysis_scope": analysis_scope,
         "candidate_spans": candidate_spans,
     }
+    if analysis_model_profile:
+        payload["analysis_model_profile"] = analysis_model_profile
     if candidate_result.get("citation_index"):
         payload["target_citation_index"] = candidate_result.get("citation_index")
     citation_meta = candidate_result.get("citation_meta") if isinstance(candidate_result, dict) else {}
@@ -584,6 +587,7 @@ def process_citing_paper(
         "ok": analysis_result.get("ok"),
         "candidate_span_count": len(payload.get("candidate_spans", [])),
         "analysis_scope": analysis_scope,
+        "analysis_model_profile": analysis_model_profile,
         "fulltext_page_count": len(payload.get("fulltext_pages", [])),
         "fulltext_char_count": payload.get("fulltext_char_count", 0),
         "findings_count": len(analysis_result.get("findings", [])) if isinstance(analysis_result.get("findings"), list) else 0,
@@ -611,6 +615,7 @@ def run_pipeline(
     top_k_spans: int,
     scan_limit: int,
     analysis_scope: str = "fulltext_direct",
+    analysis_model_profile: str = "",
 ):
     analysis_scope = normalize_analysis_scope(analysis_scope)
     started_at = datetime.now().isoformat(timespec="seconds")
@@ -644,6 +649,7 @@ def run_pipeline(
             item_dir=item_dir,
             top_k_spans=top_k_spans,
             analysis_scope=analysis_scope,
+            analysis_model_profile=analysis_model_profile,
         )
         if should_prioritize_result(paper_result):
             prioritized_results.append(paper_result)
@@ -670,6 +676,7 @@ def run_pipeline(
         "scanned_papers": scanned_papers,
         "processed_papers": len(per_paper_results),
         "analysis_scope": analysis_scope,
+        "analysis_model_profile": analysis_model_profile,
         "prioritized_results": len(prioritized_results),
         "deferred_results": len(deferred_results),
         "contexts_ok": contexts_result.get("ok") if isinstance(contexts_result, dict) else False,
@@ -703,6 +710,12 @@ def parse_args():
         default="fulltext_direct",
         help="分析范围：fulltext_direct 为默认单篇全文直读模式，candidate_spans 为候选段落模式",
     )
+    parser.add_argument(
+        "--analysis-model-profile",
+        choices=["default", "local", "deepseek"],
+        default="",
+        help="分析模型：default 跟随环境配置，local 使用本地模型，deepseek 使用 DeepSeek。",
+    )
     return parser.parse_args()
 
 
@@ -725,6 +738,7 @@ def main():
             top_k_spans=max(1, args.top_k_spans),
             scan_limit=scan_limit,
             analysis_scope=args.analysis_scope,
+            analysis_model_profile=args.analysis_model_profile,
         )
     except Exception as e:
         print(json.dumps({"ok": False, "error": str(e)}, ensure_ascii=False, indent=2))

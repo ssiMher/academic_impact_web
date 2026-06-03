@@ -379,6 +379,10 @@ class Phase1DetailTestCase(unittest.TestCase):
         self.assertIn('刷新探测状态', body)
         self.assertIn('下载所选论文', body)
         self.assertIn('分析所选论文', body)
+        self.assertIn('选择分析模型', body)
+        self.assertIn('name="analysis_model_profile"', body)
+        self.assertIn('value="local"', body)
+        self.assertIn('value="deepseek"', body)
         self.assertIn('fulltext_direct', body)
         self.assertIn('上传并绑定 PDF', body)
         self.assertIn('全文分析完成', body)
@@ -389,6 +393,12 @@ class Phase1DetailTestCase(unittest.TestCase):
             TEST_SESSION_ID,
             active_template_ids=['first_evaluation'],
             custom_requests_text='寻找方法来源证据',
+        )
+        session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))
+        session_payload['analysis_model'] = {'profile': 'deepseek'}
+        (TEST_SESSION_DIR / 'session.json').write_text(
+            json.dumps(session_payload, ensure_ascii=False),
+            encoding='utf-8',
         )
         cli = impact_core.impact_cli()
         calls = []
@@ -408,6 +418,7 @@ class Phase1DetailTestCase(unittest.TestCase):
         prompt_fragment = calls[0].get('template_prompt_fragment') or ''
         self.assertIn('首次', prompt_fragment)
         self.assertIn('方法来源', prompt_fragment)
+        self.assertEqual(calls[0].get('analysis_model_profile'), 'deepseek')
 
     def test_load_session_rebuilds_stale_custom_template_keywords(self):
         session_payload = json.loads((TEST_SESSION_DIR / 'session.json').read_text(encoding='utf-8'))

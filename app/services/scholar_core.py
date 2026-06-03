@@ -54,6 +54,59 @@ def evidence_templates_module():
     )
 
 
+ANALYSIS_MODEL_OPTIONS = [
+    {
+        "value": "default",
+        "label": "跟随环境配置",
+        "description": "使用当前 .env 中配置的分析模式、接口地址和模型名。",
+    },
+    {
+        "value": "local",
+        "label": "本地模型",
+        "description": "使用 ACADEMIC_IMPACT_LOCAL_LLM_URL / ACADEMIC_IMPACT_LOCAL_MODEL。",
+    },
+    {
+        "value": "deepseek",
+        "label": "DeepSeek",
+        "description": "使用 DeepSeek Chat，需要配置 DEEPSEEK_API_KEY。",
+    },
+]
+
+
+def normalize_analysis_model_profile(value: str = "") -> str:
+    profile = (value or "default").strip().lower().replace("-", "_")
+    aliases = {
+        "": "default",
+        "env": "default",
+        "current": "default",
+        "local_model": "local",
+        "local_llm": "local",
+        "本地模型": "local",
+        "deepseek_chat": "deepseek",
+    }
+    profile = aliases.get(profile, profile)
+    if profile not in {item["value"] for item in ANALYSIS_MODEL_OPTIONS}:
+        return "default"
+    return profile
+
+
+def analysis_model_options() -> list[dict[str, str]]:
+    return [dict(item) for item in ANALYSIS_MODEL_OPTIONS]
+
+
+def selected_analysis_model_profile(session: dict[str, Any]) -> str:
+    analysis_model = session.get("analysis_model")
+    if isinstance(analysis_model, dict):
+        return normalize_analysis_model_profile(analysis_model.get("profile") or "")
+    return "default"
+
+
+def set_session_analysis_model_profile(session: dict[str, Any], profile: str) -> str:
+    normalized = normalize_analysis_model_profile(profile)
+    session["analysis_model"] = {"profile": normalized}
+    return normalized
+
+
 def slugify(value: str) -> str:
     text = re.sub(r"[^a-z0-9]+", "_", (value or "").strip().lower())
     return re.sub(r"_+", "_", text).strip("_") or "scholar"
@@ -133,6 +186,7 @@ def default_task_state() -> dict[str, Any]:
         "current_queue_id": "",
         "current_title": "",
         "current_index": 0,
+        "analysis_model_profile": "default",
     }
 
 
@@ -2572,6 +2626,7 @@ def mark_task_running(
     task_type: str,
     *,
     limit_per_publication: int | None = None,
+    analysis_model_profile: str | None = None,
     message: str = "",
 ) -> tuple[bool, dict[str, Any]]:
     with _task_lock(session_id):
@@ -2580,6 +2635,11 @@ def mark_task_running(
         if task_state.get("active"):
             return False, dict(task_state)
         now = datetime.now().isoformat(timespec="seconds")
+        resolved_model_profile = normalize_analysis_model_profile(
+            analysis_model_profile or selected_analysis_model_profile(session)
+        )
+        if task_type == "analyze_queue":
+            set_session_analysis_model_profile(session, resolved_model_profile)
         task_state.update(
             {
                 "active": True,
@@ -2600,6 +2660,7 @@ def mark_task_running(
                 "current_queue_id": "",
                 "current_title": "",
                 "current_index": 0,
+                "analysis_model_profile": resolved_model_profile,
             }
         )
         session["task_state"] = task_state
@@ -2924,8 +2985,13 @@ def analyze_scholar_queue(
     queue_ids: list[str],
     top_k_spans: int = 8,
     analysis_scope: str = "fulltext_direct",
+    analysis_model_profile: str = "",
 ) -> dict[str, Any]:
     session = load_scholar_status(session_id)
+    resolved_model_profile = normalize_analysis_model_profile(
+        analysis_model_profile or selected_analysis_model_profile(session)
+    )
+    set_session_analysis_model_profile(session, resolved_model_profile)
     session_dir = resolve_scholar_session_dir(session_id)
     total = len(queue_ids)
 
@@ -2969,10 +3035,16 @@ def start_analyze_queue_task(
     queue_ids: list[str],
     top_k_spans: int = 8,
     analysis_scope: str = "fulltext_direct",
+    analysis_model_profile: str = "",
 ) -> tuple[bool, dict[str, Any]]:
+    session = load_scholar_status(session_id)
+    resolved_model_profile = normalize_analysis_model_profile(
+        analysis_model_profile or selected_analysis_model_profile(session)
+    )
     started, task_state = mark_task_running(
         session_id,
         "analyze_queue",
+        analysis_model_profile=resolved_model_profile,
         message="正在分析所选高价值引用论文…",
     )
     if not started:
@@ -2981,6 +3053,7 @@ def start_analyze_queue_task(
         session_id,
         selected_queue_ids=queue_ids,
         top_k_spans=top_k_spans,
+        analysis_model_profile=resolved_model_profile,
         total_count=len(queue_ids),
     )
 
@@ -2990,6 +3063,7 @@ def start_analyze_queue_task(
             queue_ids=queue_ids,
             top_k_spans=top_k_spans,
             analysis_scope=analysis_scope,
+            analysis_model_profile=resolved_model_profile,
         )
 
     thread = threading.Thread(

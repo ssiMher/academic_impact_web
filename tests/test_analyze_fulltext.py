@@ -344,6 +344,51 @@ class AnalyzeFulltextResponseHandlingTestCase(unittest.TestCase):
         self.assertIn('Transformer encoder', self.module.SINGLE_MODEL_SYSTEM_PROMPT)
         self.assertIn('不要降级为 mention_only', captured_messages[1]['content'])
 
+    def test_analyze_payload_uses_deepseek_profile_when_requested(self):
+        payload = {
+            'analysis_scope': 'fulltext_direct',
+            'analysis_model_profile': 'deepseek',
+            'target_title': 'Target Paper',
+            'citing_title': 'DeepSeek Profile Test',
+            'candidate_spans': [],
+            'fulltext_pages': [
+                {'page': 1, 'text': 'We build on Target Paper as a baseline.'},
+            ],
+        }
+        model_result = {
+            'analysis_text': '{"ok": true, "citing_title": "DeepSeek Profile Test", "findings": []}',
+            'output_source': 'content',
+            'finish_reason': 'stop',
+            'content_len': 72,
+            'reasoning_len': 0,
+        }
+        captured_kwargs = {}
+
+        def fake_chat(_messages, **kwargs):
+            captured_kwargs.update(kwargs)
+            return model_result
+
+        with mock.patch.object(self.module, 'call_openai_compatible_chat', side_effect=fake_chat), \
+                mock.patch.object(self.module, 'load_analysis_api_key', return_value='deepseek-key'):
+            result = self.module.analyze_payload(payload)
+
+        self.assertTrue(result['ok'])
+        self.assertEqual(captured_kwargs['url'], 'https://api.deepseek.com/chat/completions')
+        self.assertEqual(captured_kwargs['model'], 'deepseek-chat')
+        self.assertEqual(captured_kwargs['api_key'], 'deepseek-key')
+        self.assertEqual(result['_debug']['analysis_model_profile'], 'deepseek')
+
+    def test_resolve_analysis_model_profile_supports_local_and_default_profiles(self):
+        default_profile = self.module.resolve_analysis_model_profile('')
+        local_profile = self.module.resolve_analysis_model_profile('local')
+
+        self.assertEqual(default_profile['profile'], 'default')
+        self.assertEqual(default_profile['mode'], 'single_model')
+        self.assertEqual(local_profile['profile'], 'local')
+        self.assertEqual(local_profile['mode'], 'single_model')
+        self.assertEqual(local_profile['url'], self.module.LOCAL_VLLM_URL)
+        self.assertEqual(local_profile['model'], self.module.LOCAL_MODEL)
+
     def test_fulltext_direct_prompt_uses_configurable_default_budget(self):
         self.assertEqual(self.module.MAX_FULLTEXT_DIRECT_CHARS, 90000)
 

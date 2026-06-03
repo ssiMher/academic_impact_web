@@ -102,8 +102,12 @@
         </form>
 
         <section class="subpanel" id="analysis-templates">
-          <h2>分析模板</h2>
-          <p class="muted">模板会影响后续全文分析，帮助系统优先寻找首次评价、详细对比、理论基础、方法来源等可汇报证据。</p>
+          <div class="panel-header">
+            <div>
+              <h2>分析模板</h2>
+              <p class="muted">模板会影响后续全文分析，帮助系统优先寻找首次评价、详细对比、理论基础、方法来源等可汇报证据。</p>
+            </div>
+          </div>
           <form action="/scholars/{{ session_id }}/analysis-templates" method="post">
             <div class="checkbox-grid">
               {% for template in analysis_templates.builtin_templates or [] %}
@@ -157,8 +161,12 @@
         </section>
 
         <section class="subpanel" id="exclusion-profile">
-          <h2>排除作者 / 本组作者</h2>
-          <p class="muted">自引和本组合作者默认不作为高价值第三方评价，但会保留在队列中并降低优先级，方便核对。</p>
+          <div class="panel-header">
+            <div>
+              <h2>排除作者 / 本组作者</h2>
+              <p class="muted">自引和本组合作者默认不作为高价值第三方评价，但会保留在队列中并降低优先级，方便核对。</p>
+            </div>
+          </div>
           <form action="/scholars/{{ session_id }}/exclusion-profile" method="post">
             <div class="checkbox-grid">
               <label>
@@ -183,8 +191,12 @@
         </section>
 
         <section class="subpanel" id="review-comment-import">
-          <h2>审稿意见 / 外部评价导入</h2>
-          <p class="muted">把审稿意见、评审总结或外部评价原文贴进来，系统会把它们转成可放进“亮点评价卡片”的证据。</p>
+          <div class="panel-header">
+            <div>
+              <h2>审稿意见 / 外部评价导入</h2>
+              <p class="muted">把审稿意见、评审总结或外部评价原文贴进来，系统会把它们转成可放进“亮点评价卡片”的证据。</p>
+            </div>
+          </div>
           <form action="/scholars/{{ session_id }}/review-comment-evidence" method="post">
             <label>
               原文片段（空行分隔多条）
@@ -194,30 +206,38 @@
           </form>
         </section>
 
-        <div class="callout info">
-          <strong>本地 PDF 索引</strong>
-          <p>当前索引条目：{{ local_pdf_index.entry_count or 0 }}</p>
-          <p>上次扫描 PDF：{{ local_pdf_index.scanned_pdf_count or local_pdf_index.entry_count or 0 }}</p>
-          <p>队列命中本地 PDF：{{ local_pdf_index.queue_matched_count or 0 }}</p>
-          <p>队列已上传 PDF：{{ local_pdf_index.queue_manual_pdf_count or 0 }}</p>
-          <p>队列可直接分析 PDF：{{ local_pdf_index.queue_ready_pdf_count or 0 }}</p>
-          <p>构建耗时：{{ ((local_pdf_index.build_elapsed_ms or 0) / 1000) | round(2) }} 秒</p>
-          <p>本次刷新总耗时：{{ ((local_pdf_index.refresh_total_ms or 0) / 1000) | round(2) }} 秒</p>
-          <p>队列重匹配耗时：{{ ((local_pdf_index.queue_rematch_elapsed_ms or 0) / 1000) | round(2) }} 秒</p>
-          <p class="muted">索引文件：{{ local_pdf_index.index_path or '未配置' }}</p>
-          {% if local_pdf_index.generated_at %}
-          <p class="muted">最近刷新：{{ local_pdf_index.generated_at }}</p>
-          {% endif %}
-          {% if local_pdf_index.last_refreshed_at %}
-          <p class="muted">上次点按钮刷新：{{ local_pdf_index.last_refreshed_at }}</p>
-          {% endif %}
-          {% if local_pdf_index.search_dirs %}
-          <p class="muted">扫描目录：{{ local_pdf_index.search_dirs | join('；') }}</p>
-          {% endif %}
-          <form action="/scholars/{{ session_id }}/refresh-local-pdf-index" method="post" class="inline-actions">
-            <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>刷新本地 PDF 索引</button>
-          </form>
-        </div>
+        <section class="subpanel callout info" id="local-pdf-index">
+          <div class="panel-header">
+            <div>
+              <strong>本地 PDF 索引</strong>
+              <p class="muted">索引数字只统计下面扫描目录中的 PDF；上传到当前队列的 PDF 会单独计入“已上传/已绑定 PDF”。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <p>扫描目录 PDF：{{ local_pdf_index.scanned_pdf_count or local_pdf_index.entry_count or 0 }}</p>
+            <p>可匹配索引条目：{{ local_pdf_index.entry_count or 0 }}</p>
+            <p>本地库命中队列：{{ local_pdf_index.queue_matched_count or 0 }}</p>
+            <p>已上传/已绑定 PDF：{{ local_pdf_index.queue_manual_pdf_count or 0 }}</p>
+            <p>队列可直接分析 PDF：{{ local_pdf_index.queue_ready_pdf_count or 0 }}</p>
+            <p>扫描目录已存在：{{ local_pdf_index.existing_search_dir_count or 0 }} / {{ local_pdf_index.search_dir_count or (local_pdf_index.search_dirs or []) | length }}</p>
+            <p>构建耗时：{{ ((local_pdf_index.build_elapsed_ms or 0) / 1000) | round(2) }} 秒</p>
+            <p>本次刷新总耗时：{{ ((local_pdf_index.refresh_total_ms or 0) / 1000) | round(2) }} 秒</p>
+            <p>队列重匹配耗时：{{ ((local_pdf_index.queue_rematch_elapsed_ms or 0) / 1000) | round(2) }} 秒</p>
+            <p class="muted">索引文件：{{ local_pdf_index.index_path or '未配置' }}</p>
+            {% if local_pdf_index.generated_at %}
+            <p class="muted">最近刷新：{{ local_pdf_index.generated_at }}</p>
+            {% endif %}
+            {% if local_pdf_index.last_refreshed_at %}
+            <p class="muted">上次点按钮刷新：{{ local_pdf_index.last_refreshed_at }}</p>
+            {% endif %}
+            {% if local_pdf_index.search_dirs %}
+            <p class="muted">扫描目录：{{ local_pdf_index.search_dirs | join('；') }}</p>
+            {% endif %}
+            <form action="/scholars/{{ session_id }}/refresh-local-pdf-index" method="post" class="inline-actions">
+              <button type="submit" class="secondary" {% if task_active %}disabled title="当前有后台任务运行中"{% endif %} data-scholar-task-control>刷新本地 PDF 索引</button>
+            </form>
+          </div>
+        </section>
       </section>
 
       {% if guidance.steps %}
@@ -374,7 +394,11 @@
       {% endif %}
 
       <section class="panel" id="strong-evidence">
-        <h2>强引用证据</h2>
+        <div class="panel-header">
+          <div>
+            <h2>强引用证据</h2>
+          </div>
+        </div>
         {% if payload.strong_evidence %}
         <form action="/scholars/{{ session_id }}#strong-evidence" method="get" class="inline-actions">
           <label>
@@ -970,6 +994,73 @@
     </main>
     <script>
       (() => {
+        const initializeScholarPanelToggles = () => {
+          const headers = document.querySelectorAll('.panel > .panel-header, .subpanel > .panel-header');
+          headers.forEach((header, index) => {
+            const panel = header.parentElement;
+            if (!panel || panel.dataset.scholarPanelToggleReady === 'true') return;
+            const panelId = panel.id || `scholar-panel-${index + 1}`;
+            if (!panel.id) panel.id = panelId;
+            const storageKey = `academic-impact:scholar-panel:{{ session_id }}:${panelId}`;
+            const panelBody = panel.querySelector(':scope > .panel-body');
+            const directBodyNodes = [];
+            let sibling = header.nextElementSibling;
+            while (sibling) {
+              directBodyNodes.push(sibling);
+              sibling = sibling.nextElementSibling;
+            }
+            if (!panelBody && !directBodyNodes.length) return;
+            panel.dataset.scholarPanelToggleReady = 'true';
+
+            let actions = header.querySelector(':scope > .actions');
+            if (!actions) {
+              actions = document.createElement('div');
+              actions.className = 'actions';
+              header.appendChild(actions);
+            }
+
+            const toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'ghost module-toggle';
+            toggle.setAttribute('aria-controls', panelId);
+            toggle.setAttribute('data-scholar-panel-toggle', panelId);
+            actions.appendChild(toggle);
+
+            const affectedNodes = panelBody ? [panelBody] : directBodyNodes;
+            const render = () => {
+              const collapsed = panel.classList.contains('is-collapsed');
+              affectedNodes.forEach((node) => {
+                node.hidden = collapsed;
+              });
+              toggle.textContent = collapsed ? '展开' : '收起';
+              toggle.setAttribute('aria-expanded', String(!collapsed));
+            };
+
+            try {
+              if (window.localStorage.getItem(storageKey) === 'collapsed') {
+                panel.classList.add('is-collapsed');
+              }
+            } catch (_err) {
+              // The toggle still works for the current page when storage is blocked.
+            }
+            render();
+
+            toggle.addEventListener('click', (event) => {
+              event.preventDefault();
+              panel.classList.toggle('is-collapsed');
+              try {
+                window.localStorage.setItem(
+                  storageKey,
+                  panel.classList.contains('is-collapsed') ? 'collapsed' : 'open'
+                );
+              } catch (_err) {
+                // Ignore storage failures; keep the visible UI state updated.
+              }
+              render();
+            });
+          });
+        };
+
         const taskActive = {{ 'true' if task_active else 'false' }};
         const controls = Array.from(document.querySelectorAll('[data-scholar-task-control]'));
         const message = document.getElementById('scholar-task-status-message');
@@ -1037,6 +1128,7 @@
           setControlsDisabled(true);
           window.setInterval(poll, 3000);
         }
+        initializeScholarPanelToggles();
       })();
     </script>
   </body>

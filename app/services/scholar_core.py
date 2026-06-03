@@ -281,6 +281,13 @@ def load_local_pdf_index_status(session: dict[str, Any] | None = None) -> dict[s
     search_dirs = pipeline.configured_local_pdf_library_dirs(download_pdf)
     index_path = str(Path(download_pdf.DEFAULT_LOCAL_PDF_INDEX_PATH).expanduser())
     index_data = download_pdf.load_local_pdf_index(index_path=index_path) or {}
+    search_dir_statuses = [
+        {
+            "path": directory,
+            "exists": Path(directory).expanduser().exists(),
+        }
+        for directory in search_dirs
+    ]
     refresh_meta = (session or {}).get("local_pdf_index_refresh") or {}
     queue = (session or {}).get("deep_analysis_queue", []) or []
     queue_matched_count = sum(
@@ -307,6 +314,9 @@ def load_local_pdf_index_status(session: dict[str, Any] | None = None) -> dict[s
         "generated_at": index_data.get("generated_at") or "",
         "index_path": index_path,
         "search_dirs": index_data.get("search_dirs") or search_dirs,
+        "search_dir_statuses": search_dir_statuses,
+        "search_dir_count": len(search_dir_statuses),
+        "existing_search_dir_count": sum(1 for item in search_dir_statuses if item.get("exists")),
         "queue_matched_count": queue_matched_count,
         "queue_manual_pdf_count": queue_manual_pdf_count,
         "queue_ready_pdf_count": queue_ready_pdf_count,

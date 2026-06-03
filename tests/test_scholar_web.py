@@ -177,21 +177,68 @@ class ScholarWebTestCase(unittest.TestCase):
                 "generated_at": "2026-05-18T10:00:00",
                 "index_path": "/tmp/local_pdf_index.json",
                 "search_dirs": ["/papers"],
+                "search_dir_count": 1,
+                "existing_search_dir_count": 1,
             },
         ):
             response = client.get(f"/scholars/{TEST_SESSION_ID}")
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("刷新本地 PDF 索引", response.text)
-        self.assertIn("当前索引条目：128", response.text)
-        self.assertIn("上次扫描 PDF：128", response.text)
-        self.assertIn("队列命中本地 PDF：1", response.text)
-        self.assertIn("队列已上传 PDF：1", response.text)
+        self.assertIn("扫描目录 PDF：128", response.text)
+        self.assertIn("可匹配索引条目：128", response.text)
+        self.assertIn("本地库命中队列：1", response.text)
+        self.assertIn("已上传/已绑定 PDF：1", response.text)
         self.assertIn("队列可直接分析 PDF：2", response.text)
+        self.assertIn("扫描目录已存在：1 / 1", response.text)
+        self.assertIn("索引数字只统计下面扫描目录中的 PDF", response.text)
         self.assertIn("构建耗时：0.24 秒", response.text)
         self.assertIn("本次刷新总耗时：0.84 秒", response.text)
         self.assertIn("队列重匹配耗时：0.6 秒", response.text)
         self.assertIn("/tmp/local_pdf_index.json", response.text)
+        self.assertIn('id="local-pdf-index"', response.text)
+        self.assertIn("data-scholar-panel-toggle", response.text)
+        self.assertIn("academic-impact:scholar-panel:", response.text)
+
+    def test_load_local_pdf_index_status_reports_search_dir_existence(self):
+        existing_dir = TEST_SESSION_DIR / "pdfs"
+        missing_dir = TEST_SESSION_DIR / "missing"
+        existing_dir.mkdir(parents=True, exist_ok=True)
+
+        class FakeDownloadPdf:
+            DEFAULT_LOCAL_PDF_INDEX_PATH = str(TEST_SESSION_DIR / "local_pdf_index.json")
+
+            @staticmethod
+            def load_local_pdf_index(index_path=""):
+                return {
+                    "entry_count": 2,
+                    "scanned_pdf_count": 2,
+                    "search_dirs": [str(existing_dir), str(missing_dir)],
+                }
+
+        class FakePipeline:
+            RUN_PIPELINE = type("RunPipeline", (), {"DOWNLOAD_PDF": FakeDownloadPdf})()
+
+            @staticmethod
+            def configured_local_pdf_library_dirs(download_pdf_module):
+                return [str(existing_dir), str(missing_dir)]
+
+        with mock.patch.object(
+            scholar_core,
+            "scholar_pipeline",
+            return_value=FakePipeline(),
+        ):
+            status = scholar_core.load_local_pdf_index_status({})
+
+        self.assertEqual(status["search_dir_count"], 2)
+        self.assertEqual(status["existing_search_dir_count"], 1)
+        self.assertEqual(
+            status["search_dir_statuses"],
+            [
+                {"path": str(existing_dir), "exists": True},
+                {"path": str(missing_dir), "exists": False},
+            ],
+        )
 
     def test_scholar_route_renders_expansion_controls_and_queue(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

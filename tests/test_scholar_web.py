@@ -1949,6 +1949,21 @@ class ScholarWebTestCase(unittest.TestCase):
         self.assertIn("https://example.test/alice", response.text)
         self.assertIn("C001 · Alice Fellow · Fellow Citing Paper", response.text)
         self.assertIn('action="/scholars/test_scholar_session/candidates/review"', response.text)
+        panel_start = response.text.index('id="person-candidates"')
+        panel_body_start = response.text.index('<div class="panel-body">', panel_start)
+        filter_form_start = response.text.index(
+            'action="/scholars/test_scholar_session#person-candidates"',
+            panel_start,
+        )
+        candidate_card_start = response.text.index("<strong>Alice Fellow</strong>", panel_start)
+        self.assertLess(panel_body_start, filter_form_start)
+        self.assertLess(panel_body_start, candidate_card_start)
+
+    def test_scholar_panel_collapse_css_hides_non_header_children(self):
+        css = (Path(__file__).resolve().parents[1] / "app/static/style.css").read_text(encoding="utf-8")
+
+        self.assertIn(".panel.is-collapsed > :not(.panel-header)", css)
+        self.assertIn(".subpanel.is-collapsed > :not(.panel-header)", css)
 
     def test_scholar_route_filters_person_candidates(self):
         TEST_SESSION_DIR.mkdir(parents=True, exist_ok=True)

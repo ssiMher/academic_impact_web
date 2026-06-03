@@ -692,6 +692,7 @@
             <span class="chip">已拒绝：{{ rejected_people }}</span>
           </div>
         </div>
+        <div class="panel-body">
         {% if person.unfiltered_count %}
         <form action="/scholars/{{ session_id }}#person-candidates" method="get" class="inline-actions">
           <label>
@@ -803,6 +804,7 @@
         {% else %}
         <p class="muted">当前没有命中任何人物候选。展开引用网络后，系统会按 Fellow、院士、国外高校作者等线索生成候选。</p>
         {% endif %}
+        </div>
       </section>
 
       <section class="panel" id="deep-analysis-queue">
